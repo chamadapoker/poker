@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { militaryPersonnel } from "@/lib/data"
+import { fetchMilitaryPersonnel } from "@/lib/client-data"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
@@ -58,7 +58,7 @@ function PermanenceChecklist() {
       return
     }
 
-    const military = militaryPersonnel.find((m) => m.id === selectedMilitary)
+    const military = await fetchMilitaryPersonnel(selectedMilitary)
     if (!military) {
       toast({
         title: "Militar não encontrado",
@@ -113,7 +113,7 @@ function PermanenceChecklist() {
               <SelectValue placeholder="Selecione o Militar" />
             </SelectTrigger>
             <SelectContent>
-              {militaryPersonnel.map((militar) => (
+              {fetchMilitaryPersonnel().map((militar) => (
                 <SelectItem key={militar.id} value={militar.id}>
                   {militar.rank} {militar.name}
                 </SelectItem>

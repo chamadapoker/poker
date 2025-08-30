@@ -97,3 +97,30 @@
     @apply p-6 pt-0;
   }
 }
+
+/* Animações personalizadas para o header */
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-x-reverse {
+  0%, 100% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease-in-out infinite;
+}
+
+.animate-gradient-x-reverse {
+  animation: gradient-x-reverse 3s ease-in-out infinite;
+}

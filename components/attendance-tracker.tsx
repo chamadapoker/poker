@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, XCircle, User, Shield } from "lucide-react"
+import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings } from "lucide-react"
 import { militaryPersonnel, callTypes, attendanceStatuses } from "@/lib/static-data"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
@@ -40,12 +40,19 @@ function AttendanceTracker() {
   useEffect(() => {
     const loadData = async () => {
       console.log('=== INICIANDO CARREGAMENTO DE DADOS ===')
+      console.log('militaryPersonnel disponível:', militaryPersonnel)
+      console.log('callTypes disponível:', callTypes)
       
-      // 1. PRIMEIRO: Carregar justificativas
-      console.log('1. Carregando justificativas...')
-      await fetchJustifications()
-      
-      console.log('=== CARREGAMENTO DE DADOS CONCLUÍDO ===')
+      try {
+        // 1. PRIMEIRO: Carregar justificativas
+        console.log('1. Carregando justificativas...')
+        await fetchJustifications()
+        
+        console.log('=== CARREGAMENTO DE DADOS CONCLUÍDO ===')
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error)
+        console.log('Continuando com dados estáticos...')
+      }
     }
     loadData()
     
@@ -58,9 +65,10 @@ function AttendanceTracker() {
 
   // NOVO: useEffect separado para reagir às mudanças em justifications
   useEffect(() => {
-    if (justifications.length > 0) {
+    if (justifications.length >= 0) { // Mudança: >= 0 em vez de > 0
       console.log('=== JUSTIFICATIVAS ATUALIZADAS, INICIALIZANDO LISTA ===')
       console.log('Justificativas disponíveis:', justifications)
+      console.log('militaryPersonnel disponível:', militaryPersonnel)
       initializeAttendance()
       fetchAttendanceHistory()
     }
@@ -168,43 +176,46 @@ function AttendanceTracker() {
   }
 
   const fetchAttendanceHistory = async () => {
-    const { data: records, error } = await supabase
-      .from("military_attendance_records")
-      .select("*")
-      .eq("date", today)
-      .order("military_name", { ascending: true })
+    console.log("Buscando histórico de presença para:", today)
+    
+    try {
+      const { data: records, error } = await supabase
+        .from("military_attendance_records")
+        .select("*")
+        .eq("date", today)
 
-    if (error) {
-      console.error("Error fetching attendance history:", error)
-    } else if (records && records.length > 0) {
-      // Atualiza o estado com os dados do banco
-      const updatedAttendance = militaryPersonnel.map((military) => {
-        const record = records.find((r) => r.military_id === military.id)
-        // CORREÇÃO: Usar a mesma lógica de comparação de datas
-        const isJustified = justifications.some(
-          (justification) => {
-            const justificationStart = justification.start_date
-            const justificationEnd = justification.end_date
-            const todayStr = today
-            
-            return justification.military_name === military.name &&
-                   todayStr >= justificationStart &&
-                   todayStr <= justificationEnd
+      if (error) {
+        console.error("Error fetching attendance history:", error)
+        console.log("Usando dados estáticos para histórico de presença")
+        return
+      } else if (records && records.length > 0) {
+        // Atualiza o estado com os dados do banco
+        const updatedAttendance = militaryPersonnel.map((military) => {
+          const record = records.find(r => r.military_id === military.id)
+          const isJustified = justifications.some(
+            (justification) => {
+              const nameMatch = justification.military_name === military.name
+              const dateRange = today >= justification.start_date && today <= justification.end_date
+              return nameMatch && dateRange
+            }
+          )
+
+          return {
+            id: `att_${military.id}`,
+            militaryId: military.id,
+            militaryName: military.name,
+            rank: military.rank,
+            status: record ? record.status : (isJustified ? "justificado" : "ausente"),
+            callType: record ? record.call_type : "",
+            date: today,
+            isJustified,
           }
-        )
-
-        return {
-          id: `att_${military.id}`,
-          militaryId: military.id,
-          militaryName: military.name,
-          rank: military.rank,
-          status: isJustified ? "justificado" : (record?.status || "ausente"),
-          callType: record?.call_type || "",
-          date: today,
-          isJustified,
-        }
-      })
-      setMilitaryAttendance(updatedAttendance)
+        })
+        setMilitaryAttendance(updatedAttendance)
+      }
+    } catch (error) {
+      console.error("Erro geral ao buscar histórico de presença:", error)
+      console.log("Usando dados estáticos para histórico de presença")
     }
   }
 
@@ -313,89 +324,165 @@ function AttendanceTracker() {
 
   const getStatusColor = (status: string, isJustified: boolean) => {
     if (isJustified) {
-      return "border-l-blue-500 bg-blue-50 dark:bg-blue-950/20"
+      return "border-l-blue-600 bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700"
     }
     
     switch (status) {
       case "presente":
-        return "border-l-green-500"
+        return "border-l-green-600 bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-700"
       case "ausente":
       default:
-        return "border-l-red-500"
+        return "border-l-red-600 bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700"
     }
   }
 
   const getStatusIcon = (status: string, isJustified: boolean) => {
     if (isJustified) {
-      return <Shield className="h-5 w-5 text-blue-500" />
+      return <Shield className="h-6 w-6 text-blue-600" />
     }
     
     switch (status) {
       case "presente":
-        return <CheckCircle className="h-5 w-5 text-green-500" />
+        return <CheckCircle className="h-6 w-6 text-green-600" />
       case "ausente":
-        return <XCircle className="h-5 w-5 text-red-500" />
+        return <XCircle className="h-6 w-6 text-red-600" />
       default:
-        return <User className="h-5 w-5 text-gray-500" />
+        return <User className="h-6 w-6 text-slate-500" />
     }
   }
 
   // Agora mostra todos os militares, incluindo justificados
   const allMilitary = militaryAttendance
 
+  // Estatísticas
+  const presentCount = allMilitary.filter(m => m.status === "presente" && !m.isJustified).length
+  const absentCount = allMilitary.filter(m => m.status === "ausente" && !m.isJustified).length
+  const justifiedCount = allMilitary.filter(m => m.isJustified).length
+  const totalCount = allMilitary.length
+
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="space-y-8">
+      {/* Cards de estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-300">Total</p>
+                <p className="text-3xl font-bold text-blue-700 dark:text-blue-200">{totalCount}</p>
+              </div>
+              <Users className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600 dark:text-green-300">Presentes</p>
+                <p className="text-3xl font-bold text-green-700 dark:text-green-200">{presentCount}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-300" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-red-600 dark:text-red-300">Ausentes</p>
+                <p className="text-3xl font-bold text-red-700 dark:text-red-200">{absentCount}</p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-600 dark:text-red-300" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-300">Justificados</p>
+                <p className="text-3xl font-bold text-blue-700 dark:text-blue-200">{justifiedCount}</p>
+              </div>
+              <Shield className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tipo de Chamada */}
+      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
         <CardHeader>
-          <CardTitle>Tipo de Chamada</CardTitle>
+          <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
+            <Settings className="h-6 w-6 text-red-600 dark:text-red-400" />
+            Tipo de Chamada
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Select value={selectedCallType} onValueChange={(value) => {
-            console.log('Tipo de chamada selecionado:', value)
-            setSelectedCallType(value)
-          }}>
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Selecione o tipo de chamada">
-                {selectedCallType && callTypes.find(t => t.id === selectedCallType)?.label}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {callTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedCallType && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Tipo selecionado: {callTypes.find(t => t.id === selectedCallType)?.label}
-            </p>
-          )}
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <Select value={selectedCallType} onValueChange={(value) => {
+              console.log('Tipo de chamada selecionado:', value)
+              setSelectedCallType(value)
+            }}>
+              <SelectTrigger className="w-full max-w-md border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
+                <SelectValue placeholder="Selecione o tipo de chamada">
+                  {selectedCallType && callTypes.find(t => t.id === selectedCallType)?.label}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {callTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedCallType && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg">
+                <Calendar className="h-4 w-4 text-red-600 dark:text-red-300" />
+                <span className="text-sm font-medium text-red-700 dark:text-red-200">
+                  {callTypes.find(t => t.id === selectedCallType)?.label}
+                </span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Lista de Militares */}
+      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
         <CardHeader>
-          <CardTitle>Militares ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
+          <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
+            <Users className="h-6 w-6 text-red-600 dark:text-red-400" />
+            Militares ({format(new Date(), "dd/MM/yyyy")})
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <CardContent className="p-6">
+          <div className="space-y-3">
             {allMilitary.map((military) => (
               <div
                 key={military.id}
-                className={`flex items-center justify-between p-3 rounded-lg border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-card hover:bg-accent/50 transition-colors`}
+                className={`flex items-center justify-between p-4 rounded-xl border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300 group`}
               >
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(military.status, military.isJustified)}
-                  <span className="font-medium">{military.rank} {military.militaryName}</span>
+                <div className="flex items-center gap-4">
+                  <div className="p-2 rounded-full bg-white dark:bg-slate-700 shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                    {getStatusIcon(military.status, military.isJustified)}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
+                      {military.rank} {military.militaryName}
+                    </span>
+                  </div>
                 </div>
                 
                 {military.isJustified ? (
                   // Para militares justificados, mostra apenas o status fixo
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-blue-500" />
-                    <span className="text-blue-600 font-medium">JUSTIFICADO</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg">
+                    <Shield className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                    <span className="text-blue-700 dark:text-blue-200 font-medium">JUSTIFICADO</span>
                   </div>
                 ) : (
                   // Para militares não justificados, mostra o dropdown
@@ -403,7 +490,7 @@ function AttendanceTracker() {
                     value={military.status} 
                     onValueChange={(value) => handleStatusChange(military.militaryId, value)}
                   >
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-48 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
                       <SelectValue>
                         {military.status && attendanceStatuses.find(s => s.id === military.status)?.label}
                       </SelectValue>
@@ -423,30 +510,34 @@ function AttendanceTracker() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span>Presente</span>
+      {/* Botão de Salvar */}
+      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-6">
+            {/* Legenda */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2 px-3 py-2 bg-green-100 dark:bg-green-800 border border-green-200 dark:border-green-600 rounded-lg">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-green-700 dark:text-green-200 font-medium">Presente</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-500 rounded"></div>
-                <span>Ausente</span>
+              <div className="flex items-center gap-2 px-3 py-2 bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-600 rounded-lg">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span className="text-red-700 dark:text-red-200 font-medium">Ausente</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                <span>Justificado</span>
+              <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-blue-700 dark:text-blue-200 font-medium">Justificado</span>
               </div>
             </div>
             
+            {/* Botão de Salvar */}
             <Button 
               onClick={handleSaveAttendance} 
-              className="w-full"
+              className="w-full max-w-md mx-auto h-14 text-lg font-semibold bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               disabled={!selectedCallType}
             >
-              Salvar
+              <Save className="h-5 w-5 mr-2" />
+              Salvar Presença
             </Button>
           </div>
         </CardContent>

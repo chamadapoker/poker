@@ -1,4 +1,4 @@
- import type React from "react"
+import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
@@ -7,8 +7,8 @@ import { AppHeader } from "@/components/app-header"
 import { AppFooter } from "@/components/app-footer"
 import { Toaster } from "@/components/ui/toaster"
 import SupabaseRealtimeListener from "@/components/supabase-realtime-listener"
-import { SidebarProvider } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/main-sidebar"
+import { MobileMenuProvider } from "@/components/mobile-menu-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,20 +23,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <SidebarProvider defaultOpen>
-            <div className="flex flex-col min-h-screen">
+          <MobileMenuProvider>
+            <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
               <AppHeader />
               <div className="flex flex-1">
                 <MainSidebar />
-                <main className="flex-1 flex flex-col p-4">
-                  {children}
+                <main className="flex-1 flex flex-col p-4 lg:p-6 transition-all duration-300 lg:ml-0">
+                  <div className="max-w-7xl mx-auto w-full">
+                    {children}
+                  </div>
                 </main>
               </div>
               <AppFooter />
             </div>
-            <Toaster />
-            <SupabaseRealtimeListener />
-          </SidebarProvider>
+          </MobileMenuProvider>
+          <Toaster />
+          <SupabaseRealtimeListener />
         </ThemeProvider>
       </body>
     </html>

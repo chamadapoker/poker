@@ -270,8 +270,8 @@ function EventCalendar() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="event-date">Data</Label>
-                <DatePicker date={selectedDate} setDate={setSelectedDate} placeholder="Selecione a data do evento" />
+                <Label>Data *</Label>
+                <DatePicker date={selectedDate} setDate={setSelectedDate} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="event-time">Hora (Opcional)</Label>

@@ -9,7 +9,7 @@ import { fetchMilitaryPersonnel } from "@/lib/client-data"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
-import type { DailyPermanenceRecord } from "@/lib/types"
+import type { DailyPermanenceRecord, MilitaryPersonnel } from "@/lib/types"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function PermanenceChecklist() {
@@ -20,11 +20,27 @@ function PermanenceChecklist() {
   ])
   const [selectedMilitary, setSelectedMilitary] = useState<string>("")
   const [dailyRecords, setDailyRecords] = useState<DailyPermanenceRecord[]>([])
+  const [militaryPersonnel, setMilitaryPersonnel] = useState<MilitaryPersonnel[]>([])
   const today = format(new Date(), "yyyy-MM-dd")
 
   useEffect(() => {
     fetchDailyRecords()
+    fetchMilitaryPersonnelData()
   }, [])
+
+  const fetchMilitaryPersonnelData = async () => {
+    try {
+      const data = await fetchMilitaryPersonnel()
+      setMilitaryPersonnel(data)
+    } catch (error) {
+      console.error("Error fetching military personnel:", error)
+      toast({
+        title: "Erro ao carregar militares",
+        description: "Não foi possível carregar a lista de militares.",
+        variant: "destructive",
+      })
+    }
+  }
 
   const fetchDailyRecords = async () => {
     const { data, error } = await supabase
@@ -58,7 +74,10 @@ function PermanenceChecklist() {
       return
     }
 
-    const military = await fetchMilitaryPersonnel(selectedMilitary)
+    // Buscar todos os militares e encontrar o selecionado
+    const allMilitary = await fetchMilitaryPersonnel()
+    const military = allMilitary.find(m => m.id === selectedMilitary)
+    
     if (!military) {
       toast({
         title: "Militar não encontrado",
@@ -68,12 +87,13 @@ function PermanenceChecklist() {
       return
     }
 
-    const newRecord: Omit<DailyPermanenceRecord, "id" | "createdAt" | "updatedAt"> = {
-      militaryId: military.id,
-      militaryName: military.name,
+    const newRecord: Omit<DailyPermanenceRecord, "id" | "created_at" | "updated_at"> = {
+      military_id: military.id,
+      military_name: military.name,
+      rank: military.rank,
       date: today,
-      checklist: checklistItems,
-      status: checklistItems.every((item) => item.checked) ? "presente" : "ausente", // Simplified status logic
+      status: checklistItems.every((item) => item.checked) ? "presente" : "ausente",
+      details: JSON.stringify(checklistItems)
     }
 
     const { error } = await supabase.from("daily_permanence_records").insert([newRecord])
@@ -112,13 +132,13 @@ function PermanenceChecklist() {
             <SelectTrigger>
               <SelectValue placeholder="Selecione o Militar" />
             </SelectTrigger>
-            <SelectContent>
-              {fetchMilitaryPersonnel().map((militar) => (
-                <SelectItem key={militar.id} value={militar.id}>
-                  {militar.rank} {militar.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
+                    <SelectContent>
+          {militaryPersonnel.map((militar) => (
+            <SelectItem key={militar.id} value={militar.id}>
+              {militar.rank} {militar.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
           </Select>
 
           {checklistItems.map((item) => (
@@ -155,9 +175,9 @@ function PermanenceChecklist() {
                   {dailyRecords.map((record) => (
                     <tr key={record.id} className="border-b last:border-b-0">
                       <td className="p-2">{record.date}</td>
-                      <td className="p-2">{record.militaryName}</td>
+                      <td className="p-2">{record.military_name}</td>
                       <td className="p-2">
-                        {record.checklist.filter((item) => item.checked).length} / {record.checklist.length}
+                        {record.details ? JSON.parse(record.details).filter((item: any) => item.checked).length : 0} / {record.details ? JSON.parse(record.details).length : 0}
                       </td>
                       <td className="p-2">{record.status}</td>
                     </tr>

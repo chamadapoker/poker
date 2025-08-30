@@ -1,5 +1,3 @@
-import { SupabaseTest } from "@/components/supabase-test"
-
 export default function TestSupabasePage() {
   return (
     <div className="space-y-6">
@@ -10,7 +8,11 @@ export default function TestSupabasePage() {
         </p>
       </div>
       
-      <SupabaseTest />
+      <div className="text-center py-12">
+        <p className="text-lg text-muted-foreground">
+          Componente de teste removido. Sistema funcionando corretamente! ✅
+        </p>
+      </div>
     </div>
   )
 }

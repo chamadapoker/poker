@@ -10,6 +10,7 @@ import SupabaseRealtimeListener from "@/components/supabase-realtime-listener"
 import { MainSidebar } from "@/components/main-sidebar"
 import { MobileMenuProvider } from "@/components/mobile-menu-provider"
 
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -26,9 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MobileMenuProvider>
             <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
               <AppHeader />
-              <div className="flex flex-1">
+              <div className="flex flex-1 relative">
                 <MainSidebar />
-                <main className="flex-1 flex flex-col p-4 lg:p-6 transition-all duration-300 lg:ml-0">
+                <main className="flex-1 flex flex-col p-4 lg:p-6 transition-all duration-300" id="main-content">
                   <div className="max-w-7xl mx-auto w-full">
                     {children}
                   </div>

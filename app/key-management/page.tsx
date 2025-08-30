@@ -1,6 +1,11 @@
 import { KeyManagement } from "@/components/key-management"
 
+import { unstable_noStore as noStore } from "next/cache"
+
 export default function KeyManagementPage() {
+  // Forçar renderização dinâmica
+  noStore()
+  
   return (
     <div className="space-y-6">
       <div>

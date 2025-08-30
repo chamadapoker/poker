@@ -363,15 +363,7 @@ export function JustificationManager() {
               />
             </div>
 
-            {/* Debug Info */}
-            <div className="p-3 bg-gray-100 rounded text-xs">
-              <p><strong>Debug:</strong></p>
-              <p>military_id: {formData.military_id}</p>
-              <p>military_name: {formData.military_name}</p>
-              <p>reason: {formData.reason}</p>
-              <p>start_date: {formData.start_date}</p>
-              <p>end_date: {formData.end_date}</p>
-            </div>
+
 
             {/* Botões */}
             <div className="flex gap-2">

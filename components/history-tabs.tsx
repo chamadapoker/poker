@@ -47,8 +47,8 @@ async function fetchTableSafe<T>(tableName: string): Promise<T[]> {
 -------------------------------------------------- */
 interface AttendanceRecord {
   id: string
-  military_member_id: string
-  military_member_name: string
+  military_name: string
+  rank: string
   date: string
   status: string
   justification_id: string | null
@@ -56,13 +56,12 @@ interface AttendanceRecord {
 
 interface JustificationRecord {
   id: string
-  military_member_id: string
-  military_member_name: string
+  military_name: string
   type: string
   start_date: string
   end_date: string
   reason: string
-  status: string
+  approved: boolean
 }
 
 interface EventRecord {
@@ -75,8 +74,7 @@ interface EventRecord {
 
 interface FlightRecord {
   id: string
-  military_member_id: string
-  military_member_name: string
+  military_name: string
   date: string
   flight_type: string
   status: string
@@ -84,8 +82,7 @@ interface FlightRecord {
 
 interface PermanenceRecord {
   id: string
-  military_member_id: string
-  military_member_name: string
+  military_name: string
   date: string
   status: string
   notes: string
@@ -93,8 +90,7 @@ interface PermanenceRecord {
 
 interface PersonalNoteRecord {
   id: string
-  military_member_id: string
-  military_member_name: string
+  military_name: string
   date: string
   note_content: string
 }
@@ -122,6 +118,7 @@ export function HistoryTabs() {
 
   const [attendanceSearch, setAttendanceSearch] = useState("")
   const [attendanceFilterStatus, setAttendanceFilterStatus] = useState("all")
+  const [attendanceFilterDate, setAttendanceFilterDate] = useState("all")
 
   const [justificationSearch, setJustificationSearch] = useState("")
   const [justificationFilterStatus, setJustificationFilterStatus] = useState("all")
@@ -139,26 +136,22 @@ export function HistoryTabs() {
 
   const [personalNoteSearch, setPersonalNoteSearch] = useState("")
 
+  // Gerar datas únicas para o filtro
+  const uniqueDates = [...new Set(attendanceRecords.map(r => r.date))].sort().reverse()
+
   useEffect(() => {
     const fetchAllRecords = async () => {
-      console.log("📥 Carregando dados do histórico...")
+      console.log("📥 Carregando dados do histórico de presença...")
 
-      const attPrimary = await fetchTableSafe<AttendanceRecord>("military_attendance_records")
-      if (attPrimary.length) {
-        setAttendanceRecords(attPrimary)
-      } else {
-        const attFallback = await fetchTableSafe<AttendanceRecord>("attendance_records")
-        setAttendanceRecords(attFallback)
-      }
-
-      setJustificationRecords(await fetchTableSafe<JustificationRecord>("military_justifications"))
-      setEventRecords(await fetchTableSafe<EventRecord>("military_events"))
-      setFlightRecords(await fetchTableSafe<FlightRecord>("military_flights"))
-      setPermanenceRecords(await fetchTableSafe<PermanenceRecord>("daily_permanence_records"))
-      setPersonalNoteRecords(await fetchTableSafe<PersonalNoteRecord>("military_personal_notes"))
-      setKeyHistoryRecords(await fetchTableSafe<KeyHistoryRecord>("key_history_records"))
-
-      console.log("✅ Histórico carregado.")
+      // Buscar apenas na tabela de presença
+      const attendanceData = await fetchTableSafe<AttendanceRecord>("military_attendance_records")
+      setAttendanceRecords(attendanceData)
+      
+      // Log para debug: mostrar todos os status únicos
+      const uniqueStatuses = [...new Set(attendanceData.map(r => r.status))]
+      console.log("✅ Histórico de presença carregado:", attendanceData.length, "registros")
+      console.log("📊 Status únicos encontrados:", uniqueStatuses)
+      console.log("📊 Dados carregados:", attendanceData)
     }
 
     fetchAllRecords()
@@ -166,14 +159,42 @@ export function HistoryTabs() {
 
   const filteredAttendance = attendanceRecords.filter(
     (r) =>
-      safeLower(r.military_member_name).includes(attendanceSearch.toLowerCase()) &&
-      (attendanceFilterStatus === "all" || r.status === attendanceFilterStatus),
+      safeLower(r.military_name).includes(attendanceSearch.toLowerCase()) &&
+      (attendanceFilterStatus === "all" || r.status === attendanceFilterStatus) &&
+      (attendanceFilterDate === "all" || r.date === attendanceFilterDate),
   )
+
+  // Log para debug do filtro
+  console.log("🔍 Filtros aplicados:", {
+    search: attendanceSearch,
+    status: attendanceFilterStatus,
+    date: attendanceFilterDate,
+    totalRecords: attendanceRecords.length,
+    filteredRecords: filteredAttendance.length
+  })
+  
+  // Log específico para verificar o TC CARNEIRO no filtro
+  const tcCarneiroFiltered = filteredAttendance.find(r => r.military_name.includes("CARNEIRO"))
+  if (tcCarneiroFiltered) {
+    console.log("✅ TC CARNEIRO aparece no filtro:", tcCarneiroFiltered)
+  } else {
+    console.log("❌ TC CARNEIRO NÃO aparece no filtro")
+    // Verificar se está sendo filtrado incorretamente
+    const tcCarneiroOriginal = attendanceRecords.find(r => r.military_name.includes("CARNEIRO"))
+    if (tcCarneiroOriginal) {
+      console.log("🔍 TC CARNEIRO nos dados originais:", tcCarneiroOriginal)
+      console.log("🔍 Verificando filtros:", {
+        searchMatch: safeLower(tcCarneiroOriginal.military_name).includes(attendanceSearch.toLowerCase()),
+        statusMatch: attendanceFilterStatus === "all" || tcCarneiroOriginal.status === attendanceFilterStatus,
+        dateMatch: attendanceFilterDate === "all" || tcCarneiroOriginal.date === attendanceFilterDate
+      })
+    }
+  }
 
   const filteredJustifications = justificationRecords.filter(
     (r) =>
-      safeLower(r.military_member_name).includes(justificationSearch.toLowerCase()) &&
-      (justificationFilterStatus === "all" || r.status === justificationFilterStatus) &&
+      safeLower(r.military_name).includes(justificationSearch.toLowerCase()) &&
+      (justificationFilterStatus === "all" || r.approved === (justificationFilterStatus === "aprovada")) &&
       (justificationFilterType === "all" || r.type === justificationFilterType),
   )
 
@@ -185,21 +206,21 @@ export function HistoryTabs() {
 
   const filteredFlights = flightRecords.filter(
     (r) =>
-      safeLower(r.military_member_name).includes(flightSearch.toLowerCase()) &&
+      safeLower(r.military_name).includes(flightSearch.toLowerCase()) &&
       (flightFilterStatus === "all" || r.status === flightFilterStatus) &&
       (flightFilterType === "all" || r.flight_type === flightFilterType),
   )
 
   const filteredPermanence = permanenceRecords.filter(
     (r) =>
-      safeLower(r.military_member_name).includes(permanenceSearch.toLowerCase()) &&
+      safeLower(r.military_name).includes(permanenceSearch.toLowerCase()) &&
       (permanenceFilterStatus === "all" || r.status === permanenceFilterStatus),
   )
 
   const filteredPersonalNotes = personalNoteRecords.filter(
     (r) =>
       safeLower(r.note_content).includes(personalNoteSearch.toLowerCase()) ||
-      safeLower(r.military_member_name).includes(personalNoteSearch.toLowerCase()),
+      safeLower(r.military_name).includes(personalNoteSearch.toLowerCase()),
   )
 
   const filteredKeyHistory = keyHistoryRecords.filter(
@@ -252,14 +273,35 @@ export function HistoryTabs() {
               />
               <Select value={attendanceFilterStatus} onValueChange={setAttendanceFilterStatus}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por Status" />
+                  <SelectValue>
+                    {attendanceFilterStatus === "all" ? "Todos os Status" : 
+                     attendanceFilterStatus === "presente" ? "Presente" :
+                     attendanceFilterStatus === "ausente" ? "Ausente" :
+                     attendanceFilterStatus === "justificado" ? "Justificado" : "Filtrar por Status"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Status</SelectItem>
                   <SelectItem value="presente">Presente</SelectItem>
                   <SelectItem value="ausente">Ausente</SelectItem>
+                  <SelectItem value="justificado">Justificado</SelectItem>
                 </SelectContent>
               </Select>
+                             <Select value={attendanceFilterDate} onValueChange={setAttendanceFilterDate}>
+                 <SelectTrigger className="w-[180px]">
+                   <SelectValue>
+                     {attendanceFilterDate === "all" ? "Todas as Datas" : formatDate(attendanceFilterDate)}
+                   </SelectValue>
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="all">Todas as Datas</SelectItem>
+                   {uniqueDates.map((date) => (
+                     <SelectItem key={date} value={date}>
+                       {formatDate(date)}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -274,7 +316,7 @@ export function HistoryTabs() {
                 <tbody>
                   {filteredAttendance.map((r) => (
                     <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_member_name}</td>
+                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
                       <td className="px-6 py-4">{formatDate(r.date)}</td>
                       <td className="px-6 py-4">{r.status}</td>
                       <td className="px-6 py-4">{r.justification_id ?? "—"}</td>
@@ -332,13 +374,13 @@ export function HistoryTabs() {
                 <tbody>
                   {filteredJustifications.map((r) => (
                     <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_member_name}</td>
+                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
                       <td className="px-6 py-4">{r.type}</td>
                       <td className="px-6 py-4">
                         {formatDate(r.start_date)} – {formatDate(r.end_date)}
                       </td>
                       <td className="px-6 py-4">{r.reason}</td>
-                      <td className="px-6 py-4">{r.status}</td>
+                      <td className="px-6 py-4">{r.approved ? "Aprovada" : "Pendente"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -436,7 +478,7 @@ export function HistoryTabs() {
                 <tbody>
                   {filteredFlights.map((r) => (
                     <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_member_name}</td>
+                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
                       <td className="px-6 py-4">{formatDate(r.date)}</td>
                       <td className="px-6 py-4">{r.flight_type}</td>
                       <td className="px-6 py-4">{r.status}</td>
@@ -479,7 +521,7 @@ export function HistoryTabs() {
                 <tbody>
                   {filteredPermanence.map((r) => (
                     <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_member_name}</td>
+                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
                       <td className="px-6 py-4">{formatDate(r.date)}</td>
                       <td className="px-6 py-4">{r.status}</td>
                       <td className="px-6 py-4">{r.notes || "—"}</td>
@@ -511,7 +553,7 @@ export function HistoryTabs() {
                 <tbody>
                   {filteredPersonalNotes.map((r) => (
                     <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_member_name}</td>
+                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
                       <td className="px-6 py-4">{formatDate(r.date)}</td>
                       <td className="px-6 py-4">{r.note_content}</td>
                     </tr>

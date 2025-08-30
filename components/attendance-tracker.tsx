@@ -247,17 +247,15 @@ function AttendanceTracker() {
       }
       console.log('Registros existentes removidos com sucesso')
 
-      // Insere novos registros (apenas para militares não justificados)
-      const recordsToInsert = militaryAttendance
-        .filter(attendance => !attendance.isJustified)
-        .map((attendance) => ({
-          military_id: attendance.militaryId,
-          military_name: attendance.militaryName,
-          rank: attendance.rank,
-          call_type: selectedCallType,
-          date: attendance.date,
-          status: attendance.status,
-        }))
+      // Insere novos registros (incluindo militares justificados)
+      const recordsToInsert = militaryAttendance.map((attendance) => ({
+        military_id: attendance.militaryId,
+        military_name: attendance.militaryName,
+        rank: attendance.rank,
+        call_type: selectedCallType,
+        date: attendance.date,
+        status: attendance.status, // Inclui "justificado" se for o caso
+      }))
 
       console.log('2. Registros para inserir:', recordsToInsert)
       console.log('Quantidade de registros:', recordsToInsert.length)

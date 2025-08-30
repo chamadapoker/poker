@@ -30,24 +30,24 @@ O Sistema POKER 360 é uma ferramenta abrangente projetada para otimizar a gest�
 
 ### 1. Clonar o Repositório
 
-\`\`\`bash
+```bash
 git clone <URL_DO_SEU_REPOSITORIO>
 cd sistema-poker-360
-\`\`\`
+```
 
 ### 2. Instalar Dependências
 
-\`\`\`bash
+```bash
 npm install
 # ou
 yarn install
-\`\`\`
+```
 
 ### 3. Configurar Variáveis de Ambiente
 
 Crie um arquivo `.env.local` na raiz do projeto e adicione as seguintes variáveis:
 
-\`\`\`env
+```env
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL="SUA_URL_SUPABASE"
 SUPABASE_SERVICE_ROLE_KEY="SUA_SERVICE_ROLE_KEY_SUPABASE"
@@ -59,7 +59,7 @@ CLERK_SECRET_KEY="SUA_CLERK_SECRET_KEY"
 
 # Outras variáveis de ambiente (se aplicável)
 # OPENWEATHER_API_KEY="SUA_CHAVE_API_OPENWEATHER"
-\`\`\`
+```
 
 **Importante:** As chaves do Clerk (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` e `CLERK_SECRET_KEY`) são fornecidas dinamicamente no prompt e devem ser usadas.
 
@@ -84,11 +84,11 @@ CLERK_SECRET_KEY="SUA_CLERK_SECRET_KEY"
 
 ### 5. Rodar a Aplicação
 
-\`\`\`bash
+```bash
 npm run dev
 # ou
 yarn dev
-\`\`\`
+```
 
 A aplicação estará disponível em `http://localhost:3000`.
 

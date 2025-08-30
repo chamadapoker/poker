@@ -1,4 +1,4 @@
-import { KeyManagement } from "@/components/key-management"
+import KeyManagement from "@/components/key-management"
 
 import { unstable_noStore as noStore } from "next/cache"
 

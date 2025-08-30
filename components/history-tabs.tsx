@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/lib/supabase"
 import { format, isValid } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { AnalyticsDashboard } from "./analytics-dashboard"
+import AnalyticsDashboard from "./analytics-dashboard"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 /* --------------------------------------------------

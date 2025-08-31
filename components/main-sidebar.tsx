@@ -73,7 +73,7 @@ export function MainSidebar() {
     { title: "Checklist", href: "/permanence-checklist", icon: ClipboardList },
     { title: "Eventos", href: "/event-calendar", icon: Calendar },
     { title: "Voos", href: "/flight-scheduler", icon: Plane },
-    { title: "Notas", href: "/personal-notes", icon: StickyNote },
+
     { title: "Histórico", href: "/history", icon: History },
   ]
 

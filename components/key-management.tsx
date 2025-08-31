@@ -281,10 +281,10 @@ export default function KeyManagement() {
       setIsWithdrawModalOpen(false)
       setSelectedKeyForAction(null)
       setWithdrawForm({ militaryId: "", notes: "" })
-      
+
       // Recarregar dados
       await fetchData()
-      
+
     } catch (error: any) {
       console.error("❌ Erro ao processar retirada:", error)
       toast({
@@ -392,7 +392,7 @@ export default function KeyManagement() {
     // Filtro por busca (sala ou número)
     const matchesSearch = searchTerm === "" || 
                           key.room_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          key.room_number.toLowerCase().includes(searchTerm.toLowerCase())
+                         key.room_number.toLowerCase().includes(searchTerm.toLowerCase())
     
     // Filtro por status
     if (statusFilter === "all") return matchesSearch
@@ -511,14 +511,14 @@ export default function KeyManagement() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
+            <Input
                 placeholder="🔍 Buscar por sala ou número..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
-              />
-            </div>
-            
+            />
+          </div>
+
             <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
               <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                 <SelectValue placeholder="Status" className="text-gray-900 dark:text-gray-100">
@@ -570,7 +570,7 @@ export default function KeyManagement() {
                       <div className="flex items-center gap-2 mb-2">
                         <Key className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{key.room_name}</h3>
-                      </div>
+                  </div>
                                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Sala {key.room_number || 'N/A'}</p>
                       
                       {/* Status da Chave - Baseado no último movimento */}
@@ -578,7 +578,7 @@ export default function KeyManagement() {
                         {(() => {
                           const keyStatus = getKeyStatus(key.id);
                           return (
-                            <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                               <div className={`w-3 h-3 rounded-full ${
                                 keyStatus === 'available' 
                                   ? 'bg-green-500' 
@@ -595,7 +595,7 @@ export default function KeyManagement() {
                           );
                         })()}
                       </div>
-                    </div>
+                  </div>
                   </div>
 
                   {/* Botões de Ação - Baseados no status */}
@@ -617,7 +617,7 @@ export default function KeyManagement() {
                             <DialogTitle className="text-gray-900 dark:text-gray-100">Retirar Chave - {key.room_name}</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <div>
+                  <div>
                               <Label htmlFor="military" className="text-gray-900 dark:text-gray-100 font-medium">Militar *</Label>
                               <Select 
                                 value={withdrawForm.militaryId} 
@@ -633,7 +633,7 @@ export default function KeyManagement() {
                                       : "Selecione um militar"
                                     }
                                   </SelectValue>
-                                </SelectTrigger>
+                      </SelectTrigger>
                                 <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 max-h-[300px]">
                                   {militaryPersonnel
                                     .sort((a, b) => {
@@ -648,15 +648,15 @@ export default function KeyManagement() {
                                         <div className="flex items-center gap-2 py-1">
                                           <span className="font-bold text-gray-900 dark:text-gray-100">{military.rank}</span>
                                           <span className="font-semibold text-gray-800 dark:text-gray-200">{military.name}</span>
-                                        </div>
-                                      </SelectItem>
-                                    ))
-                                  }
-                                </SelectContent>
-                              </Select>
-                            </div>
-                             
-                            <div>
+                                  </div>
+                                </SelectItem>
+                              ))
+                            }
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                               <Label htmlFor="notes" className="text-gray-900 dark:text-gray-100 font-medium">Observações (opcional)</Label>
                               <Textarea
                                 id="notes"
@@ -683,8 +683,8 @@ export default function KeyManagement() {
                                 <Save className="w-4 h-4" />
                                 {isSubmitting ? "Processando..." : "Confirmar Retirada"}
                               </Button>
-                            </div>
-                          </div>
+                  </div>
+                </div>
                         </DialogContent>
                       </Dialog>
                     ) : (
@@ -705,17 +705,17 @@ export default function KeyManagement() {
                             <DialogTitle className="text-gray-900 dark:text-gray-100">Devolver Chave - {key.room_name}</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <div>
+                <div>
                               <Label htmlFor="return-notes" className="text-gray-900 dark:text-gray-100 font-medium">Observações (opcional)</Label>
-                              <Textarea
+                  <Textarea
                                 id="return-notes"
                                 value={returnForm.notes}
                                 onChange={(e) => setReturnForm(prev => ({ ...prev, notes: e.target.value }))}
                                 placeholder="Digite observações sobre a devolução..."
                                 className="min-h-[100px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                              />
-                            </div>
-                             
+                  />
+                </div>
+
                             <div className="flex gap-2 justify-end">
                               <Button 
                                 variant="outline" 
@@ -723,23 +723,23 @@ export default function KeyManagement() {
                                 className="hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                               >
                                 Cancelar
-                              </Button>
-                              <Button 
+                  </Button>
+                  <Button 
                                 onClick={handleReturn}
                                 disabled={isSubmitting}
                                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                               >
                                 <Save className="w-4 h-4" />
                                 {isSubmitting ? "Processando..." : "Confirmar Devolução"}
-                              </Button>
-                            </div>
+                  </Button>
+                </div>
                           </div>
                         </DialogContent>
                       </Dialog>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+            </CardContent>
+          </Card>
             ))}
           </div>
                
@@ -756,12 +756,12 @@ export default function KeyManagement() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
+            <Input
                 placeholder="🔍 Buscar por chave ou militar..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
-              />
+            />
             </div>
           </div>
 

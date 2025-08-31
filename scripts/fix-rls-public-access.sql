@@ -115,14 +115,14 @@ END $$;
 
 -- 9. Verificar políticas criadas
 SELECT 
-    schemaname,
-    tablename,
-    policyname,
-    permissive,
-    roles,
-    cmd,
-    qual,
-    with_check
+  schemaname,
+  tablename,
+  policyname,
+  permissive,
+  roles,
+  cmd,
+  qual,
+  with_check
 FROM pg_policies 
 WHERE tablename = 'military_justifications';
 

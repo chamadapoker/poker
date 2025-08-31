@@ -22,20 +22,20 @@ export const militaryPersonnel = [
   { id: "13", name: "OBREGON", rank: "2T" },
   { id: "14", name: "ELIASAFE", rank: "SO" },
   { id: "15", name: "MENEZES", rank: "1S" },
-  { id: "16", name: "JACOBS", rank: "2S" },
+  { id: "16", name: "JACOBS", rank: "1S" },
   { id: "17", name: "RIBAS", rank: "2S" },
   { id: "18", name: "EDGAR", rank: "2S" },
   { id: "19", name: "MADUREIRO", rank: "2S" },
   { id: "20", name: "ORIEL", rank: "2S" },
   { id: "21", name: "FRANK", rank: "2S" },
-  { id: "22", name: "BRAZ", rank: "3S" },
+  { id: "22", name: "BRAZ", rank: "2S" },
   { id: "23", name: "PITTIGLIANI", rank: "3S" },
   { id: "24", name: "L. TEIXEIRA", rank: "3S" },
   { id: "25", name: "MAIA", rank: "3S" },
   { id: "26", name: "ANNE", rank: "3S" },
   { id: "27", name: "JAQUES", rank: "3S" },
-  { id: "28", name: "VILELA", rank: "3S" },
-  { id: "29", name: "HOEHR", rank: "3S" },
+  { id: "28", name: "HOEHR", rank: "3S" },
+  { id: "29", name: "VILELA", rank: "3S" },
   { id: "30", name: "HENRIQUE", rank: "3S" },
   { id: "31", name: "VIEIRA", rank: "S1" },
   { id: "32", name: "NYCOLAS", rank: "S1" },
@@ -49,17 +49,12 @@ export const militaryPersonnel = [
   { id: "40", name: "VIEIRA", rank: "S2" },
 ]
 
-/** Tipos de chamada conforme o print */
+/** Tipos de chamada conforme solicitado */
 export const callTypes = [
   { id: "inicio-expediente", label: "Início de Expediente" },
-  { id: "termino-expediente", label: "Término de Expediente" },
+  { id: "final-expediente", label: "Final de Expediente" },
+  { id: "palestra-auditorio", label: "Palestra Auditório" },
   { id: "formatura", label: "Formatura" },
-  { id: "palestra", label: "Palestra" },
-  { id: "instrucao", label: "Instrução" },
-  { id: "servico", label: "Serviço" },
-  { id: "voo-noturno", label: "Voo Noturno" },
-  { id: "dispensa", label: "Dispensa" },
-  { id: "entrando-de", label: "Entrando de..." },
 ]
 
 /** Status de presença com as opções específicas solicitadas */

@@ -64,6 +64,8 @@ function EventCalendar() {
   const [loading, setLoading] = useState(true)
   const [date, setDate] = useState<Date | undefined>(new Date())
   const notifiedEvents = useRef<Set<string>>(new Set())
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   // Buscar eventos
   const fetchEvents = useCallback(async () => {
@@ -232,6 +234,79 @@ function EventCalendar() {
     }
   }
 
+  // Função para calcular tempo restante até o evento
+  const getTimeUntilEvent = (event: MilitaryEvent) => {
+    if (!event.time) return null
+    
+    const now = new Date()
+    const eventDateTime = new Date(event.date)
+    const [hours, minutes] = event.time.split(':').map(Number)
+    eventDateTime.setHours(hours, minutes, 0, 0)
+    
+    const diffMs = eventDateTime.getTime() - now.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+    
+    return { diffMs, diffHours, diffMinutes, eventDateTime }
+  }
+
+  // Função para verificar se o evento está próximo (1 hora ou menos)
+  const isEventNearby = (event: MilitaryEvent) => {
+    const timeInfo = getTimeUntilEvent(event)
+    if (!timeInfo) return false
+    
+    return timeInfo.diffMs > 0 && timeInfo.diffMs <= 60 * 60 * 1000 // 1 hora em ms
+  }
+
+  // Função para verificar se o evento está muito próximo (15 minutos ou menos)
+  const isEventVeryNearby = (event: MilitaryEvent) => {
+    const timeInfo = getTimeUntilEvent(event)
+    if (!timeInfo) return false
+    
+    return timeInfo.diffMs > 0 && timeInfo.diffMs <= 15 * 60 * 1000 // 15 minutos em ms
+  }
+
+  // Função para tocar som de alerta
+  const playAlertSound = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(console.error)
+    }
+  }
+
+  // Função para verificar notificações
+  const checkNotifications = useCallback(() => {
+    const now = new Date()
+    setCurrentTime(now)
+    
+    events.forEach(event => {
+      if (event.time && !notifiedEvents.current.has(event.id)) {
+        const timeInfo = getTimeUntilEvent(event)
+        if (timeInfo && timeInfo.diffMs > 0 && timeInfo.diffMs <= 60 * 60 * 1000) {
+          // Evento em 1 hora ou menos
+          notifiedEvents.current.add(event.id)
+          
+          // Mostrar toast de notificação
+          toast({
+            title: "🔔 Evento Próximo!",
+            description: `${event.title} começa em ${timeInfo.diffHours > 0 ? `${timeInfo.diffHours}h` : ''}${timeInfo.diffMinutes > 0 ? `${timeInfo.diffMinutes}min` : ''}`,
+            duration: 10000,
+          })
+          
+          // Tocar som se estiver muito próximo
+          if (timeInfo.diffMs <= 15 * 60 * 1000) {
+            playAlertSound()
+          }
+        }
+      }
+    })
+  }, [events, toast])
+
+  // Timer para verificar notificações a cada minuto
+  useEffect(() => {
+    const interval = setInterval(checkNotifications, 60000) // 1 minuto
+    return () => clearInterval(interval)
+  }, [checkNotifications])
+
   // Obter nome do militar
   const getMilitaryName = (id: string | undefined) => {
     if (!id) return "Não definido"
@@ -265,8 +340,13 @@ function EventCalendar() {
 
   return (
     <div className="space-y-8">
+      {/* Elemento de áudio para notificações */}
+      <audio ref={audioRef} preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav" />
+      </audio>
+
       {/* Header com estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-blue-200 shadow-md">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -306,6 +386,23 @@ function EventCalendar() {
                 </p>
               </div>
               <BellRing className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card de eventos próximos */}
+        <Card className="border-orange-200 shadow-md">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-600 font-semibold">Eventos Próximos (1h)</p>
+                <p className="text-3xl font-bold text-orange-800">
+                  {events.filter(e => isEventNearby(e)).length}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">⚠️</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -542,18 +639,52 @@ function EventCalendar() {
               </div>
           ) : (
             <div className="space-y-4">
-              {sortedEvents.map((event) => (
-                <div key={event.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg text-foreground">{event.title}</h3>
-                        {event.time && (
-                          <Badge variant="outline" className="text-xs">
-                            {event.time}
-                          </Badge>
-                        )}
-                      </div>
+              {sortedEvents.map((event) => {
+                const timeInfo = getTimeUntilEvent(event)
+                const isNearby = isEventNearby(event)
+                const isVeryNearby = isEventVeryNearby(event)
+                
+                return (
+                  <div 
+                    key={event.id} 
+                    className={`border rounded-lg p-4 transition-all duration-300 ${
+                      isVeryNearby 
+                        ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-lg animate-pulse' 
+                        : isNearby 
+                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20 shadow-md' 
+                        : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-lg text-foreground">{event.title}</h3>
+                          
+                          {/* Badge de tempo com alertas */}
+                          {event.time && (
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant={isVeryNearby ? "destructive" : isNearby ? "secondary" : "outline"} 
+                                className={`text-xs ${
+                                  isVeryNearby ? 'animate-pulse' : ''
+                                }`}
+                              >
+                                {event.time}
+                              </Badge>
+                              
+                              {/* Badge de alerta para eventos próximos */}
+                              {isNearby && (
+                                <Badge 
+                                  variant="destructive" 
+                                  className="text-xs animate-pulse flex items-center gap-1"
+                                >
+                                  <BellRing className="h-3 w-3" />
+                                  {isVeryNearby ? 'MUITO PRÓXIMO!' : 'PRÓXIMO!'}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                         <div className="flex items-center gap-1">
@@ -567,6 +698,18 @@ function EventCalendar() {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Contador regressivo para eventos próximos */}
+                      {isNearby && timeInfo && (
+                        <div className="mb-2">
+                          <Badge 
+                            variant={isVeryNearby ? "destructive" : "secondary"}
+                            className="text-xs font-mono"
+                          >
+                            ⏰ Começa em: {timeInfo.diffHours > 0 ? `${timeInfo.diffHours}h ` : ''}{timeInfo.diffMinutes}min
+                          </Badge>
+                        </div>
+                      )}
                       
                       {event.description && (
                         <p className="text-sm text-muted-foreground mt-2">{event.description}</p>
@@ -593,7 +736,7 @@ function EventCalendar() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </CardContent>

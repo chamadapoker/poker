@@ -361,53 +361,53 @@ function AttendanceTracker() {
   const totalCount = allMilitary.length
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Cards de estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-600 dark:text-blue-300">Total</p>
-                <p className="text-3xl font-bold text-blue-700 dark:text-blue-200">{totalCount}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-200">{totalCount}</p>
               </div>
-              <Users className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-300" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-600 dark:text-green-300">Presentes</p>
-                <p className="text-3xl font-bold text-green-700 dark:text-green-200">{presentCount}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-200">{presentCount}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-300" />
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-300" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-red-600 dark:text-red-300">Ausentes</p>
-                <p className="text-3xl font-bold text-red-700 dark:text-red-200">{absentCount}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-200">{absentCount}</p>
               </div>
-              <XCircle className="h-8 w-8 text-red-600 dark:text-red-300" />
+              <XCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 dark:text-red-300" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-600 dark:text-blue-300">Justificados</p>
-                <p className="text-3xl font-bold text-blue-700 dark:text-blue-200">{justifiedCount}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-200">{justifiedCount}</p>
               </div>
-              <Shield className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-300" />
             </div>
           </CardContent>
         </Card>
@@ -421,8 +421,8 @@ function AttendanceTracker() {
             Tipo de Chamada
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 sm:gap-4">
             <Select value={selectedCallType} onValueChange={(value) => {
               console.log('Tipo de chamada selecionado:', value)
               setSelectedCallType(value)

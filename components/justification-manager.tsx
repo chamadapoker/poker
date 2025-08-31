@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Plus, Save, X } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Edit, Trash2, Plus, Save, X, Calendar, User, FileText, Clock } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { militaryPersonnel } from "@/lib/static-data"
 import { format } from "date-fns"
@@ -29,6 +30,7 @@ export function JustificationManager() {
   const { toast } = useToast()
   const [justifications, setJustifications] = useState<Justification[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState<Justification>({
     military_id: "",
     military_name: "",
@@ -148,6 +150,7 @@ export function JustificationManager() {
       // Limpar formulário e recarregar dados
       resetForm()
       fetchJustifications()
+      setIsModalOpen(false)
     } catch (error: any) {
       console.error('Erro completo ao salvar justificativa:', error)
       console.error('Tipo do erro:', typeof error)
@@ -181,6 +184,7 @@ export function JustificationManager() {
       start_date: justification.start_date,
       end_date: justification.end_date
     })
+    setIsModalOpen(true)
   }
 
   const handleDelete = async (id: string) => {
@@ -219,6 +223,7 @@ export function JustificationManager() {
       start_date: "",
       end_date: ""
     })
+    setIsModalOpen(false)
   }
 
   const handleMilitaryChange = (militaryId: string) => {
@@ -312,9 +317,9 @@ export function JustificationManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Estatísticas das Justificativas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -372,116 +377,168 @@ export function JustificationManager() {
         </Card>
       </div>
 
-      {/* Formulário */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {editingId ? (
-              <>
-                <Edit className="h-5 w-5" />
-                Editar Justificativa
-              </>
-            ) : (
-              <>
-                <Plus className="h-5 w-5" />
-                Nova Justificativa
-              </>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Seleção do Militar */}
-              <div>
-                <Label htmlFor="military">Militar *</Label>
-                <Select 
-                  value={formData.military_id} 
-                  onValueChange={handleMilitaryChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o militar">
-                      {formData.military_id ? getSelectedMilitaryDisplay() : "Selecione o militar"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {militaryPersonnel.map((military) => (
-                      <SelectItem key={military.id} value={military.id}>
-                        {military.rank} {military.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formData.military_id && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Selecionado: {getSelectedMilitaryDisplay()}
-                  </p>
-                )}
-              </div>
+      {/* Modal de Nova/Editar Justificativa */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            onClick={() => {
+              setEditingId(null)
+              resetForm()
+              setIsModalOpen(true)
+            }}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Justificativa
+          </Button>
+        </DialogTrigger>
+        
+        <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              {editingId ? (
+                <>
+                  <Edit className="h-5 w-5 text-blue-600" />
+                  Editar Justificativa
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5 text-green-600" />
+                  Nova Justificativa
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {editingId ? 'Edite os dados da justificativa selecionada.' : 'Preencha os dados para criar uma nova justificativa.'}
+            </DialogDescription>
+                    </DialogHeader>
 
-              {/* Data de Início */}
-              <div>
-                <Label htmlFor="startDate">Data de Início *</Label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Seleção do Militar */}
+            <div className="space-y-2">
+              <Label htmlFor="military" className="text-sm font-medium flex items-center gap-2">
+                <User className="h-4 w-4 text-blue-600" />
+                Militar *
+              </Label>
+              <Select 
+                value={formData.military_id} 
+                onValueChange={handleMilitaryChange}
+              >
+                <SelectTrigger className="h-11 border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                  <SelectValue placeholder="Selecione o militar">
+                    {formData.military_id ? getSelectedMilitaryDisplay() : "Selecione o militar"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {militaryPersonnel.map((military) => (
+                    <SelectItem key={military.id} value={military.id} className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-blue-700">
+                          {military.rank.charAt(0)}
+                        </span>
+                      </div>
+                      <span className="font-medium">{military.rank} {military.name}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formData.military_id && (
+                <p className="text-sm text-blue-600 font-medium mt-2 flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Selecionado: {getSelectedMilitaryDisplay()}
+                </p>
+              )}
+            </div>
+
+            {/* Datas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startDate" className="text-sm font-medium flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-green-600" />
+                  Data de Início *
+                </Label>
                 <Input
                   id="startDate"
                   type="date"
                   value={formData.start_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
+                  className="h-11 border-2 focus:border-green-500 focus:ring-2 focus:ring-green-200"
                 />
               </div>
 
-              {/* Data de Término */}
-              <div>
-                <Label htmlFor="endDate">Data de Término *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="endDate" className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-orange-600" />
+                  Data de Término *
+                </Label>
                 <Input
                   id="endDate"
                   type="date"
                   value={formData.end_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
+                  className="h-11 border-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
                 />
               </div>
             </div>
 
             {/* Descrição/Motivo */}
-            <div>
-              <Label htmlFor="reason">Descrição/Motivo da Justificativa *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="reason" className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4 text-purple-600" />
+                Descrição/Motivo da Justificativa *
+              </Label>
               <Textarea
                 id="reason"
                 value={formData.reason}
                 onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                 placeholder="Digite aqui o motivo da justificativa (ex: Atestado médico, Serviço externo, Dispensa, etc.)"
-                className="min-h-[120px]"
+                className="min-h-[120px] border-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 resize-none"
               />
             </div>
 
+            {/* Preview da Justificativa */}
+            {formData.military_id && formData.start_date && formData.end_date && formData.reason && (
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Preview da Justificativa
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Militar:</span> {getSelectedMilitaryDisplay()}</p>
+                  <p><span className="font-medium">Período:</span> {formData.start_date} a {formData.end_date}</p>
+                  <p><span className="font-medium">Motivo:</span> {formData.reason}</p>
+                </div>
+              </div>
+            )}
 
-
-            {/* Botões */}
-            <div className="flex gap-2">
-              <Button type="submit" className="flex items-center gap-2">
+            <DialogFooter className="flex gap-2">
+              <Button type="submit" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                 {editingId ? (
                   <>
-                    <Save className="h-4 w-4" />
-                    Atualizar
+                    <Save className="h-4 w-4 mr-2" />
+                    Atualizar Justificativa
                   </>
                 ) : (
                   <>
-                    <Plus className="h-4 w-4" />
-                    Criar
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Justificativa
                   </>
                 )}
               </Button>
               
-              {editingId && (
-                <Button type="button" variant="outline" onClick={resetForm} className="flex items-center gap-2">
-                  <X className="h-4 w-4" />
-                  Cancelar
-                </Button>
-              )}
-            </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={resetForm}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+            </DialogFooter>
           </form>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
 
       {/* Lista de Justificativas */}
       <Card>

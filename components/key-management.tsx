@@ -166,15 +166,23 @@ export default function KeyManagement() {
       
       setMilitaryPersonnel(militaryData || [])
 
-      // Buscar histórico (opcional - pode não existir ainda)
-      console.log("📚 Buscando histórico...")
+      // Buscar histórico dos últimos 30 dias
+      console.log("📚 Buscando histórico dos últimos 30 dias...")
       try {
+        // Calcular data de 30 dias atrás
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        const thirtyDaysAgoISO = thirtyDaysAgo.toISOString()
+        
+        console.log("📅 Buscando movimentações a partir de:", thirtyDaysAgoISO)
+        
         const { data: historyData, error: historyError } = await supabase
           .from("claviculario_movements")
           .select(`
             *,
             claviculario_keys(room_name)
           `)
+          .gte("timestamp", thirtyDaysAgoISO)
           .order("timestamp", { ascending: false })
           .limit(100)
         
@@ -182,7 +190,7 @@ export default function KeyManagement() {
           console.warn("⚠️ Erro ao buscar histórico (pode não existir ainda):", historyError)
           setHistory([])
         } else {
-          console.log("✅ Histórico carregado:", historyData?.length || 0)
+          console.log("✅ Histórico dos últimos 30 dias carregado:", historyData?.length || 0)
           
           // Processar dados do histórico (agora usando as colunas diretas)
           const processedHistory = (historyData || []).map(record => ({
@@ -447,52 +455,52 @@ export default function KeyManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header com estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <Key className="h-8 w-8 text-blue-600" />
+              <Key className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
               <div>
-                <p className="text-2xl font-bold text-blue-800">{keys.length}</p>
-                <p className="text-sm text-blue-600">Total de Chaves</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-800 dark:text-blue-200">{keys.length}</p>
+                <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-300">Total de Chaves</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
               <div>
-                <p className="text-2xl font-bold text-green-800">{keys.filter(k => getKeyStatus(k.id) === "available").length}</p>
-                <p className="text-sm text-green-600">Disponíveis</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-800 dark:text-green-200">{keys.filter(k => getKeyStatus(k.id) === "available").length}</p>
+                <p className="text-xs sm:text-sm text-green-600 dark:text-green-300">Disponíveis</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <LogOut className="h-8 w-8 text-red-600" />
+              <LogOut className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 dark:text-red-400" />
               <div>
-                <p className="text-2xl font-bold text-red-800">{keys.filter(k => getKeyStatus(k.id) === "borrowed").length}</p>
-                <p className="text-sm text-red-600">Em Uso</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-800 dark:text-red-200">{keys.filter(k => getKeyStatus(k.id) === "borrowed").length}</p>
+                <p className="text-sm text-red-600 dark:text-red-300">Em Uso</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <History className="h-8 w-8 text-purple-600" />
+              <History className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400" />
               <div>
-                <p className="text-2xl font-bold text-purple-800">{history.length}</p>
-                <p className="text-sm text-purple-600">Transações</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-800 dark:text-purple-200">{history.length}</p>
+                <p className="text-xs sm:text-sm text-purple-600 dark:text-purple-300">Transações (30 dias)</p>
               </div>
             </div>
           </CardContent>
@@ -500,9 +508,9 @@ export default function KeyManagement() {
       </div>
 
       <Tabs defaultValue="keys" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="keys">Gestão de Chaves</TabsTrigger>
-          <TabsTrigger value="history">Histórico</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <TabsTrigger value="keys" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm">Gestão de Chaves</TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm">Histórico</TabsTrigger>
         </TabsList>
 
         {/* TAB: Gestão de Chaves */}
@@ -561,45 +569,70 @@ export default function KeyManagement() {
           </div>
 
           {/* Cards das Chaves - SEM histórico, apenas status atual */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
             {filteredKeys.map((key) => (
-              <Card key={key.id} className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-600">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Key className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{key.room_name}</h3>
-                  </div>
-                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Sala {key.room_number || 'N/A'}</p>
-                      
-                      {/* Status da Chave - Baseado no último movimento */}
-                      <div className="mb-4">
-                        {(() => {
-                          const keyStatus = getKeyStatus(key.id);
-                          return (
-                  <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 rounded-full ${
-                                keyStatus === 'available' 
-                                  ? 'bg-green-500' 
-                                  : 'bg-red-500'
-                              }`}></div>
-                              <span className={`font-semibold text-sm ${
-                                keyStatus === 'available' 
-                                  ? 'text-green-700 dark:text-green-400' 
-                                  : 'text-red-700 dark:text-red-400'
-                              }`}>
-                                {keyStatus === 'available' ? 'Disponível' : 'Retirada'}
-                              </span>
-                            </div>
-                          );
-                        })()}
+              <Card key={key.id} className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-600 h-full">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Key className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{key.room_name}</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Sala {key.room_number || 'N/A'}</p>
+                        
+                        {/* Status da Chave - Baseado no último movimento */}
+                        <div className="mb-4">
+                          {(() => {
+                            const keyStatus = getKeyStatus(key.id);
+                            
+                            if (keyStatus === 'available') {
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                  <span className="font-semibold text-sm text-green-700 dark:text-green-400">
+                                    Disponível
+                                  </span>
+                                </div>
+                              );
+                            } else {
+                              // Buscar informações da última retirada
+                              const lastWithdrawal = history
+                                .filter(record => record.key_id === key.id && record.action === "Retirada")
+                                .sort((a, b) => new Date(b.action_at).getTime() - new Date(a.action_at).getTime())[0];
+                              
+                              return (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <span className="font-semibold text-sm text-red-700 dark:text-red-400">
+                                      Retirada
+                                    </span>
+                                  </div>
+                                  {lastWithdrawal && (
+                                    <div className="pl-5 space-y-1">
+                                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                                        Retirada por: <span className="font-medium text-gray-800 dark:text-gray-200">
+                                          {lastWithdrawal.military_rank} {lastWithdrawal.military_name}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-gray-500 dark:text-gray-500">
+                                        {format(new Date(lastWithdrawal.action_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }
+                          })()}
+                        </div>
                       </div>
-                  </div>
+                    </div>
                   </div>
 
                   {/* Botões de Ação - Baseados no status */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-auto">
                     {getKeyStatus(key.id) === 'available' ? (
                       <Dialog open={isWithdrawModalOpen && selectedKeyForAction?.id === key.id} onOpenChange={setIsWithdrawModalOpen}>
                         <DialogTrigger asChild>
@@ -765,40 +798,40 @@ export default function KeyManagement() {
             </div>
           </div>
 
-          <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200">
+          <Card className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-800">
-                <History className="w-5 h-5" />
-                Histórico de Movimentações
+              <CardTitle className="flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                <History className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                Histórico de Movimentações (Últimos 30 Dias)
               </CardTitle>
             </CardHeader>
             <CardContent>
               {filteredHistory.length > 0 ? (
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-100">
-                      <TableHead className="text-gray-800 font-bold text-sm">Chave</TableHead>
-                      <TableHead className="text-gray-800 font-bold text-sm">Militar</TableHead>
-                      <TableHead className="text-gray-800 font-bold text-sm">Ação</TableHead>
-                      <TableHead className="text-gray-800 font-bold text-sm">Data/Hora</TableHead>
-                      <TableHead className="text-gray-800 font-bold text-sm">Observações</TableHead>
+                    <TableRow className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-150 dark:hover:bg-gray-750">
+                      <TableHead className="text-gray-800 dark:text-gray-200 font-bold text-sm">Chave</TableHead>
+                      <TableHead className="text-gray-800 dark:text-gray-200 font-bold text-sm">Militar</TableHead>
+                      <TableHead className="text-gray-800 dark:text-gray-200 font-bold text-sm">Ação</TableHead>
+                      <TableHead className="text-gray-800 dark:text-gray-200 font-bold text-sm">Data/Hora</TableHead>
+                      <TableHead className="text-gray-800 dark:text-gray-200 font-bold text-sm">Observações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredHistory.map((record) => (
-                      <TableRow key={record.id} className="hover:bg-gray-50 transition-colors duration-200">
+                      <TableRow key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 border-gray-200 dark:border-gray-700">
                         <TableCell className="font-medium">
                           <div>
-                            <div className="text-gray-800 font-semibold">{record.key_name}</div>
+                            <div className="text-gray-800 dark:text-gray-100 font-semibold">{record.key_name}</div>
                             {/* ID da chave removido para melhorar visualização */}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-gray-500" />
+                            <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-gray-700">{record.military_rank}</span>
-                              <span className="font-semibold text-gray-900">{record.military_name}</span>
+                              <span className="font-bold text-gray-700 dark:text-gray-300">{record.military_rank}</span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{record.military_name}</span>
                             </div>
                           </div>
                         </TableCell>
@@ -812,19 +845,19 @@ export default function KeyManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium text-gray-700">
+                            <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {format(new Date(record.action_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           {record.notes ? (
-                            <div className="max-w-[200px] truncate font-medium text-gray-700" title={record.notes}>
+                            <div className="max-w-[200px] truncate font-medium text-gray-700 dark:text-gray-300" title={record.notes}>
                               {record.notes}
                             </div>
                           ) : (
-                            <span className="text-gray-400 font-medium">—</span>
+                            <span className="text-gray-400 dark:text-gray-500 font-medium">—</span>
                           )}
                         </TableCell>
                       </TableRow>

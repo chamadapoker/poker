@@ -54,3 +54,4 @@ O projeto está configurado para deploy automático na Vercel. Qualquer push par
 
 **Status:** ✅ Deploy automático ativo
 **Última atualização:** $(date)
+**Variáveis configuradas:** ✅ Supabase URL e Anon Key

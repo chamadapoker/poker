@@ -2,10 +2,11 @@
 
 import { useEffect } from "react"
 import { createClient } from "@supabase/supabase-js"
+import { supabaseConfig } from "../lib/supabase-config"
 import { toast } from "sonner"
 
 // Initialize Supabase client
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey)
 
 export default function SupabaseRealtimeListener() {
   useEffect(() => {

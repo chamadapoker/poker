@@ -324,6 +324,16 @@ function EventCalendar() {
     return 0
   })
 
+  // Eventos para o dia selecionado
+  const selectedDateEvents = events.filter(event => 
+    date && isSameDay(event.date, date)
+  )
+
+  // Função para verificar se um dia tem eventos
+  const hasEventsOnDate = (checkDate: Date) => {
+    return events.some(event => isSameDay(event.date, checkDate))
+  }
+
   // Carregar eventos ao inicializar
   useEffect(() => {
     fetchEvents()
@@ -409,7 +419,7 @@ function EventCalendar() {
       </div>
 
       {/* Calendário e controles */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* Calendário */}
         <Card className="shadow-lg">
           <CardHeader>
@@ -418,18 +428,52 @@ function EventCalendar() {
               Calendário
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border"
-              locale={ptBR}
-              showOutsideDays={true}
-              weekStartsOn={1}
-              fromYear={2020}
-              toYear={2030}
-            />
+          <CardContent className="flex justify-center p-6">
+            <div className="w-full max-w-sm">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border shadow-sm"
+                locale={ptBR}
+                showOutsideDays={true}
+                weekStartsOn={1}
+                fromYear={2020}
+                toYear={2030}
+                modifiers={{
+                  hasEvent: (date) => hasEventsOnDate(date)
+                }}
+                modifiersStyles={{
+                  hasEvent: { 
+                    backgroundColor: "rgb(59 130 246 / 0.1)", 
+                    color: "rgb(59 130 246)",
+                    fontWeight: "600"
+                  }
+                }}
+                classNames={{
+                  months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                  month: "space-y-4",
+                  caption: "flex justify-center pt-1 relative items-center",
+                  caption_label: "text-sm font-medium",
+                  nav: "space-x-1 flex items-center",
+                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                  nav_button_previous: "absolute left-1",
+                  nav_button_next: "absolute right-1",
+                  table: "w-full border-collapse space-y-1",
+                  head_row: "flex",
+                  head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                  row: "flex w-full mt-2",
+                  cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-start)]:rounded-l-md [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                  day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                  day_today: "bg-accent text-accent-foreground",
+                  day_outside: "text-muted-foreground opacity-50",
+                  day_disabled: "text-muted-foreground opacity-50",
+                  day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                  day_hidden: "invisible",
+                }}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -621,6 +665,55 @@ function EventCalendar() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Eventos do dia selecionado */}
+      {date && selectedDateEvents.length > 0 && (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              Eventos de {format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {selectedDateEvents.map((event) => (
+                <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-100">{event.title}</h4>
+                    {event.time && (
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        <Clock className="inline h-3 w-3 mr-1" />
+                        {event.time}
+                      </p>
+                    )}
+                    {event.description && (
+                      <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{event.description}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditClick(event)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteEvent(event.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Lista de eventos */}
       <Card className="shadow-lg">

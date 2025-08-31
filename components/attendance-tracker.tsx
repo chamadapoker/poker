@@ -441,9 +441,9 @@ function AttendanceTracker() {
               </SelectContent>
             </Select>
             {selectedCallType && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg">
-                <Calendar className="h-4 w-4 text-red-600 dark:text-red-300" />
-                <span className="text-sm font-medium text-red-700 dark:text-red-200">
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
+                <Calendar className="h-4 w-4 text-green-600 dark:text-green-300" />
+                <span className="text-sm font-medium text-green-700 dark:text-green-200">
                   {callTypes.find(t => t.id === selectedCallType)?.label}
                 </span>
               </div>
@@ -460,19 +460,19 @@ function AttendanceTracker() {
             Militares ({format(new Date(), "dd/MM/yyyy")})
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
           <div className="space-y-3">
             {allMilitary.map((military) => (
               <div
                 key={military.id}
-                className={`flex items-center justify-between p-4 rounded-xl border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300 group`}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300 group`}
               >
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-white dark:bg-slate-700 shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-0">
+                  <div className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-slate-700 shadow-sm group-hover:shadow-md transition-shadow duration-300">
                     {getStatusIcon(military.status, military.isJustified)}
                   </div>
                   <div>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
+                    <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
                       {military.rank} {military.militaryName}
                     </span>
                   </div>
@@ -480,9 +480,9 @@ function AttendanceTracker() {
                 
                 {military.isJustified ? (
                   // Para militares justificados, mostra apenas o status fixo
-                  <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg">
+                  <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg">
                     <Shield className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-                    <span className="text-blue-700 dark:text-blue-200 font-medium">JUSTIFICADO</span>
+                    <span className="text-xs sm:text-sm text-blue-700 dark:text-blue-200 font-medium">JUSTIFICADO</span>
                   </div>
                 ) : (
                   // Para militares não justificados, mostra o dropdown
@@ -490,7 +490,7 @@ function AttendanceTracker() {
                     value={military.status} 
                     onValueChange={(value) => handleStatusChange(military.militaryId, value)}
                   >
-                    <SelectTrigger className="w-48 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
+                    <SelectTrigger className="w-full sm:w-48 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
                       <SelectValue>
                         {military.status && attendanceStatuses.find(s => s.id === military.status)?.label}
                       </SelectValue>

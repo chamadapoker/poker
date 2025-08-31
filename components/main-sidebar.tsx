@@ -105,9 +105,9 @@ export function MainSidebar() {
         w-64 lg:w-auto
         bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700
         shadow-lg lg:shadow-none
-        top-8 lg:top-0
+        top-20 lg:top-0
         bottom-0 lg:bottom-0
-        h-screen lg:h-auto
+        h-[calc(100vh-5rem)] lg:h-auto
         flex-shrink-0
       `}>
         

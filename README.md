@@ -53,3 +53,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
 O projeto está configurado para deploy automático na Vercel. Qualquer push para a branch `main` dispara um novo deploy automaticamente.
 
 **Status:** ✅ Deploy automático ativo
+**Última atualização:** $(date)

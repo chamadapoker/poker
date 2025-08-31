@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/use-toast"
 import { createClient } from "@supabase/supabase-js"
+import { supabaseConfig } from "../lib/supabase-config"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { 
@@ -33,14 +34,7 @@ import {
 } from "lucide-react"
 
 // Initialize Supabase client
-const supabase = createClient(
-  import { supabaseConfig } from "../lib/supabase-config"
-
-// ... existing code ...
-
-supabaseConfig.url,
-supabaseConfig.anonKey
-)
+const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey)
 
 interface MilitaryPersonnel {
   id: string

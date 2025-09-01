@@ -1,8 +1,15 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Calendar, Clock, UserCheck, UserX, FileText, Key, TrendingUp, TrendingDown, Activity, Target } from "lucide-react"
+import { Users, Calendar, Clock, UserCheck, UserX, FileText, Key, TrendingUp, TrendingDown, Activity } from "lucide-react"
 import { useEffect, useState } from "react"
+import { 
+  fetchTotalMilitaryPersonnel, 
+  fetchCurrentDayAttendance, 
+  fetchMonthlyAttendanceStats, 
+  fetchJustificationTypes, 
+  fetchUpcomingEvents 
+} from "@/lib/data"
 
 interface AnalyticsData {
   totalPersonnel: number
@@ -25,6 +32,7 @@ interface AnalyticsData {
   }[]
   keyUsage: {
     keyName: string
+    location: string
     usageCount: number
     lastUsed: string
   }[]
@@ -60,51 +68,33 @@ function AnalyticsDashboard() {
       try {
         setAnalyticsData(prev => ({ ...prev, loading: true, error: null }))
 
-        // Dados simulados funcionais
-        const mockData = {
-          totalPersonnel: 40,
-          currentAttendance: {
-            present: 32,
-            absent: 6,
-            justified: 2,
-            percentage: 80
-          },
-          monthlyStats: [
-            { month: 'Jan', present: 28, absent: 4, percentage: 88 },
-            { month: 'Fev', present: 30, absent: 3, percentage: 91 },
-            { month: 'Mar', present: 29, absent: 5, percentage: 85 },
-            { month: 'Abr', present: 31, absent: 2, percentage: 94 },
-            { month: 'Mai', present: 27, absent: 6, percentage: 82 },
-            { month: 'Jun', present: 32, absent: 3, percentage: 91 }
-          ],
-          justificationTypes: [
-            { type: 'Atestado médico', count: 8, percentage: 40 },
-            { type: 'Serviço externo', count: 6, percentage: 30 },
-            { type: 'Dispensa', count: 3, percentage: 15 },
-            { type: 'Voo', count: 2, percentage: 10 },
-            { type: 'Instrução', count: 1, percentage: 5 }
-          ],
-          keyUsage: [
-            { keyName: 'Chave 001', usageCount: 45, lastUsed: '15/01/2025' },
-            { keyName: 'Chave 002', usageCount: 38, lastUsed: '14/01/2025' },
-            { keyName: 'Chave 003', usageCount: 32, lastUsed: '13/01/2025' },
-            { keyName: 'Chave 004', usageCount: 28, lastUsed: '12/01/2025' },
-            { keyName: 'Chave 005', usageCount: 25, lastUsed: '11/01/2025' }
-          ],
-          recentEvents: [
-            { title: 'Formatura Mensal', date: '20/01/2025', type: 'Evento' },
-            { title: 'Reunião de Comando', date: '22/01/2025', type: 'Reunião' },
-            { title: 'Instrução de Voo', date: '25/01/2025', type: 'Instrução' }
-          ],
-          flightStats: {
-            totalFlights: 156,
-            completedFlights: 148,
-            totalHours: 2847
-          }
-        }
+        // Buscar dados reais do banco
+        const [
+          totalPersonnel,
+          currentAttendance,
+          monthlyStats,
+          justificationTypes,
+          recentEvents
+        ] = await Promise.all([
+          fetchTotalMilitaryPersonnel(),
+          fetchCurrentDayAttendance(),
+          fetchMonthlyAttendanceStats(),
+          fetchJustificationTypes(),
+          fetchUpcomingEvents()
+        ])
 
         setAnalyticsData({
-          ...mockData,
+          totalPersonnel,
+          currentAttendance,
+          monthlyStats,
+          justificationTypes,
+          keyUsage: [],
+          recentEvents,
+          flightStats: {
+            totalFlights: 0,
+            completedFlights: 0,
+            totalHours: 0
+          },
           loading: false,
           error: null
         })
@@ -219,24 +209,32 @@ function AnalyticsDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {analyticsData.monthlyStats.map((month, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{month.month}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${month.percentage}%` }}
-                      ></div>
+            {analyticsData.monthlyStats.length > 0 ? (
+              <div className="space-y-4">
+                {analyticsData.monthlyStats.map((month, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{month.month}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${month.percentage}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 w-12 text-right">
+                        {month.percentage}%
+                      </span>
                     </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 w-12 text-right">
-                      {month.percentage}%
-                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhum dado de presença mensal disponível</p>
+                <p className="text-xs mt-1">Os dados aparecerão conforme o uso do sistema</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -249,59 +247,38 @@ function AnalyticsDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {analyticsData.justificationTypes.map((justification, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{justification.type}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-amber-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${justification.percentage}%` }}
-                      ></div>
+            {analyticsData.justificationTypes.length > 0 ? (
+              <div className="space-y-3">
+                {analyticsData.justificationTypes.map((justification, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{justification.type}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${justification.percentage}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 w-8 text-right">
+                        {justification.count}
+                      </span>
                     </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 w-8 text-right">
-                      {justification.count}
-                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhuma justificativa registrada</p>
+                <p className="text-xs mt-1">Os dados aparecerão conforme o uso do sistema</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Uso de Chaves e Eventos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Uso de Chaves */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-green-600" />
-              Chaves Mais Utilizadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {analyticsData.keyUsage.map((key, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div>
-                    <div className="font-medium">{key.keyName}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Último uso: {key.lastUsed}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-green-600">{key.usageCount}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">vezes</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Próximos Eventos */}
+      {/* Próximos Eventos */}
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -334,31 +311,7 @@ function AnalyticsDashboard() {
         </Card>
       </div>
 
-      {/* Estatísticas de Voo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-red-600" />
-            Estatísticas de Voo
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{analyticsData.flightStats.totalFlights}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total de Voos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{analyticsData.flightStats.completedFlights}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Voos Concluídos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">{analyticsData.flightStats.totalHours}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Horas de Voo</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }

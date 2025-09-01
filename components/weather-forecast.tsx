@@ -212,8 +212,11 @@ export function WeatherForecast() {
                 className={`p-4 bg-gradient-to-br ${getCardColor(day.day)} rounded-lg border-2 hover:shadow-lg transition-all duration-200`}
               >
                 <div className="text-center mb-3">
-                  <div className={`text-lg font-bold ${getTextColor(day.day)} mb-2`}>
+                  <div className={`text-lg font-bold ${getTextColor(day.day)} mb-1`}>
                     {day.day}
+                  </div>
+                  <div className={`text-xs ${getTextColor(day.day)} opacity-70 mb-2`}>
+                    {day.date}
                   </div>
                   <div className="flex justify-center mb-3">
                     {getWeatherIcon(day.icon)}
@@ -274,18 +277,7 @@ export function WeatherForecast() {
           </div>
         </div>
 
-        {/* Aviso importante */}
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-sm text-blue-800 dark:text-blue-300 text-center font-medium">
-            <strong>Importante:</strong> Verifique as condições meteorológicas antes dos voos
-          </p>
-          <p className="text-xs text-blue-600 dark:text-blue-400 text-center mt-1">
-            {apiStatus === "active" 
-              ? "Dados fornecidos pelo OpenWeatherMap - Coordenadas: Santa Maria, RS (-29.6868, -53.8149)"
-              : "Dados simulados para demonstração - API será ativada em breve"
-            }
-          </p>
-        </div>
+
       </CardContent>
     </Card>
   )

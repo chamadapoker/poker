@@ -284,3 +284,225 @@ export {
   callTypes,
   absenceReasons,
 } from "./static-data"
+
+// Dashboard Analytics Functions
+
+// Fetch Total Military Personnel Count
+export async function fetchTotalMilitaryPersonnel(): Promise<number> {
+  noStore()
+  try {
+    const { count, error } = await supabase
+      .from("military_personnel")
+      .select("*", { count: "exact", head: true })
+
+    if (error) {
+      console.error("Database Error:", error)
+      return 0
+    }
+    return count || 0
+  } catch (error) {
+    console.error("Failed to fetch total military personnel:", error)
+    return 0
+  }
+}
+
+// Fetch Current Day Attendance
+export async function fetchCurrentDayAttendance() {
+  noStore()
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    
+    const { data, error } = await supabase
+      .from("military_attendance_records")
+      .select("*")
+      .eq("date", today)
+
+    if (error) {
+      console.error("Database Error:", error)
+      return { present: 0, absent: 0, justified: 0, percentage: 0 }
+    }
+
+    const records = data || []
+    const present = records.filter(r => r.status === 'presente').length
+    const absent = records.filter(r => r.status === 'ausente').length
+    const justified = records.filter(r => r.is_justified).length
+    const total = records.length
+    const percentage = total > 0 ? Math.round((present / total) * 100) : 0
+
+    return { present, absent, justified, percentage }
+  } catch (error) {
+    console.error("Failed to fetch current day attendance:", error)
+    return { present: 0, absent: 0, justified: 0, percentage: 0 }
+  }
+}
+
+// Fetch Monthly Attendance Stats (starting from tomorrow)
+export async function fetchMonthlyAttendanceStats() {
+  noStore()
+  try {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const startDate = tomorrow.toISOString().split('T')[0]
+    
+    const { data, error } = await supabase
+      .from("military_attendance_records")
+      .select("*")
+      .gte("date", startDate)
+
+    if (error) {
+      console.error("Database Error:", error)
+      return []
+    }
+
+    // Group by month and calculate stats
+    const monthlyData = data?.reduce((acc, record) => {
+      const month = new Date(record.date).toLocaleDateString('pt-BR', { month: 'short' })
+      if (!acc[month]) {
+        acc[month] = { present: 0, absent: 0, total: 0 }
+      }
+      acc[month].total++
+      if (record.status === 'presente') acc[month].present++
+      if (record.status === 'ausente') acc[month].absent++
+      return acc
+    }, {} as Record<string, { present: number, absent: number, total: number }>)
+
+    return Object.entries(monthlyData || {}).map(([month, stats]) => ({
+      month,
+      present: stats.present,
+      absent: stats.absent,
+      percentage: stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0
+    }))
+  } catch (error) {
+    console.error("Failed to fetch monthly attendance stats:", error)
+    return []
+  }
+}
+
+// Fetch Justification Types
+export async function fetchJustificationTypes() {
+  noStore()
+  try {
+    const { data, error } = await supabase
+      .from("military_justifications")
+      .select("reason")
+
+    if (error) {
+      console.error("Database Error:", error)
+      return []
+    }
+
+    // Count by reason type
+    const reasonCounts = data?.reduce((acc, justification) => {
+      const reason = justification.reason
+      acc[reason] = (acc[reason] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    const total = Object.values(reasonCounts || {}).reduce((sum, count) => sum + count, 0)
+
+    return Object.entries(reasonCounts || {}).map(([type, count]) => ({
+      type,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 100) : 0
+    })).sort((a, b) => b.count - a.count)
+  } catch (error) {
+    console.error("Failed to fetch justification types:", error)
+    return []
+  }
+}
+
+// Fetch Most Used Keys from Claviculario Movements with JOIN (like history page)
+export async function fetchMostUsedKeys() {
+  noStore()
+  try {
+    // Usar o mesmo JOIN que a página de histórico usa
+    const { data, error } = await supabase
+      .from("claviculario_movements")
+      .select(`
+        key_id,
+        type,
+        timestamp,
+        claviculario_keys (
+          key_name,
+          location
+        )
+      `)
+      .eq("type", "withdrawal")
+      .order("timestamp", { ascending: false })
+
+    if (error) {
+      console.error("Database Error:", error)
+      return []
+    }
+
+    if (!data || data.length === 0) {
+      console.log("Nenhum dado de chaves encontrado")
+      return []
+    }
+
+    // Count usage by key_id and get key details
+    const keyUsage = data.reduce((acc, record) => {
+      const keyId = record.key_id
+      const keyName = record.claviculario_keys?.key_name || `Chave ${keyId.slice(0, 8)}`
+      const location = record.claviculario_keys?.location || "Local não especificado"
+      
+      if (!acc[keyId]) {
+        acc[keyId] = { 
+          usageCount: 0, 
+          lastUsed: record.timestamp,
+          keyName: keyName,
+          location: location
+        }
+      }
+      acc[keyId].usageCount++
+      if (new Date(record.timestamp) > new Date(acc[keyId].lastUsed)) {
+        acc[keyId].lastUsed = record.timestamp
+      }
+      return acc
+    }, {} as Record<string, { 
+      usageCount: number, 
+      lastUsed: string,
+      keyName: string,
+      location: string
+    }>)
+
+    return Object.entries(keyUsage).map(([keyId, data]) => ({
+      keyName: data.keyName,
+      location: data.location,
+      usageCount: data.usageCount,
+      lastUsed: new Date(data.lastUsed).toLocaleDateString('pt-BR')
+    })).sort((a, b) => b.usageCount - a.usageCount).slice(0, 5)
+  } catch (error) {
+    console.error("Failed to fetch most used keys:", error)
+    return []
+  }
+}
+
+// Fetch Upcoming Events (including BDS)
+export async function fetchUpcomingEvents() {
+  noStore()
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    
+    const { data, error } = await supabase
+      .from("military_events")
+      .select("*")
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .limit(5)
+
+    if (error) {
+      console.error("Database Error:", error)
+      return []
+    }
+
+    return (data || []).map(event => ({
+      title: event.title,
+      date: new Date(event.date).toLocaleDateString('pt-BR'),
+      type: event.description || 'Evento'
+    }))
+  } catch (error) {
+    console.error("Failed to fetch upcoming events:", error)
+    return []
+  }
+}

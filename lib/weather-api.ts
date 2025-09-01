@@ -26,6 +26,7 @@ export interface WeatherData {
   }
   forecast: Array<{
     day: string
+    date: string
     temperature: number
     maxTemp: number
     minTemp: number
@@ -115,18 +116,27 @@ export async function fetchWeatherData(): Promise<WeatherData> {
     const dailyForecasts = forecastData.list.filter((item: any, index: number) => index % 8 === 0).slice(0, 5)
     const days = ['Hoje', 'Amanhã', 'Segunda', 'Terça', 'Quarta']
     
-    const forecast = dailyForecasts.map((item: any, index: number) => ({
-      day: days[index],
-      temperature: Math.round(item.main.temp),
-      maxTemp: Math.round(item.main.temp_max),
-      minTemp: Math.round(item.main.temp_min),
-      condition: getWeatherCondition(item.weather[0].main, item.weather[0].description),
-      icon: getWeatherIcon(item.weather[0].main),
-      rainProbability: item.pop ? Math.round(item.pop * 100) : 0,
-      wind: Math.round(item.wind.speed * 3.6),
-      humidity: item.main.humidity,
-      pressure: Math.round(item.main.pressure)
-    }))
+    const forecast = dailyForecasts.map((item: any, index: number) => {
+      const date = new Date(item.dt * 1000)
+      const formattedDate = date.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit' 
+      })
+      
+      return {
+        day: days[index],
+        date: formattedDate,
+        temperature: Math.round(item.main.temp),
+        maxTemp: Math.round(item.main.temp_max),
+        minTemp: Math.round(item.main.temp_min),
+        condition: getWeatherCondition(item.weather[0].main, item.weather[0].description),
+        icon: getWeatherIcon(item.weather[0].main),
+        rainProbability: item.pop ? Math.round(item.pop * 100) : 0,
+        wind: Math.round(item.wind.speed * 3.6),
+        humidity: item.main.humidity,
+        pressure: Math.round(item.main.pressure)
+      }
+    })
 
     console.log("📅 Previsão de 5 dias processada com sucesso!")
     return { current, forecast }
@@ -209,6 +219,7 @@ function getMockWeatherData(): WeatherData {
     forecast: [
       {
         day: "Hoje",
+        date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         temperature: 22,
         maxTemp: 26,
         minTemp: 16,
@@ -221,6 +232,7 @@ function getMockWeatherData(): WeatherData {
       },
       {
         day: "Amanhã",
+        date: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         temperature: 20,
         maxTemp: 24,
         minTemp: 14,
@@ -233,6 +245,7 @@ function getMockWeatherData(): WeatherData {
       },
       {
         day: "Segunda",
+        date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         temperature: 18,
         maxTemp: 22,
         minTemp: 12,
@@ -245,6 +258,7 @@ function getMockWeatherData(): WeatherData {
       },
       {
         day: "Terça",
+        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         temperature: 19,
         maxTemp: 23,
         minTemp: 13,
@@ -257,6 +271,7 @@ function getMockWeatherData(): WeatherData {
       },
       {
         day: "Quarta",
+        date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         temperature: 24,
         maxTemp: 28,
         minTemp: 17,

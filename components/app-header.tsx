@@ -9,7 +9,6 @@ export function AppHeader() {
   const { toggleMobile } = useMobileMenu()
 
   const handleMenuClick = () => {
-    console.log('Menu button clicked')
     toggleMobile()
   }
 

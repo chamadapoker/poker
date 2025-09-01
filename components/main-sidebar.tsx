@@ -60,10 +60,11 @@ export function MainSidebar() {
 
   // Fechar menu mobile ao mudar de rota
   useEffect(() => {
+    // Só fechar se o menu estiver aberto
     if (isMobileOpen) {
       toggleMobile()
     }
-  }, [pathname, isMobileOpen, toggleMobile])
+  }, [pathname]) // Só depende da mudança de rota
 
   const navigationItems = [
     { title: "Dashboard", href: "/dashboard", icon: BarChart3 },
@@ -115,12 +116,12 @@ export function MainSidebar() {
         <div className="flex flex-col h-full">
           {/* Navegação principal */}
           <div className="flex-1 p-1.5 pt-20 lg:pt-2">
-            {/* Botão de expandir/recolher - NO TOPO */}
-            <div className="mb-3 flex justify-center lg:justify-start">
+            {/* Botão de expandir/recolher - APENAS NO DESKTOP */}
+            <div className="hidden lg:block mb-3 flex justify-start">
               <Button 
                 variant="ghost" 
                 size="sm"
-                className={`${isCollapsed ? 'w-10 lg:w-full' : 'w-full'} justify-center lg:justify-start hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group h-8`}
+                className={`${isCollapsed ? 'w-10' : 'w-full'} justify-start hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group h-8`}
                 onClick={toggleCollapse}
               >
                 {isCollapsed ? (
@@ -128,7 +129,7 @@ export function MainSidebar() {
                 ) : (
                   <ChevronLeft className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                 )}
-                <span className={`transition-all duration-300 overflow-hidden text-center lg:text-left ${isCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'lg:opacity-100 lg:max-w-full'}`}>
+                <span className={`transition-all duration-300 overflow-hidden text-left ${isCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-full'}`}>
                   {isCollapsed ? 'Expandir' : 'Recolher'}
                 </span>
               </Button>
@@ -142,7 +143,7 @@ export function MainSidebar() {
             </div>
 
             {/* Itens de navegação */}
-            <nav className="space-y-0.5 flex flex-col items-center lg:items-stretch">
+            <nav className="space-y-0.5 flex flex-col items-stretch">
               {navigationItems.map((item) => {
                 const IconComponent = item.icon
                 const isActive = pathname === item.href
@@ -152,24 +153,22 @@ export function MainSidebar() {
                     key={item.href}
                     href={item.href}
                     className={`
-                      flex items-center justify-center lg:justify-start gap-1.5 p-1 rounded-md transition-all duration-200 group relative
-                      ${isCollapsed ? 'w-10 lg:w-full' : 'w-full'}
+                      flex items-center justify-start gap-3 p-3 rounded-md transition-all duration-200 group relative
+                      ${isCollapsed ? 'lg:w-10 lg:justify-center' : 'w-full'}
                       ${isActive 
                         ? 'bg-red-600 text-white shadow-sm' 
                         : 'text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400'
                       }
                     `}
                   >
-                    <IconComponent className={`h-6 w-6 flex-shrink-0 mx-auto lg:mx-0 ${isActive ? 'text-white' : 'group-hover:scale-110 transition-transform duration-200'}`} />
+                    <IconComponent className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-white' : 'group-hover:scale-110 transition-transform duration-200'}`} />
                     
-                    <span className={`transition-all duration-300 font-medium overflow-hidden text-center lg:text-left ${
+                    <span className={`transition-all duration-300 font-medium overflow-hidden text-left ${
                       isCollapsed 
-                        ? 'lg:opacity-0 lg:max-w-0' : 'lg:opacity-100 lg:max-w-full'
+                        ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 max-w-full'
                     }`}>
                       {item.title}
                     </span>
-
-
                   </Link>
                 )
               })}
@@ -177,28 +176,26 @@ export function MainSidebar() {
           </div>
 
           {/* Footer com usuário e controles */}
-          <div className="border-t border-slate-200 dark:border-slate-700 p-1 space-y-1 flex flex-col items-center lg:items-stretch">
+          <div className="border-t border-slate-200 dark:border-slate-700 p-3 space-y-2 flex flex-col items-stretch">
             {/* Área do usuário logado */}
-            <div className={`flex items-center justify-center lg:justify-start gap-2 p-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 ${isCollapsed ? 'w-10 lg:w-full' : 'w-full'}`}>
+            <div className={`flex items-center justify-start gap-3 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 ${isCollapsed ? 'lg:w-10 lg:justify-center' : 'w-full'}`}>
               <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0">
                 <User className="h-4 w-4 text-white" />
               </div>
-              <div className={`transition-all duration-300 overflow-hidden text-center lg:text-left ${isCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'lg:opacity-100 lg:max-w-full'}`}>
+              <div className={`transition-all duration-300 overflow-hidden text-left ${isCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 max-w-full'}`}>
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Usuário Logado</p>
                 <p className="text-xs text-slate-600 dark:text-slate-400">admin@poker360.com</p>
               </div>
             </div>
 
-
-
             {/* Botão de logout */}
             <Button 
               variant="ghost" 
               size="sm"
-              className={`${isCollapsed ? 'w-10 lg:w-full' : 'w-full'} justify-center lg:justify-start hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group h-7`}
+              className={`${isCollapsed ? 'lg:w-10 lg:justify-center' : 'w-full'} justify-start hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group h-10`}
             >
-              <LogOut className="h-4 w-4 lg:mr-2 group-hover:scale-110 transition-transform duration-200" />
-              <span className={`transition-all duration-300 overflow-hidden text-center lg:text-left ${isCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'lg:opacity-100 lg:max-w-full'}`}>
+              <LogOut className="h-4 w-4 mr-3 group-hover:scale-110 transition-transform duration-200" />
+              <span className={`transition-all duration-300 overflow-hidden text-left ${isCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 max-w-full'}`}>
                 Sair
               </span>
             </Button>

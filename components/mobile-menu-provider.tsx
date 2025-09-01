@@ -25,7 +25,9 @@ export function MobileMenuProvider({ children }: MobileMenuProviderProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const toggleMobile = () => {
+    console.log('toggleMobile called, current state:', isMobileOpen)
     setIsMobileOpen(!isMobileOpen)
+    console.log('New state will be:', !isMobileOpen)
   }
 
   return (

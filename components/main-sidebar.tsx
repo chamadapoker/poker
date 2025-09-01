@@ -91,30 +91,30 @@ export function MainSidebar() {
       {/* Overlay para mobile */}
       {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={toggleMobile}
         />
       )}
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:static left-0 z-30
+        fixed lg:static left-0 z-40
         transform transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${isCollapsed ? 'lg:w-16' : 'lg:w-64'}
         w-64 lg:w-auto
         bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700
         shadow-lg lg:shadow-none
-        top-20 lg:top-0
+        top-0 lg:top-0
         bottom-0 lg:bottom-0
-        h-[calc(100vh-5rem)] lg:h-auto
+        h-screen lg:h-auto
         flex-shrink-0
       `}>
         
         {/* Conteúdo da navegação */}
         <div className="flex flex-col h-full">
           {/* Navegação principal */}
-          <div className="flex-1 p-1.5 pt-2">
+          <div className="flex-1 p-1.5 pt-20 lg:pt-2">
             {/* Botão de expandir/recolher - NO TOPO */}
             <div className="mb-3 flex justify-center lg:justify-start">
               <Button 

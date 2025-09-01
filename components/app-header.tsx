@@ -8,12 +8,17 @@ import { useMobileMenu } from "./mobile-menu-provider"
 export function AppHeader() {
   const { toggleMobile } = useMobileMenu()
 
+  const handleMenuClick = () => {
+    console.log('Menu button clicked')
+    toggleMobile()
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
       {/* POKER no desktop, menu sanduíche no mobile */}
       <div className="flex-shrink-0">
         {/* Menu sanduíche no mobile */}
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggleMobile}>
+        <Button variant="ghost" size="icon" className="lg:hidden" onClick={handleMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
         

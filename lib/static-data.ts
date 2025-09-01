@@ -37,16 +37,13 @@ export const militaryPersonnel = [
   { id: "28", name: "HOEHR", rank: "3S" },
   { id: "29", name: "VILELA", rank: "3S" },
   { id: "30", name: "HENRIQUE", rank: "3S" },
-  { id: "31", name: "VIEIRA", rank: "S1" },
-  { id: "32", name: "NYCOLAS", rank: "S1" },
-  { id: "33", name: "GABRIEL REIS", rank: "S1" },
-  { id: "34", name: "MATEUS FONTOURA", rank: "S2" },
-  { id: "35", name: "DOUGLAS SILVA", rank: "S2" },
-  { id: "36", name: "DA ROSA", rank: "S2" },
-  { id: "37", name: "DENARDIN", rank: "S2" },
-  { id: "38", name: "MILESI", rank: "S2" },
-  { id: "39", name: "JOÃO GABRIEL", rank: "S2" },
-  { id: "40", name: "VIEIRA", rank: "S2" },
+  { id: "31", name: "NYCOLAS", rank: "S1" },
+  { id: "32", name: "GABRIEL REIS", rank: "S1" },
+  { id: "33", name: "DOUGLAS SILVA", rank: "S2" },
+  { id: "34", name: "DA ROSA", rank: "S2" },
+  { id: "35", name: "DENARDIN", rank: "S2" },
+  { id: "36", name: "JOÃO GABRIEL", rank: "S2" },
+  { id: "37", name: "VIEIRA", rank: "S2" },
 ]
 
 /** Tipos de chamada conforme solicitado */

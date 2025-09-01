@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings } from "lucide-react"
+import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw } from "lucide-react"
 import { militaryPersonnel, callTypes, attendanceStatuses } from "@/lib/static-data"
+import { PDFGenerator } from "@/components/pdf-generator"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
@@ -35,6 +36,7 @@ function AttendanceTracker() {
   const [selectedCallType, setSelectedCallType] = useState<string>("")
   const [militaryAttendance, setMilitaryAttendance] = useState<MilitaryAttendance[]>([])
   const [justifications, setJustifications] = useState<JustificationRecord[]>([])
+  const [showPDFButton, setShowPDFButton] = useState(false)
   const today = format(new Date(), "yyyy-MM-dd")
 
   useEffect(() => {
@@ -60,6 +62,17 @@ function AttendanceTracker() {
     if (callTypes.length > 0) {
       setSelectedCallType(callTypes[0].id)
       console.log('Tipo de chamada padrão definido:', callTypes[0].id)
+    }
+
+    // Verificar se deve limpar a lista (expiração diária)
+    const lastResetDate = localStorage.getItem('lastAttendanceReset')
+    const today = new Date().toDateString()
+    
+    if (lastResetDate !== today) {
+      // É um novo dia, limpar a lista
+      console.log('Novo dia detectado, limpando lista de presença...')
+      localStorage.setItem('lastAttendanceReset', today)
+      // A lista será inicializada como "ausente" no initializeAttendance
     }
   }, [])
 
@@ -229,6 +242,37 @@ function AttendanceTracker() {
     )
   }
 
+  const handleClearAttendance = () => {
+    // Confirmar antes de limpar
+    if (!confirm('Tem certeza que deseja limpar a lista de presença? Os status serão resetados para "AUSENTE", mas os justificados permanecerão.')) {
+      return
+    }
+    
+    // Limpar apenas os status não justificados, mantendo os justificados
+    const clearedAttendance = militaryAttendance.map(military => {
+      if (military.isJustified) {
+        // Manter justificados como estão
+        return military
+      } else {
+        // Resetar apenas os não justificados
+        return {
+          ...military,
+          status: 'ausente',
+          isJustified: false
+        }
+      }
+    })
+    setMilitaryAttendance(clearedAttendance)
+    
+    // Resetar o botão de PDF
+    setShowPDFButton(false)
+    
+    toast({
+      title: "Lista Limpa!",
+      description: "Status resetados para 'AUSENTE'. Justificados mantidos.",
+    })
+  }
+
   const handleSaveAttendance = async () => {
     if (!selectedCallType) {
       toast({
@@ -294,9 +338,10 @@ function AttendanceTracker() {
       console.log('=== SALVAMENTO CONCLUÍDO COM SUCESSO ===')
 
       toast({
-        title: "Presença Salva!",
-        description: `Retirada de faltas salva com sucesso para ${callTypes.find(t => t.id === selectedCallType)?.label}.`,
+        title: "✅ Presença Salva com Sucesso!",
+        description: `Dados de presença salvos para ${callTypes.find(t => t.id === selectedCallType)?.label}. Agora você pode gerar o PDF ou enviar por email.`,
       })
+      setShowPDFButton(true)
     } catch (error: any) {
       console.error("=== ERRO AO SALVAR PRESENÇA ===")
       console.error("Tipo do erro:", typeof error)
@@ -512,33 +557,73 @@ function AttendanceTracker() {
 
       {/* Botão de Salvar */}
       <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-6">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4 sm:gap-6">
             {/* Legenda */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <div className="flex items-center gap-2 px-3 py-2 bg-green-100 dark:bg-green-800 border border-green-200 dark:border-green-600 rounded-lg">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-green-100 dark:bg-green-800 border border-green-200 dark:border-green-600 rounded-lg">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full"></div>
                 <span className="text-green-700 dark:text-green-200 font-medium">Presente</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-600 rounded-lg">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-600 rounded-lg">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full"></div>
                 <span className="text-red-700 dark:text-red-200 font-medium">Ausente</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-blue-500 rounded-full"></div>
                 <span className="text-blue-700 dark:text-blue-200 font-medium">Justificado</span>
               </div>
             </div>
             
-            {/* Botão de Salvar */}
-            <Button 
-              onClick={handleSaveAttendance} 
-              className="w-full max-w-md mx-auto h-14 text-lg font-semibold bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              disabled={!selectedCallType}
-            >
-              <Save className="h-5 w-5 mr-2" />
-              Salvar Presença
-            </Button>
+            {/* Botões de Ação */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto">
+              <Button 
+                onClick={handleSaveAttendance} 
+                className="flex-1 h-12 sm:h-14 text-base sm:text-lg font-semibold bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={!selectedCallType}
+              >
+                <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Salvar Presença
+              </Button>
+              
+              <Button 
+                onClick={handleClearAttendance}
+                variant="outline"
+                className="h-12 sm:h-14 text-base sm:text-lg font-semibold border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Limpar Lista
+              </Button>
+            </div>
+
+            {/* Botões de PDF e Email */}
+            {showPDFButton && (
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-full max-w-md mx-auto px-2 sm:px-0">
+                  <PDFGenerator
+                    militaryAttendance={allMilitary.map(military => {
+                      // Buscar o motivo da justificativa se o militar estiver justificado
+                      if (military.isJustified) {
+                        // Buscar por nome completo ou apenas pelo nome
+                        const justification = justifications.find(j => 
+                          j.military_name === `${military.rank} ${military.militaryName}` ||
+                          j.military_name === military.militaryName ||
+                          j.military_name.includes(military.militaryName)
+                        )
+                        return {
+                          ...military,
+                          justificationReason: justification?.reason || 'JUSTIFICADO'
+                        }
+                      }
+                      return military
+                    })}
+                    selectedCallType={selectedCallType}
+                    callTypes={callTypes}
+                    attendanceStatuses={attendanceStatuses}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

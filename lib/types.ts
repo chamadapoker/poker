@@ -25,12 +25,15 @@ export type DailyPermanenceRecord = {
   id: string
   military_id: string
   military_name: string
-  rank: string
   date: string
-  status: string
-  details?: string
+  checklist: {
+    items: Array<{ id: number, text: string, checked: boolean }>
+    notes: string
+    status: string
+    completed_at: string
+  }
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 export type MilitaryAttendanceRecord = {

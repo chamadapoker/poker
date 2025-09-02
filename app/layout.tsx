@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex flex-1 relative">
                 <MainSidebar />
                 <main className="flex-1 flex flex-col p-2 sm:p-4 lg:p-6 transition-all duration-300" id="main-content">
-                  <div className="max-w-7xl mx-auto w-full">
+                  <div className="w-full">
                     {children}
                   </div>
                 </main>

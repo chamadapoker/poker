@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase"
 import { format, isValid } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { militaryPersonnel } from "@/lib/static-data"
-
+import { useIsMobile } from "@/hooks/use-mobile"
 
 import AnalyticsDashboard from "./analytics-dashboard"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -375,17 +375,28 @@ function createSimplePDF(data: any[], filename: string, title: string, columns: 
    * (error.code === "42P01") ou se outro erro acontecer.
    */
   async function fetchTableSafe<T>(tableName: string): Promise<T[]> {
-  const { data, error } = await supabase.from(tableName).select("*")
-  if (error) {
-    if (error.code === "42P01") {
-      console.warn(`Tabela '${tableName}' não encontrada — ignorando.`)
+    console.log(`🔍 Tentando buscar dados da tabela: ${tableName}`)
+    
+    try {
+      const { data, error } = await supabase.from(tableName).select("*")
+      
+      if (error) {
+        if (error.code === "42P01") {
+          console.warn(`⚠️ Tabela '${tableName}' não encontrada — ignorando.`)
+          return []
+        }
+        console.error(`❌ Erro ao buscar '${tableName}':`, error)
+        return []
+      }
+      
+      console.log(`✅ Tabela '${tableName}' carregada com sucesso:`, data?.length || 0, "registros")
+      return (data as T[]) ?? []
+      
+    } catch (catchError) {
+      console.error(`💥 Erro inesperado ao buscar '${tableName}':`, catchError)
       return []
     }
-    console.error(`Erro ao buscar '${tableName}':`, error)
-    return []
   }
-  return (data as T[]) ?? []
-}
 
   /**
    * Busca histórico de chaves com detalhes das chaves (nome e número da sala)
@@ -514,6 +525,7 @@ interface KeyHistoryRecord {
 -------------------------------------------------- */
 export function HistoryTabs() {
   const [activeTab, setActiveTab] = useState("attendance")
+  const isMobile = useIsMobile()
 
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
   const [justificationRecords, setJustificationRecords] = useState<JustificationRecord[]>([])
@@ -554,54 +566,79 @@ export function HistoryTabs() {
   useEffect(() => {
     const fetchAllRecords = async () => {
       console.log("📥 Carregando dados completos do histórico...")
+      console.log("🔧 Configuração Supabase:", {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'Config não encontrada',
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      })
 
       try {
         // 1. Histórico de Presença
         console.log("🔄 Carregando histórico de presença...")
         const attendanceData = await fetchTableSafe<AttendanceRecord>("military_attendance_records")
+        console.log("📊 Dados de presença recebidos:", attendanceData)
         setAttendanceRecords(attendanceData)
         console.log("✅ Presença carregada:", attendanceData.length, "registros")
 
         // 2. Histórico de Justificativas
         console.log("🔄 Carregando histórico de justificativas...")
         const justificationData = await fetchTableSafe<JustificationRecord>("military_justifications")
+        console.log("📊 Dados de justificativas recebidos:", justificationData)
         setJustificationRecords(justificationData)
         console.log("✅ Justificativas carregadas:", justificationData.length, "registros")
 
         // 3. Histórico de Eventos
         console.log("🔄 Carregando histórico de eventos...")
         const eventData = await fetchTableSafe<EventRecord>("military_events")
+        console.log("📊 Dados de eventos recebidos:", eventData)
         setEventRecords(eventData)
         console.log("✅ Eventos carregados:", eventData.length, "registros")
 
         // 4. Histórico de Voos
         console.log("🔄 Carregando histórico de voos...")
         const flightData = await fetchTableSafe<FlightRecord>("flight_schedules")
+        console.log("📊 Dados de voos recebidos:", flightData)
         setFlightRecords(flightData)
         console.log("✅ Voos carregados:", flightData.length, "registros")
 
         // 5. Histórico de Permanência
         console.log("🔄 Carregando histórico de permanência...")
         const permanenceData = await fetchTableSafe<PermanenceRecord>("daily_permanence_records")
+        console.log("📊 Dados de permanência recebidos:", permanenceData)
         setPermanenceRecords(permanenceData)
         console.log("✅ Permanência carregada:", permanenceData.length, "registros")
 
         // 6. Histórico de Notas Pessoais
         console.log("🔄 Carregando histórico de notas pessoais...")
         const notesData = await fetchTableSafe<PersonalNoteRecord>("personal_notes")
+        console.log("📊 Dados de notas recebidos:", notesData)
         setPersonalNoteRecords(notesData)
         console.log("✅ Notas carregadas:", notesData.length, "registros")
 
         // 7. Histórico de Chaves
         console.log("🔄 Carregando histórico de chaves...")
         const keysData = await fetchKeyHistoryWithDetails()
+        console.log("📊 Dados de chaves recebidos:", keysData)
         setKeyHistoryRecords(keysData)
         console.log("✅ Chaves carregadas:", keysData.length, "registros")
 
         console.log("🎉 Todos os dados foram carregados com sucesso!")
+        console.log("📊 Resumo final:", {
+          attendance: attendanceData.length,
+          justifications: justificationData.length,
+          events: eventData.length,
+          flights: flightData.length,
+          permanence: permanenceData.length,
+          notes: notesData.length,
+          keys: keysData.length
+        })
         
       } catch (error) {
         console.error("❌ Erro ao carregar dados do histórico:", error)
+        console.error("🔍 Detalhes do erro:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        })
       }
     }
 
@@ -714,6 +751,22 @@ export function HistoryTabs() {
     )
   )
 
+  // Função para renderizar filtros de forma responsiva
+  const renderFilters = (filters: React.ReactNode) => {
+    if (isMobile) {
+      return (
+        <div className="space-y-3 mb-4">
+          {filters}
+        </div>
+      )
+    }
+    return (
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        {filters}
+      </div>
+    )
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -781,666 +834,1275 @@ export function HistoryTabs() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-1 p-1">
-            <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2 py-2">
-              Presença
-            </TabsTrigger>
-            <TabsTrigger value="justifications" className="text-xs sm:text-sm px-2 py-2">
-              Justificativas
-            </TabsTrigger>
-            <TabsTrigger value="events" className="text-xs sm:text-sm px-2 py-2">
-              Eventos
-            </TabsTrigger>
-            <TabsTrigger value="flights" className="text-xs sm:text-sm px-2 py-2">
-              Voos
-            </TabsTrigger>
-            <TabsTrigger value="permanence" className="text-xs sm:text-sm px-2 py-2">
-              Permanência
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="text-xs sm:text-sm px-2 py-2">
-              Notas Pessoais
-            </TabsTrigger>
-            <TabsTrigger value="keys" className="text-xs sm:text-sm px-2 py-2">
-              Chaves
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 py-2">
-              Análises
-            </TabsTrigger>
-          </TabsList>
+        {/* Sistema de Abas Responsivo */}
+        {isMobile ? (
+          // Mobile: Select dropdown
+          <div className="mb-6">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full text-base">
+                <SelectValue>
+                  {activeTab === "attendance" ? "📊 Presença" :
+                   activeTab === "justifications" ? "📝 Justificativas" :
+                   activeTab === "events" ? "📅 Eventos" :
+                   activeTab === "flights" ? "✈️ Voos" :
+                   activeTab === "permanence" ? "🏠 Permanência" :
+                   activeTab === "notes" ? "📝 Notas Pessoais" :
+                   activeTab === "keys" ? "🔑 Chaves" :
+                   activeTab === "analytics" ? "📈 Análises" : "Selecionar Aba"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="attendance">📊 Presença</SelectItem>
+                <SelectItem value="justifications">📝 Justificativas</SelectItem>
+                <SelectItem value="events">📅 Eventos</SelectItem>
+                <SelectItem value="flights">✈️ Voos</SelectItem>
+                <SelectItem value="permanence">🏠 Permanência</SelectItem>
+                <SelectItem value="notes">📝 Notas Pessoais</SelectItem>
+                <SelectItem value="keys">🔑 Chaves</SelectItem>
+                <SelectItem value="analytics">📈 Análises</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          // Desktop: Componente Tabs tradicional
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-1 p-1 mb-6">
+              <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2 py-2">
+                Presença
+              </TabsTrigger>
+              <TabsTrigger value="justifications" className="text-xs sm:text-sm px-2 py-2">
+                Justificativas
+              </TabsTrigger>
+              <TabsTrigger value="events" className="text-xs sm:text-sm px-2 py-2">
+                Eventos
+              </TabsTrigger>
+              <TabsTrigger value="flights" className="text-xs sm:text-sm px-2 py-2">
+                Voos
+              </TabsTrigger>
+              <TabsTrigger value="permanence" className="text-xs sm:text-sm px-2 py-2">
+                Permanência
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="text-xs sm:text-sm px-2 py-2">
+                Notas Pessoais
+              </TabsTrigger>
+              <TabsTrigger value="keys" className="text-xs sm:text-sm px-2 py-2">
+                Chaves
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 py-2">
+                Análises
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="attendance" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredAttendance, 'historico-presenca')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredAttendance, 'historico-presenca', 'Histórico de Presença', ['Militar', 'Data', 'Status', 'Justificativa', 'Detalhes'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
-              </div>
-              <Input
-                placeholder="Buscar militar..."
-                value={attendanceSearch}
-                onChange={(e) => setAttendanceSearch(e.target.value)}
-                className="flex-1"
-              />
-              <Select value={attendanceFilterStatus} onValueChange={setAttendanceFilterStatus}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue>
-                    {attendanceFilterStatus === "all" ? "Todos os Status" : 
-                     attendanceFilterStatus === "presente" ? "Presente" :
-                     attendanceFilterStatus === "ausente" ? "Ausente" :
-                     attendanceFilterStatus === "justificado" ? "Justificado" : "Filtrar por Status"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Status</SelectItem>
-                  <SelectItem value="presente">Presente</SelectItem>
-                  <SelectItem value="ausente">Ausente</SelectItem>
-                  <SelectItem value="justificado">Justificado</SelectItem>
-                </SelectContent>
-              </Select>
-                             <Select value={attendanceFilterDate} onValueChange={setAttendanceFilterDate}>
-                 <SelectTrigger className="w-[180px]">
-                   <SelectValue>
-                     {attendanceFilterDate === "all" ? "Todas as Datas" : formatDate(attendanceFilterDate)}
-                   </SelectValue>
-                 </SelectTrigger>
-                 <SelectContent>
-                   <SelectItem value="all">Todas as Datas</SelectItem>
-                   {uniqueDates.map((date) => (
-                     <SelectItem key={date} value={date}>
-                       {formatDate(date)}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-               {attendanceFilterStatus === "justificado" && (
-                 <Select value={attendanceFilterJustificationType} onValueChange={setAttendanceFilterJustificationType}>
-                   <SelectTrigger className="w-[180px]">
-                     <SelectValue>
-                       {attendanceFilterJustificationType === "all" ? "Todos os Tipos" : attendanceFilterJustificationType}
-                     </SelectValue>
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os Tipos</SelectItem>
-                     <SelectItem value="dispensa">Dispensa</SelectItem>
-                     <SelectItem value="ferias">Férias</SelectItem>
-                     <SelectItem value="licenca">Licença</SelectItem>
-                     <SelectItem value="missao">Missão</SelectItem>
-                     <SelectItem value="medico">Médico</SelectItem>
-                   </SelectContent>
-                 </Select>
-               )}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Militar</th>
-                    <th className="px-6 py-3">Data</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Justificativa</th>
-                    <th className="px-6 py-3">Detalhes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAttendance.map((r) => {
-                    // Buscar informações da justificativa se existir
-                    const justification = r.justification_id ? 
-                      justificationRecords.find(j => j.id === r.justification_id) : null
-                    
-                    return (
-                      <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                        <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
-                        <td className="px-6 py-4">{formatDate(r.date)}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            r.status === 'presente' ? 'bg-green-100 text-green-800' : 
-                            r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
-                            r.status === 'justificado' ? 'bg-blue-100 text-blue-800' : 
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {r.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {justification ? (
-                            <div className="text-sm">
-                              <div className="font-medium text-blue-600">{justification.type}</div>
-                              <div className="text-gray-600">
-                                {formatDate(justification.start_date)} - {formatDate(justification.end_date)}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {justification ? (
-                            <div className="text-sm text-gray-600 max-w-xs truncate" title={justification.reason}>
-                              {justification.reason}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
+            {/* Conteúdo das abas para Desktop */}
+            <TabsContent value="attendance" className="mt-6">
+              {/* Conteúdo da aba de Presença */}
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredAttendance, 'historico-presenca')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredAttendance, 'historico-presenca', 'Histórico de Presença', ['Militar', 'Data', 'Status', 'Justificativa', 'Detalhes'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar militar..."
+                      value={attendanceSearch}
+                      onChange={(e) => setAttendanceSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={attendanceFilterStatus} onValueChange={setAttendanceFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue>
+                          {attendanceFilterStatus === "all" ? "Todos os Status" : 
+                           attendanceFilterStatus === "presente" ? "Presente" :
+                           attendanceFilterStatus === "ausente" ? "Ausente" :
+                           attendanceFilterStatus === "justificado" ? "Justificado" : "Filtrar por Status"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="presente">Presente</SelectItem>
+                        <SelectItem value="ausente">Ausente</SelectItem>
+                        <SelectItem value="justificado">Justificado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={attendanceFilterDate} onValueChange={setAttendanceFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue>
+                          {attendanceFilterDate === "all" ? "Todas as Datas" : formatDate(attendanceFilterDate)}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {uniqueDates.map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {attendanceFilterStatus === "justificado" && (
+                      <Select value={attendanceFilterJustificationType} onValueChange={setAttendanceFilterJustificationType}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                          <SelectValue>
+                            {attendanceFilterJustificationType === "all" ? "Todos os Tipos" : attendanceFilterJustificationType}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos os Tipos</SelectItem>
+                          <SelectItem value="dispensa">Dispensa</SelectItem>
+                          <SelectItem value="ferias">Férias</SelectItem>
+                          <SelectItem value="licenca">Licença</SelectItem>
+                          <SelectItem value="missao">Missão</SelectItem>
+                          <SelectItem value="medico">Médico</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Justificativa</th>
+                        <th className="px-6 py-3">Detalhes</th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="justifications" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredJustifications, 'historico-justificativas')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredJustifications, 'historico-justificativas', 'Histórico de Justificativas', ['Militar', 'Tipo', 'Período', 'Motivo', 'Status'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
+                    </thead>
+                    <tbody>
+                      {filteredAttendance.map((r) => {
+                        // Buscar informações da justificativa se existir
+                        const justification = r.justification_id ? 
+                          justificationRecords.find(j => j.id === r.justification_id) : null
+                        
+                        return (
+                          <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                            <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
+                            <td className="px-6 py-4">{formatDate(r.date)}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                r.status === 'presente' ? 'bg-green-100 text-green-800' : 
+                                r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
+                                r.status === 'justificado' ? 'bg-blue-100 text-blue-800' : 
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {r.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              {justification ? (
+                                <div className="text-sm">
+                                  <div className="font-medium text-blue-600">{justification.type}</div>
+                                  <div className="text-gray-600">
+                                    {formatDate(justification.start_date)} - {formatDate(justification.end_date)}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              {justification ? (
+                                <div className="text-sm text-gray-600 max-w-xs truncate" title={justification.reason}>
+                                  {justification.reason}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <Input
-                placeholder="Buscar militar ou motivo..."
-                value={justificationSearch}
-                onChange={(e) => setJustificationSearch(e.target.value)}
-                className="flex-1"
-              />
-              <Select value={justificationFilterStatus} onValueChange={setJustificationFilterStatus}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Status</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="aprovada">Aprovada</SelectItem>
-                  <SelectItem value="rejeitada">Rejeitada</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={justificationFilterType} onValueChange={setJustificationFilterType}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Tipos</SelectItem>
-                  <SelectItem value="dispensa">Dispensa</SelectItem>
-                  <SelectItem value="ferias">Férias</SelectItem>
-                  <SelectItem value="licenca">Licença</SelectItem>
-                  <SelectItem value="missao">Missão</SelectItem>
-                  <SelectItem value="medico">Médico</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Militar</th>
-                    <th className="px-6 py-3">Tipo</th>
-                    <th className="px-6 py-3">Período</th>
-                    <th className="px-6 py-3">Motivo</th>
-                    <th className="px-6 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredJustifications.map((r) => (
-                    <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
-                      <td className="px-6 py-4">{r.type}</td>
-                      <td className="px-6 py-4">
-                        {formatDate(r.start_date)} – {formatDate(r.end_date)}
-                      </td>
-                      <td className="px-6 py-4">{r.reason}</td>
-                      <td className="px-6 py-4">{r.approved ? "Aprovada" : "Pendente"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="events" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredEvents, 'historico-eventos')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredEvents, 'historico-eventos', 'Histórico de Eventos', ['Título', 'Descrição', 'Data', 'Horário', 'Responsável'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
-              </div>
-              <Input
-                placeholder="Buscar título ou descrição..."
-                value={eventSearch}
-                onChange={(e) => setEventSearch(e.target.value)}
-                className="flex-1"
-              />
-              <Select value={eventFilterDate} onValueChange={setEventFilterDate}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue>
-                    {eventFilterDate === "all" ? "Todas as Datas" : formatDate(eventFilterDate)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Datas</SelectItem>
-                  {[...new Set(eventRecords.map(r => r.date))].sort().reverse().map((date) => (
-                    <SelectItem key={date} value={date}>
-                      {formatDate(date)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Título</th>
-                    <th className="px-6 py-3">Descrição</th>
-                    <th className="px-6 py-3">Data</th>
-                    <th className="px-6 py-3">Horário</th>
-                    <th className="px-6 py-3">Responsável</th>
-                    <th className="px-6 py-3">Criado em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEvents.map((r) => {
-                    const responsible = r.created_by_military_id ? 
-                      militaryPersonnel.find(m => m.id === r.created_by_military_id) : null
-                    
-                    return (
-                      <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                        <td className="px-6 py-4 font-medium whitespace-nowrap">{r.title}</td>
-                        <td className="px-6 py-4 max-w-xs truncate" title={r.description}>{r.description}</td>
-                        <td className="px-6 py-4">{formatDate(r.date)}</td>
-                        <td className="px-6 py-4 font-mono">{r.time || "—"}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {responsible ? `${responsible.rank} ${responsible.name}` : "Não definido"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(r.created_at)}</td>
+            {/* Outras abas para Desktop */}
+            <TabsContent value="justifications" className="mt-6">
+              {/* Conteúdo da aba de Justificativas */}
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredJustifications, 'historico-justificativas')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredJustifications, 'historico-justificativas', 'Histórico de Justificativas', ['Militar', 'Tipo', 'Período', 'Motivo', 'Status'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar militar ou motivo..."
+                      value={justificationSearch}
+                      onChange={(e) => setJustificationSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={justificationFilterStatus} onValueChange={setJustificationFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="pendente">Pendente</SelectItem>
+                        <SelectItem value="aprovada">Aprovada</SelectItem>
+                        <SelectItem value="rejeitada">Rejeitada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={justificationFilterType} onValueChange={setJustificationFilterType}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Tipos</SelectItem>
+                        <SelectItem value="dispensa">Dispensa</SelectItem>
+                        <SelectItem value="ferias">Férias</SelectItem>
+                        <SelectItem value="licenca">Licença</SelectItem>
+                        <SelectItem value="missao">Missão</SelectItem>
+                        <SelectItem value="medico">Médico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Tipo</th>
+                        <th className="px-6 py-3">Período</th>
+                        <th className="px-6 py-3">Motivo</th>
+                        <th className="px-6 py-3">Status</th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="flights" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredFlights, 'historico-voos')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredFlights, 'historico-voos', 'Histórico de Voos', ['Data', 'Horário Zulu', 'Militares Responsáveis', 'Horário Local'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
+                    </thead>
+                    <tbody>
+                      {filteredJustifications.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
+                          <td className="px-6 py-4">{r.type}</td>
+                          <td className="px-6 py-4">
+                            {formatDate(r.start_date)} – {formatDate(r.end_date)}
+                          </td>
+                          <td className="px-6 py-4">{r.reason}</td>
+                          <td className="px-6 py-4">{r.approved ? "Aprovada" : "Pendente"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <Input
-                placeholder="Buscar por data ou horário..."
-                value={flightSearch}
-                onChange={(e) => setFlightSearch(e.target.value)}
-                className="flex-1"
-              />
-              <Select value={flightFilterDate} onValueChange={setFlightFilterDate}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue>
-                    {flightFilterDate === "all" ? "Todas as Datas" : formatDate(flightFilterDate)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Datas</SelectItem>
-                  {[...new Set(flightRecords.map(r => r.flight_date))].sort().reverse().map((date) => (
-                    <SelectItem key={date} value={date}>
-                      {formatDate(date)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Data</th>
-                    <th className="px-6 py-3">Horário Zulu</th>
-                    <th className="px-6 py-3">Militares Responsáveis</th>
-                    <th className="px-6 py-3">Horário Local</th>
-                    <th className="px-6 py-3">Criado em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredFlights.map((r) => {
-                    const militaryIds = r.military_ids ? JSON.parse(r.military_ids) : []
-                    const localTime = r.flight_time ? 
-                      new Date(`2000-01-01T${r.flight_time}:00Z`).toLocaleTimeString('pt-BR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        timeZone: 'America/Sao_Paulo'
-                      }) : '—'
-                    
-                    return (
-                      <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                        <td className="px-6 py-4">{formatDate(r.flight_date)}</td>
-                        <td className="px-6 py-4 font-mono">{r.flight_time}</td>
-                        <td className="px-6 py-4">
-                          {militaryIds.map((id: string) => {
-                            const military = militaryPersonnel.find(m => m.id === id)
-                            return military ? `${military.rank} ${military.name}` : id
-                          }).join(', ')}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-blue-600">{localTime}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(r.created_at)}</td>
+            </TabsContent>
+
+            {/* Aba de Eventos */}
+            <TabsContent value="events" className="mt-6">
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredEvents, 'historico-eventos')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredEvents, 'historico-eventos', 'Histórico de Eventos', ['Título', 'Data', 'Horário', 'Descrição', 'Responsável'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar evento..."
+                      value={eventSearch}
+                      onChange={(e) => setEventSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={eventFilterDate} onValueChange={setEventFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(eventRecords.map(r => r.date))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Título</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Horário</th>
+                        <th className="px-6 py-3">Descrição</th>
+                        <th className="px-6 py-3">Responsável</th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="permanence" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredPermanence, 'historico-permanencia')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredPermanence, 'historico-permanencia', 'Histórico de Permanência', ['Militar', 'Patente', 'Data', 'Status', 'Detalhes'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
+                    </thead>
+                    <tbody>
+                      {filteredEvents.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.title}</td>
+                          <td className="px-6 py-4">{formatDate(r.date)}</td>
+                          <td className="px-6 py-4">{r.time || '—'}</td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.description}>{r.description}</td>
+                          <td className="px-6 py-4">{r.created_by_military_id ? 'Sim' : 'Não'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <Input
-                placeholder="Buscar militar ou notas..."
-                value={permanenceSearch}
-                onChange={(e) => setPermanenceSearch(e.target.value)}
-                className="flex-1"
-              />
-              <Select value={permanenceFilterStatus} onValueChange={setPermanenceFilterStatus}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Status</SelectItem>
-                  <SelectItem value="presente">Presente</SelectItem>
-                                          <SelectItem value="ausente">Ausente</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={permanenceFilterDate} onValueChange={setPermanenceFilterDate}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue>
-                    {permanenceFilterDate === "all" ? "Todas as Datas" : formatDate(permanenceFilterDate)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Datas</SelectItem>
-                  {[...new Set(permanenceRecords.map(r => r.date))].sort().reverse().map((date) => (
-                    <SelectItem key={date} value={date}>
-                      {formatDate(date)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Militar</th>
-                    <th className="px-6 py-3">Patente</th>
-                    <th className="px-6 py-3">Data</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Detalhes</th>
-                    <th className="px-6 py-3">Criado em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPermanence.map((r) => {
-                    let details = "—"
-                    try {
-                      if (r.details) {
-                        const parsed = JSON.parse(r.details)
-                        if (parsed.notes) details = parsed.notes
-                        else if (parsed.checklist) details = `Checklist: ${parsed.checklist.length} itens`
-                      }
-                    } catch (e) {
-                      details = r.details || "—"
-                    }
-                    
-                    return (
-                      <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                        <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{r.rank}</td>
-                        <td className="px-6 py-4">{formatDate(r.date)}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            r.status === 'presente' ? 'bg-green-100 text-green-800' : 
-                            r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {r.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 max-w-xs truncate" title={details}>{details}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(r.created_at)}</td>
+            </TabsContent>
+
+            {/* Aba de Voos */}
+            <TabsContent value="flights" className="mt-6">
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredFlights, 'historico-voos')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredFlights, 'historico-voos', 'Histórico de Voos', ['Data', 'Horário Zulu', 'Militares', 'Criado em'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar voo..."
+                      value={flightSearch}
+                      onChange={(e) => setFlightSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={flightFilterDate} onValueChange={setFlightFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(flightRecords.map(r => r.flight_date))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Horário Zulu</th>
+                        <th className="px-6 py-3">Militares</th>
+                        <th className="px-6 py-3">Criado em</th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="notes" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredPersonalNotes, 'historico-notas')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredPersonalNotes, 'historico-notas', 'Histórico de Notas Pessoais', ['Militar', 'Data', 'Nota'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
+                    </thead>
+                    <tbody>
+                      {filteredFlights.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4">{formatDate(r.flight_date)}</td>
+                          <td className="px-6 py-4">{r.flight_time}</td>
+                          <td className="px-6 py-4">
+                            {r.military_ids ? JSON.parse(r.military_ids).length : 0} militares
+                          </td>
+                          <td className="px-6 py-4">{formatDate(r.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <Input
-                placeholder="Buscar por conteúdo ou militar..."
-                value={personalNoteSearch}
-                onChange={(e) => setPersonalNoteSearch(e.target.value)}
-                className="flex-1"
-              />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Militar</th>
-                    <th className="px-6 py-3">Data</th>
-                    <th className="px-6 py-3">Nota</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPersonalNotes.map((r) => (
-                    <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
-                      <td className="px-6 py-4">{formatDate(r.date)}</td>
-                      <td className="px-6 py-4">{r.note_content}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="keys" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => exportToCSV(filteredKeyHistory, 'historico-chaves')}
-                  variant="outline"
-                  className="w-fit"
-                >
-                  📊 CSV
-                </Button>
-                <Button 
-                  onClick={() => generatePDF(filteredKeyHistory, 'historico-chaves', 'Histórico de Movimentação de Chaves', ['Data/Hora', 'Sala (Nome + Número)', 'Militar (Posto + Nome)', 'Tipo', 'Notas'])}
-                  variant="outline"
-                  className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                >
-                  📄 PDF
-                </Button>
-              </div>
-              <Input
-                placeholder="Buscar por nome da sala, número da sala, militar, tipo ou notas..."
-                value={keyHistorySearch}
-                onChange={(e) => setKeyHistorySearch(e.target.value)}
-                className="flex-1"
-              />
-              <Select value={keyHistoryFilterDate} onValueChange={setKeyHistoryFilterDate}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue>
-                    {keyHistoryFilterDate === "all" ? "Todas as Datas" : formatDate(keyHistoryFilterDate)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Datas</SelectItem>
-                  {[...new Set(keyHistoryRecords.map(r => r.timestamp))].sort().reverse().map((timestamp) => (
-                    <SelectItem key={timestamp} value={timestamp}>
-                      {formatDate(timestamp)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={keyHistoryFilterAction} onValueChange={setKeyHistoryFilterAction}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue>
-                    {keyHistoryFilterAction === "all" ? "Todos os Tipos" : 
-                     keyHistoryFilterAction === 'withdrawal' ? 'Retirada' : 
-                     keyHistoryFilterAction === 'return' ? 'Devolução' : 
-                     keyHistoryFilterAction}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Ações</SelectItem>
-                  {[...new Set(keyHistoryRecords.map(r => r.type))].sort().map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type === 'withdrawal' ? 'Retirada' : type === 'return' ? 'Devolução' : type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3">Data/Hora</th>
-                    <th className="px-6 py-3">Sala (Nome + Número)</th>
-                    <th className="px-6 py-3">Militar (Posto + Nome)</th>
-                    <th className="px-6 py-3">Tipo</th>
-                    <th className="px-6 py-3">Notas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredKeyHistory.map((r) => (
-                    <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
-                      <td className="px-6 py-4">{formatDate(r.timestamp)}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                            {r.key_name || `Chave ${r.key_id.slice(0, 8)}...`}
-                          </span>
-                          {r.key_number && (
-                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                              Sala {r.key_number}
+            {/* Aba de Permanência */}
+            <TabsContent value="permanence" className="mt-6">
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredPermanence, 'historico-permanencia')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredPermanence, 'historico-permanencia', 'Histórico de Permanência', ['Militar', 'Data', 'Status', 'Detalhes'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar militar..."
+                      value={permanenceSearch}
+                      onChange={(e) => setPermanenceSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={permanenceFilterStatus} onValueChange={setPermanenceFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="presente">Presente</SelectItem>
+                        <SelectItem value="ausente">Ausente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={permanenceFilterDate} onValueChange={setPermanenceFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(permanenceRecords.map(r => r.date))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPermanence.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
+                          <td className="px-6 py-4">{formatDate(r.date)}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.status === 'presente' ? 'bg-green-100 text-green-800' : 
+                              r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {r.status}
                             </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {r.military_name && r.military_rank ? (
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
-                            {r.military_rank} {r.military_name}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          r.type === 'withdrawal' ? 'bg-red-100 text-red-800' : 
-                          r.type === 'return' ? 'bg-green-100 text-green-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {r.type === 'withdrawal' ? 'Retirada' : 
-                           r.type === 'return' ? 'Devolução' : 
-                           r.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title={r.notes || ''}>
-                        {r.notes || '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
+                          </td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.details}>{r.details || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </TabsContent>
 
-          <TabsContent value="analytics" className="mt-6">
-            <AnalyticsDashboard />
-          </TabsContent>
-        </Tabs>
+            {/* Aba de Notas Pessoais */}
+            <TabsContent value="notes" className="mt-6">
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredPersonalNotes, 'historico-notas')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredPersonalNotes, 'historico-notas', 'Histórico de Notas Pessoais', ['Militar', 'Data', 'Conteúdo'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar nota ou militar..."
+                      value={personalNoteSearch}
+                      onChange={(e) => setPersonalNoteSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Conteúdo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPersonalNotes.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
+                          <td className="px-6 py-4">{formatDate(r.date)}</td>
+                          <td className="px-6 py-4 max-w-md truncate" title={r.note_content}>{r.note_content}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Aba de Chaves */}
+            <TabsContent value="keys" className="mt-6">
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredKeyHistory, 'historico-chaves')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredKeyHistory, 'historico-chaves', 'Histórico de Chaves', ['Chave', 'Militar', 'Ação', 'Data/Hora', 'Observações'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar chave, militar ou ação..."
+                      value={keyHistorySearch}
+                      onChange={(e) => setKeyHistorySearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={keyHistoryFilterDate} onValueChange={setKeyHistoryFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(keyHistoryRecords.map(r => r.timestamp.split('T')[0]))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={keyHistoryFilterAction} onValueChange={setKeyHistoryFilterAction}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Ação" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Ações</SelectItem>
+                        <SelectItem value="retirada">Retirada</SelectItem>
+                        <SelectItem value="devolucao">Devolução</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Chave</th>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Ação</th>
+                        <th className="px-6 py-3">Data/Hora</th>
+                        <th className="px-6 py-3">Observações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredKeyHistory.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4">
+                            <div className="font-medium">{r.key_name || 'Chave não encontrada'}</div>
+                            <div className="text-sm text-gray-500">{r.key_number || '—'}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {r.military_name ? (
+                              <div>
+                                <div className="font-medium">{r.military_name}</div>
+                                <div className="text-sm text-gray-500">{r.military_rank || '—'}</div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.type === 'retirada' ? 'bg-blue-100 text-blue-800' : 
+                              r.type === 'devolucao' ? 'bg-green-100 text-green-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {r.type === 'retirada' ? '🔑 Retirada' : 
+                               r.type === 'devolucao' ? '✅ Devolução' : r.type}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">{formatDate(r.timestamp)}</td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.notes || ''}>{r.notes || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Adicionar outras abas conforme necessário */}
+            <TabsContent value="analytics" className="mt-6">
+              <AnalyticsDashboard />
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Conteúdo das abas para Mobile */}
+        {isMobile && (
+          <div className="mt-6">
+            {/* Aba de Presença */}
+            {activeTab === "attendance" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredAttendance, 'historico-presenca')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredAttendance, 'historico-presenca', 'Histórico de Presença', ['Militar', 'Data', 'Status', 'Justificativa', 'Detalhes'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar militar..."
+                      value={attendanceSearch}
+                      onChange={(e) => setAttendanceSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={attendanceFilterStatus} onValueChange={setAttendanceFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue>
+                          {attendanceFilterStatus === "all" ? "Todos os Status" : 
+                           attendanceFilterStatus === "presente" ? "Presente" :
+                           attendanceFilterStatus === "ausente" ? "Ausente" :
+                           attendanceFilterStatus === "justificado" ? "Justificado" : "Filtrar por Status"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="presente">Presente</SelectItem>
+                        <SelectItem value="ausente">Ausente</SelectItem>
+                        <SelectItem value="justificado">Justificado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={attendanceFilterDate} onValueChange={setAttendanceFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue>
+                          {attendanceFilterDate === "all" ? "Todas as Datas" : formatDate(attendanceFilterDate)}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {uniqueDates.map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {attendanceFilterStatus === "justificado" && (
+                      <Select value={attendanceFilterJustificationType} onValueChange={setAttendanceFilterJustificationType}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                          <SelectValue>
+                            {attendanceFilterJustificationType === "all" ? "Todos os Tipos" : attendanceFilterJustificationType}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos os Tipos</SelectItem>
+                          <SelectItem value="dispensa">Dispensa</SelectItem>
+                          <SelectItem value="ferias">Férias</SelectItem>
+                          <SelectItem value="licenca">Licença</SelectItem>
+                          <SelectItem value="missao">Missão</SelectItem>
+                          <SelectItem value="medico">Médico</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Justificativa</th>
+                        <th className="px-6 py-3">Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredAttendance.map((r) => {
+                        // Buscar informações da justificativa se existir
+                        const justification = r.justification_id ? 
+                          justificationRecords.find(j => j.id === r.justification_id) : null
+                        
+                        return (
+                          <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                            <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
+                            <td className="px-6 py-4">{formatDate(r.date)}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                r.status === 'presente' ? 'bg-green-100 text-green-800' : 
+                                r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
+                                r.status === 'justificado' ? 'bg-blue-100 text-blue-800' : 
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {r.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              {justification ? (
+                                <div className="text-sm">
+                                  <div className="font-medium text-blue-600">{justification.type}</div>
+                                  <div className="text-gray-600">
+                                    {formatDate(justification.start_date)} - {formatDate(justification.end_date)}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              {justification ? (
+                                <div className="text-sm text-gray-600 max-w-xs truncate" title={justification.reason}>
+                                  {justification.reason}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Adicionar outras abas para mobile conforme necessário */}
+            {activeTab === "justifications" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredJustifications, 'historico-justificativas')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredJustifications, 'historico-justificativas', 'Histórico de Justificativas', ['Militar', 'Tipo', 'Período', 'Motivo', 'Status'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar militar ou motivo..."
+                      value={justificationSearch}
+                      onChange={(e) => setJustificationSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={justificationFilterStatus} onValueChange={setJustificationFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="pendente">Pendente</SelectItem>
+                        <SelectItem value="aprovada">Aprovada</SelectItem>
+                        <SelectItem value="rejeitada">Rejeitada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={justificationFilterType} onValueChange={setJustificationFilterType}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Tipos</SelectItem>
+                        <SelectItem value="dispensa">Dispensa</SelectItem>
+                        <SelectItem value="ferias">Férias</SelectItem>
+                        <SelectItem value="licenca">Licença</SelectItem>
+                        <SelectItem value="missao">Missão</SelectItem>
+                        <SelectItem value="medico">Médico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Tipo</th>
+                        <th className="px-6 py-3">Período</th>
+                        <th className="px-6 py-3">Motivo</th>
+                        <th className="px-6 py-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredJustifications.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
+                          <td className="px-6 py-4">{r.type}</td>
+                          <td className="px-6 py-4">
+                            {formatDate(r.start_date)} – {formatDate(r.end_date)}
+                          </td>
+                          <td className="px-6 py-4">{r.reason}</td>
+                          <td className="px-6 py-4">{r.approved ? "Aprovada" : "Pendente"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de Eventos */}
+            {activeTab === "events" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredEvents, 'historico-eventos')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredEvents, 'historico-eventos', 'Histórico de Eventos', ['Título', 'Data', 'Horário', 'Descrição', 'Responsável'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar evento..."
+                      value={eventSearch}
+                      onChange={(e) => setEventSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={eventFilterDate} onValueChange={setEventFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(eventRecords.map(r => r.date))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Título</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Horário</th>
+                        <th className="px-6 py-3">Descrição</th>
+                        <th className="px-6 py-3">Responsável</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredEvents.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.title}</td>
+                          <td className="px-6 py-4">{formatDate(r.date)}</td>
+                          <td className="px-6 py-4">{r.time || '—'}</td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.description}>{r.description}</td>
+                          <td className="px-6 py-4">{r.created_by_military_id ? 'Sim' : 'Não'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de Voos */}
+            {activeTab === "flights" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredFlights, 'historico-voos')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredFlights, 'historico-voos', 'Histórico de Voos', ['Data', 'Horário Zulu', 'Militares', 'Criado em'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar voo..."
+                      value={flightSearch}
+                      onChange={(e) => setFlightSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={flightFilterDate} onValueChange={setFlightFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(flightRecords.map(r => r.flight_date))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Horário Zulu</th>
+                        <th className="px-6 py-3">Militares</th>
+                        <th className="px-6 py-3">Criado em</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredFlights.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4">{formatDate(r.flight_date)}</td>
+                          <td className="px-6 py-4">{r.flight_time}</td>
+                          <td className="px-6 py-4">
+                            {r.military_ids ? JSON.parse(r.military_ids).length : 0} militares
+                          </td>
+                          <td className="px-6 py-4">{formatDate(r.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de Permanência */}
+            {activeTab === "permanence" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredPermanence, 'historico-permanencia')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredPermanence, 'historico-permanencia', 'Histórico de Permanência', ['Militar', 'Data', 'Status', 'Detalhes'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar militar..."
+                      value={permanenceSearch}
+                      onChange={(e) => setPermanenceSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={permanenceFilterStatus} onValueChange={setPermanenceFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="presente">Presente</SelectItem>
+                        <SelectItem value="ausente">Ausente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={permanenceFilterDate} onValueChange={setPermanenceFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(permanenceRecords.map(r => r.date))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPermanence.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
+                          <td className="px-6 py-4">{formatDate(r.date)}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.status === 'presente' ? 'bg-green-100 text-green-800' : 
+                              r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.details}>{r.details || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de Notas Pessoais */}
+            {activeTab === "notes" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredPersonalNotes, 'historico-notas')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredPersonalNotes, 'historico-notas', 'Histórico de Notas Pessoais', ['Militar', 'Data', 'Conteúdo'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar nota ou militar..."
+                      value={personalNoteSearch}
+                      onChange={(e) => setPersonalNoteSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Conteúdo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPersonalNotes.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4 font-medium whitespace-nowrap">{r.military_name}</td>
+                          <td className="px-6 py-4">{formatDate(r.date)}</td>
+                          <td className="px-6 py-4 max-w-md truncate" title={r.note_content}>{r.note_content}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de Chaves */}
+            {activeTab === "keys" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredKeyHistory, 'historico-chaves')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredKeyHistory, 'historico-chaves', 'Histórico de Chaves', ['Chave', 'Militar', 'Ação', 'Data/Hora', 'Observações'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar chave, militar ou ação..."
+                      value={keyHistorySearch}
+                      onChange={(e) => setKeyHistorySearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={keyHistoryFilterDate} onValueChange={setKeyHistoryFilterDate}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Datas</SelectItem>
+                        {[...new Set(keyHistoryRecords.map(r => r.timestamp.split('T')[0]))].sort().reverse().map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {formatDate(date)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={keyHistoryFilterAction} onValueChange={setKeyHistoryFilterAction}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Ação" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Ações</SelectItem>
+                        <SelectItem value="retirada">Retirada</SelectItem>
+                        <SelectItem value="devolucao">Devolução</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Chave</th>
+                        <th className="px-6 py-3">Militar</th>
+                        <th className="px-6 py-3">Ação</th>
+                        <th className="px-6 py-3">Data/Hora</th>
+                        <th className="px-6 py-3">Observações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredKeyHistory.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4">
+                            <div className="font-medium">{r.key_name || 'Chave não encontrada'}</div>
+                            <div className="text-sm text-gray-500">{r.key_number || '—'}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {r.military_name ? (
+                              <div>
+                                <div className="font-medium">{r.military_name}</div>
+                                <div className="text-sm text-gray-500">{r.military_rank || '—'}</div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.type === 'retirada' ? 'bg-blue-100 text-blue-800' : 
+                              r.type === 'devolucao' ? 'bg-green-100 text-green-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {r.type === 'retirada' ? '🔑 Retirada' : 
+                               r.type === 'devolucao' ? '✅ Devolução' : r.type}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">{formatDate(r.timestamp)}</td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.notes || ''}>{r.notes || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Adicionar outras abas para mobile conforme necessário */}
+            {activeTab === "analytics" && (
+              <div>
+                <AnalyticsDashboard />
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

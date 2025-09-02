@@ -13,7 +13,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 w-full">
       {/* POKER no desktop, menu sanduíche no mobile */}
       <div className="flex-shrink-0">
         {/* Menu sanduíche no mobile */}

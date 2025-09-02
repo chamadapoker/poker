@@ -15,6 +15,7 @@ import {
   StickyNote, 
   History, 
   Monitor,
+  Sparkles,
   LogOut,
   User,
   Crown,
@@ -36,6 +37,7 @@ export function MainSidebar() {
     { title: "Checklist", href: "/permanence-checklist", icon: ClipboardList, access: "all" },
     { title: "Eventos", href: "/event-calendar", icon: Calendar, access: "all" },
     { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "all" },
+    { title: "Faxina", href: "/faxina", icon: Sparkles, access: "all" },
     { title: "TI", href: "/ti", icon: Monitor, access: "admin" },
     { title: "Histórico", href: "/history", icon: History, access: "admin" },
   ]

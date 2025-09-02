@@ -835,78 +835,133 @@ export function HistoryTabs() {
           </Button>
         </div>
 
-        {/* Estatísticas Gerais */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-4 mb-4 sm:mb-6">
-          <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-blue-600">{attendanceRecords.length}</div>
-            <div className="text-xs sm:text-sm text-blue-800">Presença</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-green-600">{justificationRecords.length}</div>
-            <div className="text-xs sm:text-sm text-green-800">Justificativas</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-purple-600">{eventRecords.length}</div>
-            <div className="text-xs sm:text-sm text-purple-800">Eventos</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-orange-600">{flightRecords.length}</div>
-            <div className="text-xs sm:text-sm text-orange-800">Voos</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-red-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-red-600">{permanenceRecords.length}</div>
-            <div className="text-xs sm:text-sm text-red-800">Permanência</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-indigo-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-indigo-600">{personalNoteRecords.length}</div>
-            <div className="text-xs sm:text-sm text-indigo-800">Notas</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-yellow-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-yellow-600">{keyHistoryRecords.length}</div>
-            <div className="text-xs sm:text-sm text-yellow-800">Chaves</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-cyan-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-cyan-600">{tiTicketRecords.length}</div>
-            <div className="text-xs sm:text-sm text-cyan-800">TI</div>
-          </div>
-          <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold text-gray-600">
-              {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
-               flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
-               keyHistoryRecords.length}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-800">Total</div>
-          </div>
+        {/* Estatísticas Premium */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-1">
+                {attendanceRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300">Presença</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-green-50 to-green-100 dark:from-gray-800 dark:via-green-950/20 dark:to-green-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-1">
+                {justificationRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-300">Justificativas</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-purple-50 to-purple-100 dark:from-gray-800 dark:via-purple-950/20 dark:to-purple-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-1">
+                {eventRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300">Eventos</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-orange-50 to-orange-100 dark:from-gray-800 dark:via-orange-950/20 dark:to-orange-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent mb-1">
+                {flightRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-300">Voos</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-red-50 to-red-100 dark:from-gray-800 dark:via-red-950/20 dark:to-red-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-1">
+                {permanenceRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-300">Permanência</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50 to-indigo-100 dark:from-gray-800 dark:via-indigo-950/20 dark:to-indigo-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-indigo-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent mb-1">
+                {personalNoteRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300">Notas</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-yellow-50 to-yellow-100 dark:from-gray-800 dark:via-yellow-950/20 dark:to-yellow-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-1">
+                {keyHistoryRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-yellow-700 dark:text-yellow-300">Chaves</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-cyan-50 to-cyan-100 dark:from-gray-800 dark:via-cyan-950/20 dark:to-cyan-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-cyan-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-cyan-800 bg-clip-text text-transparent mb-1">
+                {tiTicketRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-cyan-700 dark:text-cyan-300">TI</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-950/20 dark:to-gray-900/30 group cursor-pointer hover:scale-105">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-500 to-gray-600 shadow-lg"></div>
+            <CardContent className="p-4 text-center relative">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent mb-1">
+                {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
+                 flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
+                 keyHistoryRecords.length}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Total</div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Dropdown único para todas as abas */}
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        {/* Dropdown Premium para todas as abas */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
             <div className="w-full sm:w-96">
               <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="w-full h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                <SelectTrigger className="w-full h-16 text-base border-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 focus:from-blue-50 focus:to-indigo-50 dark:focus:from-blue-900/20 dark:focus:to-indigo-900/20 focus:ring-2 focus:ring-blue-200/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
                   <SelectValue>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{availableTabs.find(tab => tab.value === activeTab)?.icon}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <span className="text-2xl">{availableTabs.find(tab => tab.value === activeTab)?.icon}</span>
+                      </div>
                       <div className="flex flex-col items-start">
-                        <span className="font-semibold text-gray-900 dark:text-white">
+                        <span className="font-bold text-gray-900 dark:text-white text-lg">
                           {availableTabs.find(tab => tab.value === activeTab)?.label}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
                           {availableTabs.find(tab => tab.value === activeTab)?.description}
                         </span>
                       </div>
                     </div>
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="max-h-96 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                <SelectContent className="max-h-96 bg-white dark:bg-gray-800 border-0 shadow-2xl rounded-2xl overflow-hidden">
                   {availableTabs.map(tab => (
-                    <SelectItem key={tab.value} value={tab.value} className="py-4 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{tab.icon}</span>
+                    <SelectItem key={tab.value} value={tab.value} className="py-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20 transition-all duration-200">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                          <span className="text-2xl">{tab.icon}</span>
+                        </div>
                         <div className="flex flex-col items-start">
-                          <span className="font-semibold text-gray-900 dark:text-white">{tab.label}</span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">{tab.description}</span>
+                          <span className="font-bold text-gray-900 dark:text-white text-lg">{tab.label}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">{tab.description}</span>
                         </div>
                       </div>
                     </SelectItem>
@@ -915,29 +970,32 @@ export function HistoryTabs() {
               </Select>
             </div>
             
-            {/* Indicador de registros */}
+            {/* Indicador de registros Premium */}
             <div className="w-full sm:w-auto">
-              <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {(() => {
-                    switch (activeTab) {
-                      case "attendance": return attendanceRecords.length
-                      case "justifications": return justificationRecords.length
-                      case "events": return eventRecords.length
-                      case "flights": return flightRecords.length
-                      case "permanence": return permanenceRecords.length
-                      case "notes": return personalNoteRecords.length
-                      case "keys": return keyHistoryRecords.length
-                      case "ti": return tiTicketRecords.length
-                      case "analytics": return "📊"
-                      default: return 0
-                    }
-                  })()}
+              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
+                <div className="p-6 text-center relative">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">
+                    {(() => {
+                      switch (activeTab) {
+                        case "attendance": return attendanceRecords.length
+                        case "justifications": return justificationRecords.length
+                        case "events": return eventRecords.length
+                        case "flights": return flightRecords.length
+                        case "permanence": return permanenceRecords.length
+                        case "notes": return personalNoteRecords.length
+                        case "keys": return keyHistoryRecords.length
+                        case "ti": return tiTicketRecords.length
+                        case "analytics": return "📊"
+                        default: return 0
+                      }
+                    })()}
+                  </div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 font-semibold">
+                    Registros
+                  </div>
                 </div>
-                <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                  Registros
-                </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

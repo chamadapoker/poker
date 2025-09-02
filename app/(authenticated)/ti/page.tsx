@@ -725,137 +725,193 @@ export default function TIPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header Melhorado */}
-        <div className="text-center space-y-4 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg">
-          <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🖥️</span>
+        {/* Header Premium */}
+        <div className="text-center space-y-6 p-10 bg-gradient-to-br from-white via-blue-50 to-indigo-100 dark:from-gray-800 dark:via-blue-950/30 dark:to-indigo-900/40 rounded-3xl border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden relative">
+          {/* Background decorativo com gradiente */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 shadow-lg"></div>
+          
+          {/* Efeito de brilho sutil no fundo */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="relative z-10">
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl group-hover:scale-110 transition-transform duration-500">
+              <span className="text-5xl">🖥️</span>
+            </div>
+            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              Sistema de Chamados de TI
+            </h1>
+            <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Gerenciamento completo e intuitivo de solicitações de tecnologia da informação
+            </p>
+            <div className="flex items-center justify-center gap-3 text-sm text-blue-600 dark:text-blue-400 mt-6">
+              <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse shadow-lg"></div>
+              <span className="font-medium">Sistema ativo e funcionando</span>
+            </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Sistema de Chamados de TI
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Gerenciamento completo e intuitivo de solicitações de tecnologia da informação
-          </p>
-          <div className="flex items-center justify-center gap-2 text-sm text-blue-600 dark:text-blue-400">
-            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-            Sistema ativo e funcionando
-          </div>
+          
+          {/* Efeito de brilho no hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
         </div>
 
-        {/* Estatísticas Melhoradas */}
+        {/* Estatísticas Premium */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-2 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative">
+          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <CardContent className="p-8 relative">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
+                <div className="relative z-10">
+                  <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                     {tickets.filter(t => t.status === "aberto").length}
                   </p>
-                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Chamados Abertos</p>
+                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mt-1">Chamados Abertos</p>
                 </div>
-                <div className="w-16 h-16 bg-blue-200 dark:bg-blue-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Plus className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
+                  <Plus className="h-10 w-10" />
                 </div>
               </div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/20 dark:to-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-yellow-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative">
+          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-yellow-50 to-yellow-100 dark:from-gray-800 dark:via-yellow-950/20 dark:to-yellow-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <CardContent className="p-8 relative">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100">
+                <div className="relative z-10">
+                  <p className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent">
                     {tickets.filter(t => t.status === "em_andamento").length}
                   </p>
-                  <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">Em Andamento</p>
+                  <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300 mt-1">Em Andamento</p>
                 </div>
-                <div className="w-16 h-16 bg-yellow-200 dark:bg-yellow-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Clock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
+                  <Clock className="h-10 w-10" />
                 </div>
               </div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-2 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-green-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative">
+          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-green-50 to-green-100 dark:from-gray-800 dark:via-green-950/20 dark:to-green-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 to-green-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <CardContent className="p-8 relative">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">
+                <div className="relative z-10">
+                  <p className="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
                     {tickets.filter(t => t.status === "resolvido").length}
                   </p>
-                  <p className="text-sm font-semibold text-green-700 dark:text-green-300">Resolvidos</p>
+                  <p className="text-sm font-semibold text-green-700 dark:text-green-300 mt-1">Resolvidos</p>
                 </div>
-                <div className="w-16 h-16 bg-green-200 dark:bg-green-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
+                  <CheckCircle className="h-10 w-10" />
                 </div>
               </div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/20 dark:to-red-900/20 border-2 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-400/10 to-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative">
+          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-red-50 to-red-100 dark:from-gray-800 dark:via-red-950/20 dark:to-red-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <CardContent className="p-8 relative">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-red-900 dark:text-red-100">
+                <div className="relative z-10">
+                  <p className="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
                     {tickets.filter(t => t.urgency_level === "crítica").length}
                   </p>
-                  <p className="text-sm font-semibold text-red-700 dark:text-red-300">Críticos</p>
+                  <p className="text-sm font-semibold text-red-700 dark:text-red-300 mt-1">Críticos</p>
                 </div>
-                <div className="w-16 h-16 bg-red-200 dark:bg-red-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
+                  <AlertTriangle className="h-10 w-10" />
                 </div>
               </div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filtros e Busca Melhorados */}
-        <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+        {/* Filtros e Busca Premium */}
+        <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+          {/* Background decorativo com gradiente */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg"></div>
+          
+          <CardContent className="p-8 relative">
+            <div className="flex flex-col sm:flex-row gap-6">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                    <Search className="h-4 w-4 text-white" />
+                  </div>
                   <Input
                     placeholder="🔍 Buscar chamados por título, descrição ou solicitante..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="pl-16 h-14 text-base border-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 focus:from-blue-50 focus:to-indigo-50 dark:focus:from-blue-900/20 dark:focus:to-indigo-900/20 focus:ring-2 focus:ring-blue-200/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   />
                 </div>
               </div>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                <SelectTrigger className="w-full sm:w-[220px] h-14 border-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 focus:from-blue-50 focus:to-indigo-50 dark:focus:from-blue-900/20 dark:focus:to-indigo-900/20 focus:ring-2 focus:ring-blue-200/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                   <SelectValue>
                     {filterStatus === "all" ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">📊</span>
-                        <span>Todos os Status</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-lg">📊</span>
+                        </div>
+                        <span className="font-semibold text-gray-900 dark:text-white">Todos os Status</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        {ticketStatuses.find(s => s.value === filterStatus)?.icon}
-                        <span>{ticketStatuses.find(s => s.value === filterStatus)?.label}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white">
+                          {ticketStatuses.find(s => s.value === filterStatus)?.icon}
+                        </div>
+                        <span className="font-semibold text-gray-900 dark:text-white">{ticketStatuses.find(s => s.value === filterStatus)?.label}</span>
                       </div>
                     )}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">📊</span>
+                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-0 shadow-2xl rounded-xl overflow-hidden">
+                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-lg">📊</span>
+                      </div>
                       <span>Todos os Status</span>
                     </div>
                   </SelectItem>
                   {ticketStatuses.map(status => (
-                    <SelectItem key={status.value} value={status.value} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                      <div className="flex items-center gap-2">
-                        {status.icon}
+                    <SelectItem key={status.value} value={status.value} className="font-medium text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white">
+                          {status.icon}
+                        </div>
                         <span>{status.label}</span>
                       </div>
                     </SelectItem>
@@ -933,8 +989,10 @@ export default function TIPage() {
 
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                    <Plus className="h-5 w-5 mr-2" />
+                  <Button className="h-14 px-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105 rounded-2xl border-0">
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                      <Plus className="h-5 w-5 text-white" />
+                    </div>
                     🆕 Novo Chamado
                   </Button>
                 </DialogTrigger>
@@ -1249,24 +1307,54 @@ export default function TIPage() {
           </CardContent>
         </Card>
 
-                                {/* Sistema KANBAN Melhorado */}
-         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                                {/* Sistema KANBAN Premium */}
+         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
            {ticketStatuses.map(status => (
-             <div key={status.value} className="space-y-4">
-               <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-lg">
-                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                   <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+             <div key={status.value} className="space-y-6">
+               {/* Header da Coluna com Gradiente */}
+               <div className="flex items-center justify-between p-6 bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden relative">
+                 {/* Borda decorativa colorida baseada no status */}
+                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${
+                   status.value === 'aberto' ? 'from-blue-500 to-blue-600' :
+                   status.value === 'em_andamento' ? 'from-yellow-500 to-yellow-600' :
+                   status.value === 'resolvido' ? 'from-green-500 to-green-600' :
+                   'from-gray-500 to-gray-600'
+                 }`}></div>
+                 
+                 {/* Efeito de brilho sutil */}
+                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+                 
+                 <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-4 relative z-10">
+                   <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
+                     status.value === 'aberto' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                     status.value === 'em_andamento' ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                     status.value === 'resolvido' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                     'bg-gradient-to-br from-gray-400 to-gray-600'
+                   } text-white`}>
                      {status.icon}
                    </div>
-                   {status.label}
+                   <span className="bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-200 dark:to-gray-100 bg-clip-text text-transparent">
+                     {status.label}
+                   </span>
                  </h3>
-                 <Badge className={`${status.color} text-sm font-bold px-3 py-1 rounded-full shadow-sm`}>
-                   {getTicketsByStatus(status.value as Ticket["status"]).length}
+                 
+                 <Badge className={`${status.color} text-sm font-bold px-4 py-2 rounded-full shadow-lg border-0 relative z-10`}>
+                   📊 {getTicketsByStatus(status.value as Ticket["status"]).length}
                  </Badge>
+                 
+                 {/* Efeito de brilho no hover */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
                </div>
 
-               <div className="min-h-[300px] p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 shadow-inner">
-                 <div className="space-y-4">
+               {/* Área de Drop com Design Premium */}
+               <div className="min-h-[400px] p-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-950 rounded-2xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+                 {/* Background decorativo */}
+                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+                 
+                 {/* Borda interna sutil */}
+                 <div className="absolute inset-2 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl opacity-50"></div>
+                 
+                 <div className="space-y-4 relative z-10">
                    {getTicketsByStatus(status.value as Ticket["status"]).map(ticket => (
                      <div key={ticket.id} className="space-y-4">
                        <TicketCard ticket={ticket} onStatusUpdate={updateTicketStatus} />
@@ -1275,14 +1363,17 @@ export default function TIPage() {
                  </div>
                  
                  {getTicketsByStatus(status.value as Ticket["status"]).length === 0 && (
-                   <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-                     <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                       <span className="text-2xl">📋</span>
+                   <div className="text-center text-gray-500 dark:text-gray-400 py-16 relative z-10">
+                     <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                       <span className="text-3xl">📋</span>
                      </div>
-                     <p className="text-sm font-medium">Nenhum chamado</p>
-                     <p className="text-xs text-gray-400 dark:text-gray-500">Use os botões para mover chamados</p>
+                     <p className="text-base font-medium text-gray-600 dark:text-gray-300">Nenhum chamado</p>
+                     <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Use os botões para mover chamados</p>
                    </div>
                  )}
+                 
+                 {/* Efeito de brilho no hover */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
                </div>
              </div>
            ))}

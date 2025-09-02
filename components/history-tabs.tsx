@@ -838,94 +838,184 @@ export function HistoryTabs() {
         {/* Estatísticas Premium */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-1">
-                {attendanceRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-1">
+                  {attendanceRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300">Presença</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300">Presença</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-green-50 to-green-100 dark:from-gray-800 dark:via-green-950/20 dark:to-green-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-1">
-                {justificationRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-1">
+                  {justificationRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-300">Justificativas</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-300">Justificativas</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-purple-50 to-purple-100 dark:from-gray-800 dark:via-purple-950/20 dark:to-purple-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-1">
-                {eventRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-1">
+                  {eventRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300">Eventos</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300">Eventos</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-orange-50 to-orange-100 dark:from-gray-800 dark:via-orange-950/20 dark:to-orange-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent mb-1">
-                {flightRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent mb-1">
+                  {flightRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-300">Voos</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-300">Voos</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-red-50 to-red-100 dark:from-gray-800 dark:via-red-950/20 dark:to-red-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-1">
-                {permanenceRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-1">
+                  {permanenceRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-300">Permanência</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-300">Permanência</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50 to-indigo-100 dark:from-gray-800 dark:via-indigo-950/20 dark:to-indigo-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-indigo-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent mb-1">
-                {personalNoteRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent mb-1">
+                  {personalNoteRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300">Notas</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300">Notas</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-yellow-50 to-yellow-100 dark:from-gray-800 dark:via-yellow-950/20 dark:to-yellow-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-1">
-                {keyHistoryRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-1">
+                  {keyHistoryRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-yellow-700 dark:text-yellow-300">Chaves</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-yellow-700 dark:text-yellow-300">Chaves</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-cyan-50 to-cyan-100 dark:from-gray-800 dark:via-cyan-950/20 dark:to-cyan-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-cyan-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-cyan-800 bg-clip-text text-transparent mb-1">
-                {tiTicketRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-cyan-800 bg-clip-text text-transparent mb-1">
+                  {tiTicketRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-cyan-700 dark:text-cyan-300">TI</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-cyan-700 dark:text-cyan-300">TI</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-950/20 dark:to-gray-900/30 group cursor-pointer hover:scale-105">
+            {/* Background decorativo com gradiente */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-500 to-gray-600 shadow-lg"></div>
+            
+            {/* Efeito de brilho sutil no fundo */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <CardContent className="p-4 text-center relative">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent mb-1">
-                {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
-                 flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
-                 keyHistoryRecords.length}
+              <div className="relative z-10">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent mb-1">
+                  {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
+                   flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
+                   keyHistoryRecords.length}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Total</div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Total</div>
+              
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </CardContent>
           </Card>
         </div>

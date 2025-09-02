@@ -9,10 +9,10 @@ export default function DashboardPage() {
       {/* Header centralizado */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Dashboard POKER 360
+          POKER 360
         </h1>
         <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-          Visão geral do sistema e estatísticas do Esquadrão
+          1º/10º GAV - Visão geral do sistema e estatísticas do Esquadrão
         </p>
       </div>
       

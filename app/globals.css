@@ -58,129 +58,70 @@
   }
 }
 
-/* Estilos específicos para dropdowns do Radix UI */
+/* Estilos globais para componentes Radix UI */
 [data-radix-select-trigger] {
-  background-color: white !important;
-  border: 1px solid #d1d5db !important;
-  color: #111827 !important;
-}
-
-.dark [data-radix-select-trigger] {
-  background-color: #1f2937 !important;
-  border: 1px solid #4b5563 !important;
-  color: #f9fafb !important;
-}
-
-[data-radix-select-trigger] span {
-  color: inherit !important;
-  font-weight: 500 !important;
+  @apply bg-white dark:bg-gray-800 !important;
+  @apply border-gray-300 dark:border-gray-600 !important;
 }
 
 [data-radix-select-content] {
-  background-color: white !important;
-  border: 1px solid #d1d5db !important;
-  color: #111827 !important;
-}
-
-.dark [data-radix-select-content] {
-  background-color: #1f2937 !important;
-  border: 1px solid #4b5563 !important;
-  color: #f9fafb !important;
+  @apply bg-white dark:bg-gray-800 !important;
+  @apply border-gray-300 dark:border-gray-600 !important;
 }
 
 [data-radix-select-item] {
-  color: inherit !important;
+  @apply !text-gray-900 dark:!text-white !important;
+  @apply font-medium !important;
+  @apply hover:bg-gray-100 dark:hover:bg-gray-700 !important;
+  @apply focus:bg-gray-100 dark:focus:bg-gray-700 !important;
 }
 
-[data-radix-select-item]:hover {
-  background-color: #f3f4f6 !important;
-}
-
-.dark [data-radix-select-item]:hover {
-  background-color: #374151 !important;
-}
-
-[data-radix-select-item][data-highlighted] {
-  background-color: #f3f4f6 !important;
-}
-
-.dark [data-radix-select-item][data-highlighted] {
-  background-color: #374151 !important;
-}
-
-/* Forçar visibilidade do texto selecionado */
 [data-radix-select-value] {
-  color: inherit !important;
-  font-weight: 500 !important;
+  @apply !text-gray-900 dark:!text-white !important;
 }
 
 /* Estilos para inputs e textareas */
 input, textarea {
-  background-color: white !important;
-  border: 1px solid #d1d5db !important;
-  color: #111827 !important;
+  @apply bg-white dark:bg-gray-800 !important;
+  @apply border-gray-300 dark:border-gray-600 !important;
+  @apply text-gray-900 dark:text-white !important;
 }
 
-.dark input, .dark textarea {
-  background-color: #1f2937 !important;
-  border: 1px solid #4b5563 !important;
-  color: #f9fafb !important;
-}
-
-/* Placeholder sempre visível */
 input::placeholder, textarea::placeholder {
-  color: #6b7280 !important;
+  @apply text-gray-500 dark:text-gray-400 !important;
 }
 
-.dark input::placeholder, .dark textarea::placeholder {
-  color: #9ca3af !important;
+/* Utilitários básicos */
+.hover\:scale-105:hover {
+  transform: scale(1.05);
 }
 
-@layer components {
-  .card {
-    @apply rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm;
-  }
-  
-  .card-header {
-    @apply flex flex-col space-y-1.5 p-6;
-  }
-  
-  .card-title {
-    @apply font-semibold leading-none tracking-tight;
-  }
-  
-  .card-description {
-    @apply text-sm text-gray-600 dark:text-gray-400;
-  }
-  
-  .card-content {
-    @apply p-6 pt-0;
-  }
+.transition-all {
+  transition: all 0.3s ease;
 }
 
-/* Animações personalizadas para o header */
-@keyframes gradient-x {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
 }
 
-@keyframes gradient-x-reverse {
-  0%, 100% {
-    background-position: 100% 50%;
-  }
-  50% {
-    background-position: 0% 50%;
-  }
+.bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.animate-gradient-x {
-  animation: gradient-x 3s ease-in-out infinite;
+.border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.animate-gradient-x-reverse {
-  animation: gradient-x-reverse 3s ease-in-out infinite;
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

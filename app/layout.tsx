@@ -3,13 +3,8 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { AppHeader } from "@/components/app-header"
-import { AppFooter } from "@/components/app-footer"
 import { Toaster } from "@/components/ui/toaster"
-import SupabaseRealtimeListener from "@/components/supabase-realtime-listener"
-import { MainSidebar } from "@/components/main-sidebar"
-import { MobileMenuProvider } from "@/components/mobile-menu-provider"
-
+import { AuthProvider } from "@/context/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,22 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <MobileMenuProvider>
-            <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-              <AppHeader />
-              <div className="flex flex-1 relative">
-                <MainSidebar />
-                <main className="flex-1 flex flex-col p-2 sm:p-4 lg:p-6 transition-all duration-300" id="main-content">
-                  <div className="w-full">
-                    {children}
-                  </div>
-                </main>
-              </div>
-              <AppFooter />
-            </div>
-          </MobileMenuProvider>
-          <Toaster />
-          <SupabaseRealtimeListener />
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

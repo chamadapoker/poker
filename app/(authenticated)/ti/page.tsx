@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Clock, AlertTriangle, CheckCircle, XCircle, Plus, Search, Filter, Download, Upload, Bell } from "lucide-react"
+import { Calendar, Clock, AlertTriangle, CheckCircle, XCircle, Plus, Search, Filter, Download, Upload, Bell, Edit3, Save, X, User, Tag, MessageSquare } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase"
 import { format, addDays, isAfter, isBefore, startOfDay } from "date-fns"
@@ -82,6 +82,26 @@ const getStatusColor = (status: string) => {
   return statusInfo?.color || "bg-gray-100 text-gray-800"
 }
 
+const getUrgencyBgColor = (urgency: string) => {
+  switch (urgency) {
+    case 'baixa': return 'bg-green-100 dark:bg-green-900'
+    case 'média': return 'bg-yellow-100 dark:bg-yellow-900'
+    case 'alta': return 'bg-orange-100 dark:bg-orange-900'
+    case 'crítica': return 'bg-red-100 dark:bg-red-900'
+    default: return 'bg-gray-100 dark:bg-gray-900'
+  }
+}
+
+const getUrgencyDotColor = (urgency: string) => {
+  switch (urgency) {
+    case 'baixa': return 'bg-green-500'
+    case 'média': return 'bg-yellow-500'
+    case 'alta': return 'bg-orange-500'
+    case 'crítica': return 'bg-red-500'
+    default: return 'bg-gray-500'
+  }
+}
+
 const isOverdue = (deadline: string) => {
   if (!deadline) return false
   return isAfter(startOfDay(new Date()), new Date(deadline))
@@ -93,7 +113,7 @@ const getDaysUntilDeadline = (deadline: string) => {
   return days
 }
 
-// Componente de Card Simples
+// Componente de Card Melhorado com Magic UI
 function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate: (ticketId: string, newStatus: Ticket["status"]) => void }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({
@@ -130,6 +150,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
         .eq("id", ticket.id)
 
       if (error) {
+        console.error("Erro ao atualizar:", error)
         toast({
           title: "Erro",
           description: "Não foi possível atualizar o chamado.",
@@ -141,7 +162,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
           description: "Chamado atualizado com sucesso.",
         })
         setIsEditing(false)
-        // Recarregar a página para atualizar os dados
+        // Recarregar os dados sem recarregar a página
         window.location.reload()
       }
     } catch (error) {
@@ -168,185 +189,248 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
 
   if (isEditing) {
     return (
-      <Card className="hover:shadow-md transition-shadow border-2 border-blue-300">
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Input
-                value={editData.title}
-                onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
-                className="font-medium text-gray-900 dark:text-white"
-              />
-              <Select value={editData.urgency_level} onValueChange={(value: any) => setEditData(prev => ({ ...prev, urgency_level: value }))}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
+      <Card className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-blue-950/20 dark:to-indigo-950/20"></div>
+        <div className="relative space-y-4">
+          <div className="flex items-center justify-between">
+            <Input
+              value={editData.title}
+              onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
+              className="font-semibold text-gray-900 dark:text-white border-2 border-blue-300 focus:border-blue-500"
+            />
+            <Select value={editData.urgency_level} onValueChange={(value: any) => setEditData(prev => ({ ...prev, urgency_level: value }))}>
+              <SelectTrigger className="w-36 border-2 border-blue-300 focus:border-blue-500">
+                <SelectValue>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${getUrgencyDotColor(editData.urgency_level)}`}></span>
+                    <span className="font-medium">{urgencyLevels.find(l => l.value === editData.urgency_level)?.label}</span>
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {urgencyLevels.map(level => (
+                  <SelectItem key={level.value} value={level.value} className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-3 h-3 rounded-full ${getUrgencyDotColor(level.value)}`}></span>
+                      <span>{level.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Textarea
+            value={editData.description}
+            onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
+            className="text-sm text-gray-600 dark:text-gray-400 border-2 border-blue-300 focus:border-blue-500"
+            rows={3}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Solicitante:</Label>
+              <Select value={editData.requester_name} onValueChange={(value) => setEditData(prev => ({ ...prev, requester_name: value }))}>
+                <SelectTrigger className="w-full border-2 border-blue-300 focus:border-blue-500">
+                  <SelectValue>
+                    {editData.requester_name ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-blue-600">
+                          {militaryPersonnel.find(p => p.name === editData.requester_name)?.rank}
+                        </span>
+                        <span className="font-medium">{editData.requester_name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-500">Selecione um militar</span>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  {urgencyLevels.map(level => (
-                    <SelectItem key={level.value} value={level.value}>
-                      {level.label}
+                <SelectContent className="max-h-60">
+                  {militaryPersonnel.map(person => (
+                    <SelectItem key={person.id} value={person.name} className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-blue-600">{person.rank}</span>
+                        <span>{person.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <Textarea
-              value={editData.description}
-              onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
-              className="text-sm text-gray-600 dark:text-gray-400"
-              rows={3}
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-medium">Solicitante:</Label>
-                <Select value={editData.requester_name} onValueChange={(value) => setEditData(prev => ({ ...prev, requester_name: value }))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione um militar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {militaryPersonnel.map(person => (
-                      <SelectItem key={person.id} value={person.name}>
-                        {person.rank} {person.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-medium">Categoria:</Label>
-                <Select value={editData.category} onValueChange={(value) => setEditData(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tiCategories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
             <div className="space-y-2">
-              <Label className="text-xs font-medium">Observações:</Label>
-              <Textarea
-                value={editData.notes}
-                onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
-                className="text-xs"
-                rows={2}
-                placeholder="Adicione observações..."
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button size="sm" onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                Salvar
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleCancel}>
-                Cancelar
-              </Button>
+              <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Categoria:</Label>
+              <Select value={editData.category} onValueChange={(value) => setEditData(prev => ({ ...prev, category: value }))}>
+                <SelectTrigger className="w-full border-2 border-blue-300 focus:border-blue-500">
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-600 dark:text-blue-400">🔧</span>
+                      <span className="font-medium">{editData.category}</span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {tiCategories.map(category => (
+                    <SelectItem key={category} value={category} className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-600 dark:text-blue-400">🔧</span>
+                        <span>{category}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </CardContent>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Observações:</Label>
+            <Textarea
+              value={editData.notes}
+              onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
+              className="text-xs border-2 border-blue-300 focus:border-blue-500"
+              rows={2}
+              placeholder="Adicione observações..."
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button size="sm" onClick={handleSave} className="bg-green-600 hover:bg-green-700 font-medium">
+              <Save className="h-4 w-4 mr-1" />
+              Salvar
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancel} className="font-medium">
+              <X className="h-4 w-4 mr-1" />
+              Cancelar
+            </Button>
+          </div>
+        </div>
       </Card>
     )
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-3 sm:p-4">
-        <div className="space-y-2 sm:space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2 text-sm sm:text-base">
+    <Card className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] dark:border-gray-800 dark:bg-gray-900">
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-blue-950/20 dark:to-indigo-950/20"></div>
+      
+      <div className="relative space-y-4">
+        {/* Header do Card */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 text-base leading-tight">
               {ticket.title}
             </h4>
-            <Badge className={getUrgencyColor(ticket.urgency_level) + " text-xs"}>
-              {ticket.urgency_level}
-            </Badge>
           </div>
-
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-            {ticket.description}
-          </p>
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-            <div className="flex items-center gap-1">
-              <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
-                <AvatarFallback className="text-xs">
-                  {ticket.requester_name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs sm:text-sm text-gray-500">{ticket.requester_name}</span>
-            </div>
-            <div className="flex items-center gap-1 bg-blue-100 dark:bg-blue-800 border border-blue-300 dark:border-blue-600 px-2 sm:px-3 py-1 rounded-lg">
-              <span className="text-blue-800 dark:text-blue-200 font-bold text-xs">{ticket.category}</span>
-            </div>
-          </div>
-
-          {ticket.deadline && (
-            <div className={`flex items-center gap-1 text-xs ${
-              isOverdue(ticket.deadline) ? 'text-red-600' : 'text-gray-500'
-            }`}>
-              <Calendar className="h-3 w-3" />
-              {isOverdue(ticket.deadline) ? (
-                <span className="font-medium">ATRASADO</span>
-              ) : (
-                <span>{getDaysUntilDeadline(ticket.deadline)} dias</span>
-              )}
-            </div>
-          )}
-
-          {ticket.images && ticket.images.length > 0 && (
-            <div className="flex items-center gap-1 text-xs text-blue-600">
-              <Upload className="h-3 w-3" />
-              {ticket.images.length} imagem(ns)
-            </div>
-          )}
-
-          {ticket.notes && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded text-xs text-yellow-800 dark:text-yellow-200">
-              <strong>Observações:</strong> {ticket.notes}
-            </div>
-          )}
-
-          <div className="text-xs text-gray-400">
-            Criado em {format(new Date(ticket.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-          </div>
-
-          {/* Botões de ação dentro do card */}
-          <div className="flex flex-wrap gap-1 sm:gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsEditing(true)}
-              className="text-xs h-7 sm:h-8 px-2 sm:px-3"
-            >
-              ✏️ <span className="hidden sm:inline">Editar</span>
-            </Button>
-            
-            {/* Botões para mudar status */}
-            {ticketStatuses
-              .filter(s => s.value !== ticket.status)
-              .map(targetStatus => (
-                <Button
-                  key={targetStatus.value}
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onStatusUpdate(ticket.id, targetStatus.value as Ticket["status"])}
-                  className="text-xs h-7 sm:h-8 px-2 sm:px-3"
-                >
-                  <span className="hidden sm:inline">Mover para {targetStatus.label}</span>
-                  <span className="sm:hidden">{targetStatus.label.split(' ')[0]}</span>
-                </Button>
-              ))}
-          </div>
+          <Badge className={`${getUrgencyColor(ticket.urgency_level)} font-semibold text-xs px-3 py-1 rounded-full shadow-sm`}>
+            {ticket.urgency_level.toUpperCase()}
+          </Badge>
         </div>
-      </CardContent>
+
+        {/* Descrição */}
+        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed">
+          {ticket.description}
+        </p>
+
+                 {/* Informações do Solicitante e Categoria */}
+         <div className="flex flex-col gap-3">
+           <div className="flex items-center gap-3">
+             <Avatar className="h-8 w-8 ring-2 ring-blue-100 dark:ring-blue-900">
+               <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-sm dark:bg-blue-900 dark:text-blue-300">
+                 {ticket.requester_name.charAt(0).toUpperCase()}
+               </AvatarFallback>
+             </Avatar>
+             <div className="flex flex-col">
+               <span className="text-sm font-medium text-gray-900 dark:text-white">{ticket.requester_name}</span>
+               <span className="text-xs text-gray-500 dark:text-gray-400">Solicitante</span>
+             </div>
+           </div>
+           
+           <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 px-3 py-2 rounded-lg w-fit">
+             <Tag className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+             <span className="text-blue-800 dark:text-blue-200 font-semibold text-sm truncate">{ticket.category}</span>
+           </div>
+         </div>
+
+        {/* Prazo */}
+        {ticket.deadline && (
+          <div className={`flex items-center gap-2 p-3 rounded-lg border ${
+            isOverdue(ticket.deadline) 
+              ? 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800' 
+              : 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700'
+          }`}>
+            <Calendar className={`h-4 w-4 ${
+              isOverdue(ticket.deadline) ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
+            }`} />
+            <span className={`text-sm font-medium ${
+              isOverdue(ticket.deadline) ? 'text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-300'
+            }`}>
+              {isOverdue(ticket.deadline) ? (
+                <span className="flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  ATRASADO
+                </span>
+              ) : (
+                <span>{getDaysUntilDeadline(ticket.deadline)} dias restantes</span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* Imagens */}
+        {ticket.images && ticket.images.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-3 py-2 rounded-lg">
+            <Upload className="h-4 w-4" />
+            <span className="font-medium">{ticket.images.length} imagem(ns) anexada(s)</span>
+          </div>
+        )}
+
+        {/* Observações */}
+        {ticket.notes && (
+          <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 p-3 rounded-lg">
+            <div className="flex items-start gap-2">
+              <MessageSquare className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-xs font-semibold text-yellow-800 dark:text-yellow-200">Observações:</span>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">{ticket.notes}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Data de Criação */}
+        <div className="text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700 pt-3">
+          Criado em {format(new Date(ticket.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+        </div>
+
+        {/* Botões de Ação */}
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsEditing(true)}
+            className="text-xs h-8 px-3 font-medium border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-950/20"
+          >
+            <Edit3 className="h-3 w-3 mr-1" />
+            Editar
+          </Button>
+          
+          {/* Botões para mudar status */}
+          {ticketStatuses
+            .filter(s => s.value !== ticket.status)
+            .map(targetStatus => (
+              <Button
+                key={targetStatus.value}
+                size="sm"
+                variant="outline"
+                onClick={() => onStatusUpdate(ticket.id, targetStatus.value as Ticket["status"])}
+                className="text-xs h-8 px-3 font-medium"
+              >
+                <span className="hidden sm:inline">Mover para {targetStatus.label}</span>
+                <span className="sm:hidden">{targetStatus.label.split(' ')[0]}</span>
+              </Button>
+            ))}
+        </div>
+      </div>
     </Card>
   )
 }
@@ -641,128 +725,207 @@ export default function TIPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-            🖥️ Sistema de Chamados de TI
+        {/* Header Melhorado */}
+        <div className="text-center space-y-4 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg">
+          <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">🖥️</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Sistema de Chamados de TI
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Gerenciamento completo de solicitações de tecnologia da informação
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Gerenciamento completo e intuitivo de solicitações de tecnologia da informação
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            Sistema ativo e funcionando
+          </div>
         </div>
 
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Plus className="h-8 w-8 text-blue-600" />
+        {/* Estatísticas Melhoradas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-2 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <CardContent className="p-6 relative">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
                     {tickets.filter(t => t.status === "aberto").length}
                   </p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Abertos</p>
+                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Chamados Abertos</p>
+                </div>
+                <div className="w-16 h-16 bg-blue-200 dark:bg-blue-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Plus className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-8 w-8 text-yellow-600" />
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/20 dark:to-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-yellow-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <CardContent className="p-6 relative">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+                  <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100">
                     {tickets.filter(t => t.status === "em_andamento").length}
                   </p>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">Em Andamento</p>
+                  <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">Em Andamento</p>
+                </div>
+                <div className="w-16 h-16 bg-yellow-200 dark:bg-yellow-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Clock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-8 w-8 text-green-600" />
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-2 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-green-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <CardContent className="p-6 relative">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">
                     {tickets.filter(t => t.status === "resolvido").length}
                   </p>
-                  <p className="text-sm text-green-700 dark:text-green-300">Resolvidos</p>
+                  <p className="text-sm font-semibold text-green-700 dark:text-green-300">Resolvidos</p>
+                </div>
+                <div className="w-16 h-16 bg-green-200 dark:bg-green-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-8 w-8 text-red-600" />
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/20 dark:to-red-900/20 border-2 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-400/10 to-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <CardContent className="p-6 relative">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-red-900 dark:text-red-100">
+                  <p className="text-3xl font-bold text-red-900 dark:text-red-100">
                     {tickets.filter(t => t.urgency_level === "crítica").length}
                   </p>
-                  <p className="text-sm text-red-700 dark:text-red-300">Críticos</p>
+                  <p className="text-sm font-semibold text-red-700 dark:text-red-300">Críticos</p>
+                </div>
+                <div className="w-16 h-16 bg-red-200 dark:bg-red-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filtros e Busca */}
-        <Card>
-          <CardContent className="p-4">
+        {/* Filtros e Busca Melhorados */}
+        <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-lg">
+          <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    placeholder="Buscar chamados..."
+                    placeholder="🔍 Buscar chamados por título, descrição ou solicitante..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   />
                 </div>
               </div>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                  <SelectValue>
+                    {filterStatus === "all" ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📊</span>
+                        <span>Todos os Status</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {ticketStatuses.find(s => s.value === filterStatus)?.icon}
+                        <span>{ticketStatuses.find(s => s.value === filterStatus)?.label}</span>
+                      </div>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📊</span>
+                      <span>Todos os Status</span>
+                    </div>
+                  </SelectItem>
                   {ticketStatuses.map(status => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
+                    <SelectItem key={status.value} value={status.value} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                      <div className="flex items-center gap-2">
+                        {status.icon}
+                        <span>{status.label}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={filterUrgency} onValueChange={setFilterUrgency}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Urgência" />
+                <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                  <SelectValue>
+                    {filterUrgency === "all" ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⚡</span>
+                        <span>Todas as Urgências</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className={`w-3 h-3 rounded-full ${filterUrgency === 'baixa' ? 'bg-green-500' : filterUrgency === 'média' ? 'bg-yellow-500' : filterUrgency === 'alta' ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                        <span>{urgencyLevels.find(l => l.value === filterUrgency)?.label}</span>
+                      </div>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Urgências</SelectItem>
+                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⚡</span>
+                      <span>Todas as Urgências</span>
+                    </div>
+                  </SelectItem>
                   {urgencyLevels.map(level => (
-                    <SelectItem key={level.value} value={level.value}>
-                      {level.label}
+                    <SelectItem key={level.value} value={level.value} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-3 h-3 rounded-full ${level.value === 'baixa' ? 'bg-green-500' : level.value === 'média' ? 'bg-yellow-500' : level.value === 'alta' ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                        <span>{level.label}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Categoria" />
+                <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                  <SelectValue>
+                    {filterCategory === "all" ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🏷️</span>
+                        <span>Todas as Categorias</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-600 dark:text-blue-400">🔧</span>
+                        <span>{filterCategory}</span>
+                      </div>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Categorias</SelectItem>
+                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🏷️</span>
+                      <span>Todas as Categorias</span>
+                    </div>
+                  </SelectItem>
                   {tiCategories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                    <SelectItem key={category} value={category} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-600 dark:text-blue-400">🔧</span>
+                        <span>{category}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -770,38 +933,59 @@ export default function TIPage() {
 
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Chamado
+                  <Button className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                    <Plus className="h-5 w-5 mr-2" />
+                    🆕 Novo Chamado
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>🆕 Criar Novo Chamado de TI</DialogTitle>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                        <Plus className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      Criar Novo Chamado de TI
+                    </DialogTitle>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                      Preencha os campos abaixo para criar um novo chamado de suporte técnico
+                    </p>
                   </DialogHeader>
                   
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="title">Título do Chamado *</Label>
+                        <Label htmlFor="title" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Título do Chamado *</Label>
                         <Input
                           id="title"
                           value={formData.title}
                           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Descreva brevemente o problema"
+                          placeholder="🔍 Descreva brevemente o problema"
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="category">Categoria *</Label>
+                        <Label htmlFor="category" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Categoria *</Label>
                         <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                          <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                            <SelectValue className="text-gray-900 dark:text-white" />
+                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <SelectValue>
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                  <span className="text-blue-700 dark:text-blue-300 text-lg">🔧</span>
+                                </div>
+                                <span className="font-semibold text-gray-900 dark:text-white">{formData.category}</span>
+                              </div>
+                            </SelectValue>
                           </SelectTrigger>
-                          <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
                             {tiCategories.map(category => (
-                              <SelectItem key={category} value={category} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                                {category}
+                              <SelectItem key={category} value={category} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                    <span className="text-blue-700 dark:text-blue-300 text-lg">🔧</span>
+                                  </div>
+                                  <span className="font-semibold text-gray-900 dark:text-white">{category}</span>
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -810,27 +994,51 @@ export default function TIPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="description">Descrição Detalhada *</Label>
+                      <Label htmlFor="description" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Descrição Detalhada *</Label>
                       <Textarea
                         id="description"
                         value={formData.description}
                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Descreva detalhadamente o problema, incluindo passos para reproduzir, mensagens de erro, etc."
+                        placeholder="📝 Descreva detalhadamente o problema, incluindo passos para reproduzir, mensagens de erro, etc."
                         rows={4}
+                        className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="requester_name">Nome do Solicitante *</Label>
+                        <Label htmlFor="requester_name" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nome do Solicitante *</Label>
                         <Select value={formData.requester_name} onValueChange={(value) => setFormData(prev => ({ ...prev, requester_name: value }))}>
-                          <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                            <SelectValue placeholder="Selecione um militar" className="text-gray-900 dark:text-white" />
+                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <SelectValue>
+                              {formData.requester_name ? (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                    <span className="text-blue-700 dark:text-blue-300 font-bold text-sm">
+                                      {militaryPersonnel.find(p => p.name === formData.requester_name)?.rank}
+                                    </span>
+                                  </div>
+                                  <span className="font-semibold text-gray-900 dark:text-white">
+                                    {formData.requester_name}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-500 dark:text-gray-400">👤 Selecione um militar</span>
+                              )}
+                            </SelectValue>
                           </SelectTrigger>
-                          <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
                             {militaryPersonnel.map(person => (
-                              <SelectItem key={person.id} value={person.name} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                                {person.rank} {person.name}
+                              <SelectItem key={person.id} value={person.name} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                    <span className="text-blue-700 dark:text-blue-300 font-bold text-sm">{person.rank}</span>
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold text-gray-900 dark:text-white">{person.name}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">{person.rank}</span>
+                                  </div>
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -840,15 +1048,47 @@ export default function TIPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="urgency_level">Nível de Urgência *</Label>
+                        <Label htmlFor="urgency_level" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nível de Urgência *</Label>
                         <Select value={formData.urgency_level} onValueChange={(value: any) => setFormData(prev => ({ ...prev, urgency_level: value }))}>
-                          <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                            <SelectValue className="text-gray-900 dark:text-white" />
+                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <SelectValue>
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getUrgencyBgColor(formData.urgency_level)}`}>
+                                  <span className={`w-3 h-3 rounded-full ${getUrgencyDotColor(formData.urgency_level)}`}></span>
+                                </div>
+                                <span className="font-semibold text-gray-900 dark:text-white">
+                                  {urgencyLevels.find(l => l.value === formData.urgency_level)?.label}
+                                </span>
+                              </div>
+                            </SelectValue>
                           </SelectTrigger>
-                          <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
                             {urgencyLevels.map(level => (
-                              <SelectItem key={level.value} value={level.value} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                                {level.label}
+                              <SelectItem key={level.value} value={level.value} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                    level.value === 'baixa' ? 'bg-green-100 dark:bg-green-900' : 
+                                    level.value === 'média' ? 'bg-yellow-100 dark:bg-yellow-900' : 
+                                    level.value === 'alta' ? 'bg-orange-100 dark:bg-orange-900' : 
+                                    'bg-red-100 dark:bg-red-900'
+                                  }`}>
+                                    <span className={`w-3 h-3 rounded-full ${
+                                      level.value === 'baixa' ? 'bg-green-500' : 
+                                      level.value === 'média' ? 'bg-yellow-500' : 
+                                      level.value === 'alta' ? 'bg-orange-500' : 
+                                      'bg-red-500'
+                                    }`}></span>
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold text-gray-900 dark:text-white">{level.label}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {level.value === 'baixa' ? 'Pode aguardar' : 
+                                       level.value === 'média' ? 'Resolução em breve' : 
+                                       level.value === 'alta' ? 'Resolução urgente' : 
+                                       'Resolução imediata'}
+                                    </span>
+                                  </div>
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -860,25 +1100,50 @@ export default function TIPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="deadline">Prazo (Opcional)</Label>
+                        <Label htmlFor="deadline" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Prazo (Opcional)</Label>
                         <Input
                           id="deadline"
                           type="datetime-local"
                           value={formData.deadline}
                           onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                          className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                          placeholder={formData.deadline ? "" : "Selecione data e hora"}
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="assigned_to">Atribuir para</Label>
+                        <Label htmlFor="assigned_to" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Atribuir para</Label>
                         <Select value={formData.assigned_to} onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}>
-                          <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                            <SelectValue placeholder="Selecione um SAU" className="text-gray-900 dark:text-white" />
+                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <SelectValue>
+                              {formData.assigned_to ? (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                    <span className="text-green-700 dark:text-green-300 font-bold text-sm">
+                                      {availableSAUs.find(s => s.id === formData.assigned_to)?.rank}
+                                    </span>
+                                  </div>
+                                  <span className="font-semibold text-gray-900 dark:text-white">
+                                    {availableSAUs.find(s => s.id === formData.assigned_to)?.name}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-500 dark:text-gray-400">👨‍💻 Selecione um SAU</span>
+                              )}
+                            </SelectValue>
                           </SelectTrigger>
-                          <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
                             {availableSAUs.map(sau => (
-                              <SelectItem key={sau.id} value={sau.id} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                                {sau.rank} {sau.name}
+                              <SelectItem key={sau.id} value={sau.id} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                    <span className="text-green-700 dark:text-green-300 font-bold text-sm">{sau.rank}</span>
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold text-gray-900 dark:text-white">{sau.name}</span>
+                                    <span className="text-xs text-green-600 dark:text-green-400">SAU - Suporte Técnico</span>
+                                  </div>
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -887,21 +1152,22 @@ export default function TIPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="notes">Observações Adicionais</Label>
+                      <Label htmlFor="notes" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Observações Adicionais</Label>
                       <Textarea
                         id="notes"
                         value={formData.notes}
                         onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Informações adicionais, contexto, etc."
+                        placeholder="💬 Informações adicionais, contexto, etc."
                         rows={3}
+                        className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base"
                       />
                     </div>
 
                     <div>
-                      <Label>Imagens/Prints (Opcional)</Label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600 mb-2">
+                      <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">📸 Imagens/Prints (Opcional)</Label>
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center bg-gray-50 dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
+                        <Upload className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
                           Arraste e solte imagens aqui ou clique para selecionar
                         </p>
                         <Input
@@ -913,31 +1179,35 @@ export default function TIPage() {
                           id="image-upload"
                         />
                         <Label htmlFor="image-upload" className="cursor-pointer">
-                          <Button variant="outline" type="button">
+                          <Button variant="outline" type="button" className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-950/20">
+                            <Upload className="h-4 w-4 mr-2" />
                             Selecionar Imagens
                           </Button>
                         </Label>
                       </div>
                       
                       {formData.images.length > 0 && (
-                        <div className="mt-2 space-y-2">
-                          <p className="text-sm font-medium">Imagens selecionadas:</p>
-                          <div className="flex flex-wrap gap-2">
+                        <div className="mt-4 space-y-3">
+                          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">🖼️ Imagens selecionadas ({formData.images.length}):</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                             {formData.images.map((image, index) => (
-                              <div key={index} className="relative">
+                              <div key={index} className="relative group">
                                 <img
                                   src={URL.createObjectURL(image)}
                                   alt={`Preview ${index + 1}`}
-                                  className="h-20 w-20 object-cover rounded border"
+                                  className="h-24 w-full object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors"
                                 />
                                 <Button
                                   size="sm"
                                   variant="destructive"
-                                  className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                                  className="absolute -top-2 -right-2 h-7 w-7 p-0 rounded-full shadow-lg hover:scale-110 transition-transform"
                                   onClick={() => removeImage(index)}
                                 >
-                                  ×
+                                  <X className="h-4 w-4" />
                                 </Button>
+                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg">
+                                  {image.name.length > 20 ? image.name.substring(0, 20) + '...' : image.name}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -945,19 +1215,31 @@ export default function TIPage() {
                       )}
                     </div>
 
-                    <div className="flex justify-end space-x-2 pt-4">
+                    <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                       <Button
                         variant="outline"
                         onClick={() => setIsCreateDialogOpen(false)}
+                        className="h-12 px-6 font-medium border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-800"
                       >
+                        <X className="h-4 w-4 mr-2" />
                         Cancelar
                       </Button>
                       <Button
                         onClick={handleCreateTicket}
                         disabled={isLoading}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="h-12 px-6 font-medium bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
                       >
-                        {isLoading ? "Criando..." : "Criar Chamado"}
+                        {isLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Criando...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Criar Chamado
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -967,34 +1249,38 @@ export default function TIPage() {
           </CardContent>
         </Card>
 
-                                {/* Sistema KANBAN Simples com Botões */}
+                                {/* Sistema KANBAN Melhorado */}
          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
            {ticketStatuses.map(status => (
              <div key={status.value} className="space-y-4">
-               <div className="flex items-center justify-between">
-                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                   {status.icon}
+               <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-lg">
+                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                   <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                     {status.icon}
+                   </div>
                    {status.label}
                  </h3>
-                 <Badge className={status.color}>
+                 <Badge className={`${status.color} text-sm font-bold px-3 py-1 rounded-full shadow-sm`}>
                    {getTicketsByStatus(status.value as Ticket["status"]).length}
                  </Badge>
                </div>
 
-               <div className="min-h-[200px] p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                 <div className="space-y-3">
+               <div className="min-h-[300px] p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 shadow-inner">
+                 <div className="space-y-4">
                    {getTicketsByStatus(status.value as Ticket["status"]).map(ticket => (
-                     <div key={ticket.id} className="space-y-3">
+                     <div key={ticket.id} className="space-y-4">
                        <TicketCard ticket={ticket} onStatusUpdate={updateTicketStatus} />
-                       
                      </div>
                    ))}
                  </div>
                  
                  {getTicketsByStatus(status.value as Ticket["status"]).length === 0 && (
-                   <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                     <p className="text-sm">Nenhum chamado</p>
-                     <p className="text-xs">Use os botões para mover chamados</p>
+                   <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                     <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                       <span className="text-2xl">📋</span>
+                     </div>
+                     <p className="text-sm font-medium">Nenhum chamado</p>
+                     <p className="text-xs text-gray-400 dark:text-gray-500">Use os botões para mover chamados</p>
                    </div>
                  )}
                </div>

@@ -534,6 +534,7 @@ export function HistoryTabs() {
   const [permanenceRecords, setPermanenceRecords] = useState<PermanenceRecord[]>([])
   const [personalNoteRecords, setPersonalNoteRecords] = useState<PersonalNoteRecord[]>([])
   const [keyHistoryRecords, setKeyHistoryRecords] = useState<KeyHistoryRecord[]>([])
+  const [tiTicketRecords, setTiTicketRecords] = useState<any[]>([])
 
   const [attendanceSearch, setAttendanceSearch] = useState("")
   const [attendanceFilterStatus, setAttendanceFilterStatus] = useState("all")
@@ -559,6 +560,24 @@ export function HistoryTabs() {
   const [keyHistorySearch, setKeyHistorySearch] = useState("")
   const [keyHistoryFilterDate, setKeyHistoryFilterDate] = useState("all")
   const [keyHistoryFilterAction, setKeyHistoryFilterAction] = useState("all")
+
+  const [tiSearch, setTiSearch] = useState("")
+  const [tiFilterStatus, setTiFilterStatus] = useState("all")
+  const [tiFilterUrgency, setTiFilterUrgency] = useState("all")
+  const [tiFilterCategory, setTiFilterCategory] = useState("all")
+
+  // Definir todas as abas disponíveis
+  const availableTabs = [
+    { value: "attendance", label: "Presença", icon: "👥", description: "Histórico de presença dos militares" },
+    { value: "justifications", label: "Justificativas", icon: "📋", description: "Histórico de justificativas de ausência" },
+    { value: "events", label: "Eventos", icon: "📅", description: "Histórico de eventos do Esquadrão" },
+    { value: "flights", label: "Voos", icon: "✈️", description: "Histórico de agendamentos de voos" },
+    { value: "permanence", label: "Permanência", icon: "🏠", description: "Histórico de permanência diária" },
+    { value: "notes", label: "Notas Pessoais", icon: "📝", description: "Histórico de notas e anotações" },
+    { value: "keys", label: "Chaves", icon: "🔑", description: "Histórico de movimentação de chaves" },
+    { value: "ti", label: "TI", icon: "🖥️", description: "Histórico de chamados de tecnologia da informação" },
+    { value: "analytics", label: "Análises", icon: "📈", description: "Dashboard de análises e estatísticas" }
+  ]
 
   // Gerar datas únicas para o filtro
   const uniqueDates = [...new Set(attendanceRecords.map(r => r.date))].sort().reverse()
@@ -621,6 +640,13 @@ export function HistoryTabs() {
         setKeyHistoryRecords(keysData)
         console.log("✅ Chaves carregadas:", keysData.length, "registros")
 
+        // 8. Histórico de TI
+        console.log("🔄 Carregando histórico de TI...")
+        const tiData = await fetchTableSafe<any>("ti_tickets")
+        console.log("📊 Dados de TI recebidos:", tiData)
+        setTiTicketRecords(tiData)
+        console.log("✅ TI carregado:", tiData.length, "registros")
+
         console.log("🎉 Todos os dados foram carregados com sucesso!")
         console.log("📊 Resumo final:", {
           attendance: attendanceData.length,
@@ -629,7 +655,8 @@ export function HistoryTabs() {
           flights: flightData.length,
           permanence: permanenceData.length,
           notes: notesData.length,
-          keys: keysData.length
+          keys: keysData.length,
+          ti: tiData.length
         })
         
       } catch (error) {
@@ -751,6 +778,20 @@ export function HistoryTabs() {
     )
   )
 
+  const filteredTiTickets = tiTicketRecords.filter(
+    (r) => {
+      const searchMatch = safeLower(r.title).includes(tiSearch.toLowerCase()) ||
+                         safeLower(r.description).includes(tiSearch.toLowerCase()) ||
+                         safeLower(r.requester_name).includes(tiSearch.toLowerCase())
+      
+      const statusMatch = tiFilterStatus === "all" || r.status === tiFilterStatus
+      const urgencyMatch = tiFilterUrgency === "all" || r.urgency_level === tiFilterUrgency
+      const categoryMatch = tiFilterCategory === "all" || r.category === tiFilterCategory
+      
+      return searchMatch && statusMatch && urgencyMatch && categoryMatch
+    }
+  )
+
   // Função para renderizar filtros de forma responsiva
   const renderFilters = (filters: React.ReactNode) => {
     if (isMobile) {
@@ -824,6 +865,10 @@ export function HistoryTabs() {
             <div className="text-lg sm:text-2xl font-bold text-yellow-600">{keyHistoryRecords.length}</div>
             <div className="text-xs sm:text-sm text-yellow-800">Chaves</div>
           </div>
+          <div className="text-center p-2 sm:p-3 bg-cyan-50 rounded-lg">
+            <div className="text-lg sm:text-2xl font-bold text-cyan-600">{tiTicketRecords.length}</div>
+            <div className="text-xs sm:text-sm text-cyan-800">TI</div>
+          </div>
           <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
             <div className="text-lg sm:text-2xl font-bold text-gray-600">
               {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
@@ -834,68 +879,71 @@ export function HistoryTabs() {
           </div>
         </div>
 
-        {/* Sistema de Abas Responsivo */}
-        {isMobile ? (
-          // Mobile: Select dropdown
-          <div className="mb-6">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full text-base">
-                <SelectValue>
-                  {activeTab === "attendance" ? "📊 Presença" :
-                   activeTab === "justifications" ? "📝 Justificativas" :
-                   activeTab === "events" ? "📅 Eventos" :
-                   activeTab === "flights" ? "✈️ Voos" :
-                   activeTab === "permanence" ? "🏠 Permanência" :
-                   activeTab === "notes" ? "📝 Notas Pessoais" :
-                   activeTab === "keys" ? "🔑 Chaves" :
-                   activeTab === "analytics" ? "📈 Análises" : "Selecionar Aba"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="attendance">📊 Presença</SelectItem>
-                <SelectItem value="justifications">📝 Justificativas</SelectItem>
-                <SelectItem value="events">📅 Eventos</SelectItem>
-                <SelectItem value="flights">✈️ Voos</SelectItem>
-                <SelectItem value="permanence">🏠 Permanência</SelectItem>
-                <SelectItem value="notes">📝 Notas Pessoais</SelectItem>
-                <SelectItem value="keys">🔑 Chaves</SelectItem>
-                <SelectItem value="analytics">📈 Análises</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Dropdown único para todas as abas */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="w-full sm:w-96">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-full h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                  <SelectValue>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{availableTabs.find(tab => tab.value === activeTab)?.icon}</span>
+                      <div className="flex flex-col items-start">
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {availableTabs.find(tab => tab.value === activeTab)?.label}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {availableTabs.find(tab => tab.value === activeTab)?.description}
+                        </span>
+                      </div>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-96 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                  {availableTabs.map(tab => (
+                    <SelectItem key={tab.value} value={tab.value} className="py-4 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{tab.icon}</span>
+                        <div className="flex flex-col items-start">
+                          <span className="font-semibold text-gray-900 dark:text-white">{tab.label}</span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">{tab.description}</span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Indicador de registros */}
+            <div className="w-full sm:w-auto">
+              <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {(() => {
+                    switch (activeTab) {
+                      case "attendance": return attendanceRecords.length
+                      case "justifications": return justificationRecords.length
+                      case "events": return eventRecords.length
+                      case "flights": return flightRecords.length
+                      case "permanence": return permanenceRecords.length
+                      case "notes": return personalNoteRecords.length
+                      case "keys": return keyHistoryRecords.length
+                      case "ti": return tiTicketRecords.length
+                      case "analytics": return "📊"
+                      default: return 0
+                    }
+                  })()}
+                </div>
+                <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  Registros
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          // Desktop: Componente Tabs tradicional
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-1 p-1 mb-6">
-              <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2 py-2">
-                Presença
-              </TabsTrigger>
-              <TabsTrigger value="justifications" className="text-xs sm:text-sm px-2 py-2">
-                Justificativas
-              </TabsTrigger>
-              <TabsTrigger value="events" className="text-xs sm:text-sm px-2 py-2">
-                Eventos
-              </TabsTrigger>
-              <TabsTrigger value="flights" className="text-xs sm:text-sm px-2 py-2">
-                Voos
-              </TabsTrigger>
-              <TabsTrigger value="permanence" className="text-xs sm:text-sm px-2 py-2">
-                Permanência
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="text-xs sm:text-sm px-2 py-2">
-                Notas Pessoais
-              </TabsTrigger>
-              <TabsTrigger value="keys" className="text-xs sm:text-sm px-2 py-2">
-                Chaves
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 py-2">
-                Análises
-              </TabsTrigger>
-            </TabsList>
+        </div>
 
             {/* Conteúdo das abas para Desktop */}
-            <TabsContent value="attendance" className="mt-6">
-              {/* Conteúdo da aba de Presença */}
+            {activeTab === "attendance" && (
               <div>
                 {renderFilters((
                   <>
@@ -996,7 +1044,6 @@ export function HistoryTabs() {
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 r.status === 'presente' ? 'bg-green-100 text-green-800' : 
                                 r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
-                                r.status === 'justificado' ? 'bg-blue-100 text-blue-800' : 
                                 'bg-gray-100 text-gray-800'
                               }`}>
                                 {r.status}
@@ -1030,11 +1077,10 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Outras abas para Desktop */}
-            <TabsContent value="justifications" className="mt-6">
-              {/* Conteúdo da aba de Justificativas */}
+            {/* Aba de Justificativas para Desktop */}
+            {activeTab === "justifications" && (
               <div>
                 {renderFilters((
                   <>
@@ -1113,10 +1159,10 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Aba de Eventos */}
-            <TabsContent value="events" className="mt-6">
+            {/* Aba de Eventos para Desktop */}
+            {activeTab === "events" && (
               <div>
                 {renderFilters((
                   <>
@@ -1182,10 +1228,10 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Aba de Voos */}
-            <TabsContent value="flights" className="mt-6">
+            {/* Aba de Voos para Desktop */}
+            {activeTab === "flights" && (
               <div>
                 {renderFilters((
                   <>
@@ -1251,10 +1297,10 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Aba de Permanência */}
-            <TabsContent value="permanence" className="mt-6">
+            {/* Aba de Permanência para Desktop */}
+            {activeTab === "permanence" && (
               <div>
                 {renderFilters((
                   <>
@@ -1336,10 +1382,10 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Aba de Notas Pessoais */}
-            <TabsContent value="notes" className="mt-6">
+            {/* Aba de Notas Pessoais para Desktop */}
+            {activeTab === "notes" && (
               <div>
                 {renderFilters((
                   <>
@@ -1388,10 +1434,10 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Aba de Chaves */}
-            <TabsContent value="keys" className="mt-6">
+            {/* Aba de Chaves para Desktop */}
+            {activeTab === "keys" && (
               <div>
                 {renderFilters((
                   <>
@@ -1488,14 +1534,136 @@ export function HistoryTabs() {
                   </table>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* Adicionar outras abas conforme necessário */}
-            <TabsContent value="analytics" className="mt-6">
-              <AnalyticsDashboard />
-            </TabsContent>
-          </Tabs>
-        )}
+            {/* Aba de TI para Desktop */}
+            {activeTab === "ti" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredTiTickets, 'historico-ti')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredTiTickets, 'historico-ti', 'Histórico de Chamados de TI', ['Título', 'Solicitante', 'Categoria', 'Urgência', 'Status', 'Data de Criação'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar por título, descrição ou solicitante..."
+                      value={tiSearch}
+                      onChange={(e) => setTiSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={tiFilterStatus} onValueChange={setTiFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="aberto">Aberto</SelectItem>
+                        <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                        <SelectItem value="resolvido">Resolvido</SelectItem>
+                        <SelectItem value="fechado">Fechado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={tiFilterUrgency} onValueChange={setTiFilterUrgency}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Urgência" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Urgências</SelectItem>
+                        <SelectItem value="baixa">Baixa</SelectItem>
+                        <SelectItem value="média">Média</SelectItem>
+                        <SelectItem value="alta">Alta</SelectItem>
+                        <SelectItem value="crítica">Crítica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={tiFilterCategory} onValueChange={setTiFilterCategory}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Categorias</SelectItem>
+                        <SelectItem value="Hardware">Hardware</SelectItem>
+                        <SelectItem value="Software">Software</SelectItem>
+                        <SelectItem value="Rede/Internet">Rede/Internet</SelectItem>
+                        <SelectItem value="Impressora">Impressora</SelectItem>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Sistema">Sistema</SelectItem>
+                        <SelectItem value="Outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Título</th>
+                        <th className="px-6 py-3">Solicitante</th>
+                        <th className="px-6 py-3">Categoria</th>
+                        <th className="px-6 py-3">Urgência</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Data de Criação</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTiTickets.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4">
+                            <div className="font-medium max-w-xs truncate" title={r.title}>{r.title}</div>
+                            <div className="text-sm text-gray-500 max-w-xs truncate" title={r.description}>{r.description}</div>
+                          </td>
+                          <td className="px-6 py-4 font-medium">{r.requester_name}</td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {r.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.urgency_level === 'baixa' ? 'bg-green-100 text-green-800' : 
+                              r.urgency_level === 'média' ? 'bg-yellow-100 text-yellow-800' : 
+                              r.urgency_level === 'alta' ? 'bg-orange-100 text-orange-800' : 
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {r.urgency_level}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.status === 'aberto' ? 'bg-blue-100 text-blue-800' : 
+                              r.status === 'em_andamento' ? 'bg-yellow-100 text-yellow-800' : 
+                              r.status === 'resolvido' ? 'bg-green-100 text-green-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">{formatDate(r.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de Análises para Desktop */}
+            {activeTab === "analytics" && (
+              <div>
+                <AnalyticsDashboard />
+              </div>
+            )}
 
         {/* Conteúdo das abas para Mobile */}
         {isMobile && (
@@ -1602,7 +1770,6 @@ export function HistoryTabs() {
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 r.status === 'presente' ? 'bg-green-100 text-green-800' : 
                                 r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
-                                r.status === 'justificado' ? 'bg-blue-100 text-blue-800' : 
                                 'bg-gray-100 text-gray-800'
                               }`}>
                                 {r.status}
@@ -2087,6 +2254,128 @@ export function HistoryTabs() {
                           </td>
                           <td className="px-6 py-4">{formatDate(r.timestamp)}</td>
                           <td className="px-6 py-4 max-w-xs truncate" title={r.notes || ''}>{r.notes || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aba de TI para Mobile */}
+            {activeTab === "ti" && (
+              <div>
+                {renderFilters((
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        onClick={() => exportToCSV(filteredTiTickets, 'historico-ti')}
+                        variant="outline"
+                        className="w-fit"
+                      >
+                        📊 CSV
+                      </Button>
+                      <Button 
+                        onClick={() => generatePDF(filteredTiTickets, 'historico-ti', 'Histórico de Chamados de TI', ['Título', 'Solicitante', 'Categoria', 'Urgência', 'Status', 'Data de Criação'])}
+                        variant="outline"
+                        className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      >
+                        📄 PDF
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Buscar por título, descrição ou solicitante..."
+                      value={tiSearch}
+                      onChange={(e) => setTiSearch(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Select value={tiFilterStatus} onValueChange={setTiFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="aberto">Aberto</SelectItem>
+                        <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                        <SelectItem value="resolvido">Resolvido</SelectItem>
+                        <SelectItem value="fechado">Fechado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={tiFilterUrgency} onValueChange={setTiFilterUrgency}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Urgência" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Urgências</SelectItem>
+                        <SelectItem value="baixa">Baixa</SelectItem>
+                        <SelectItem value="média">Média</SelectItem>
+                        <SelectItem value="alta">Alta</SelectItem>
+                        <SelectItem value="crítica">Crítica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={tiFilterCategory} onValueChange={setTiFilterCategory}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por Categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Categorias</SelectItem>
+                        <SelectItem value="Hardware">Hardware</SelectItem>
+                        <SelectItem value="Software">Software</SelectItem>
+                        <SelectItem value="Rede/Internet">Rede/Internet</SelectItem>
+                        <SelectItem value="Impressora">Impressora</SelectItem>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Sistema">Sistema</SelectItem>
+                        <SelectItem value="Outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[800px]">
+                    <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3">Título</th>
+                        <th className="px-6 py-3">Solicitante</th>
+                        <th className="px-6 py-3">Categoria</th>
+                        <th className="px-6 py-3">Urgência</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Data de Criação</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTiTickets.map((r) => (
+                        <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
+                          <td className="px-6 py-4">
+                            <div className="font-medium max-w-xs truncate" title={r.title}>{r.title}</div>
+                            <div className="text-sm text-gray-500 max-w-xs truncate" title={r.description}>{r.description}</div>
+                          </td>
+                          <td className="px-6 py-4 font-medium">{r.requester_name}</td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {r.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.urgency_level === 'baixa' ? 'bg-green-100 text-green-800' : 
+                              r.urgency_level === 'média' ? 'bg-yellow-100 text-yellow-800' : 
+                              r.urgency_level === 'alta' ? 'bg-orange-100 text-orange-800' : 
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {r.urgency_level}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              r.status === 'aberto' ? 'bg-blue-100 text-blue-800' : 
+                              r.status === 'em_andamento' ? 'bg-yellow-100 text-yellow-800' : 
+                              r.status === 'resolvido' ? 'bg-green-100 text-green-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">{formatDate(r.created_at)}</td>
                         </tr>
                       ))}
                     </tbody>

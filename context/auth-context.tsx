@@ -32,6 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
+    // Timeout de segurança para evitar travamento
+    const safetyTimeout = setTimeout(() => {
+      console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
+      setIsLoading(false)
+    }, 8000) // 8 segundos
+
     // Verificar sessão atual
     const getSession = async () => {
       try {
@@ -41,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) {
           console.error('❌ Erro ao buscar sessão:', error)
           setIsLoading(false)
+          clearTimeout(safetyTimeout)
           return
         }
 
@@ -56,9 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setIsLoading(false)
+        clearTimeout(safetyTimeout)
       } catch (error) {
         console.error('❌ Erro inesperado ao verificar sessão:', error)
         setIsLoading(false)
+        clearTimeout(safetyTimeout)
       }
     }
 
@@ -78,10 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setIsLoading(false)
+        clearTimeout(safetyTimeout)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(safetyTimeout)
+    }
   }, [])
 
   const fetchUserProfile = async (userId: string) => {

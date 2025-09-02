@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
+import { useMobileMenu } from "./mobile-menu-provider"
 import { 
   BarChart3, 
   Users, 
@@ -16,7 +17,8 @@ import {
   Monitor,
   LogOut,
   User,
-  Crown
+  Crown,
+  X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
@@ -24,6 +26,7 @@ import { toast } from "@/hooks/use-toast"
 export function MainSidebar() {
   const pathname = usePathname()
   const { user, profile, signOut } = useAuth()
+  const { isMobileOpen, toggleMobile } = useMobileMenu()
 
   const navigationItems = [
     { title: "Dashboard", href: "/dashboard", icon: BarChart3, access: "all" },
@@ -33,7 +36,7 @@ export function MainSidebar() {
     { title: "Checklist", href: "/permanence-checklist", icon: ClipboardList, access: "all" },
     { title: "Eventos", href: "/event-calendar", icon: Calendar, access: "all" },
     { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "all" },
-    { title: "TI", href: "/ti", icon: Monitor, access: "all" },
+    { title: "TI", href: "/ti", icon: Monitor, access: "admin" },
     { title: "Histórico", href: "/history", icon: History, access: "admin" },
   ]
 
@@ -61,6 +64,13 @@ export function MainSidebar() {
     }
   }
 
+  const handleNavigationClick = () => {
+    // Fecha o menu mobile quando um item é clicado
+    if (isMobileOpen) {
+      toggleMobile()
+    }
+  }
+
   const getUserInitials = () => {
     if (profile?.display_name) {
       return profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase()
@@ -81,8 +91,17 @@ export function MainSidebar() {
     return 'Usuário'
   }
 
-  return (
+  // Conteúdo do sidebar
+  const sidebarContent = (
     <div className="h-full w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 shadow-lg flex flex-col">
+      {/* Header do mobile com botão de fechar */}
+      <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Menu</h2>
+        <Button variant="ghost" size="icon" onClick={toggleMobile}>
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+
       {/* Navegação */}
       <div className="flex-1 p-4 pt-6">
         <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
@@ -98,6 +117,7 @@ export function MainSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={handleNavigationClick}
                 className={`
                   flex items-center gap-3 p-3 rounded-md transition-all duration-200 group relative
                   ${isActive 
@@ -190,6 +210,31 @@ export function MainSidebar() {
         )}
       </div>
     </div>
+  )
+
+  return (
+    <>
+      {/* Sidebar desktop - sempre visível */}
+      <div className="hidden lg:block">
+        {sidebarContent}
+      </div>
+
+      {/* Overlay mobile */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-[9998] lg:hidden"
+          onClick={toggleMobile}
+        />
+      )}
+
+      {/* Sidebar mobile - slide in/out */}
+      <div className={`
+        fixed top-0 left-0 h-full w-64 z-[9999] lg:hidden transform transition-transform duration-300 ease-in-out
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {sidebarContent}
+      </div>
+    </>
   )
 }
 

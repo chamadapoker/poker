@@ -20,7 +20,7 @@ const FormFieldContext = React.createContext<string>("")
 
 const FormField = <TField extends FieldPath<FieldValues>, TForm extends FieldValues>({
   ...props
-}: ControllerProps<TField, TForm>) => {
+}: ControllerProps<TForm, TField>) => {
   return (
     <FormFieldContext.Provider value={props.name}>
       <Controller {...props} />

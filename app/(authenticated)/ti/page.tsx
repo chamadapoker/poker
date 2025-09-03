@@ -763,16 +763,11 @@ export default function TIPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
             <CardContent className="p-8 relative">
-              <div className="flex items-center justify-between">
-                <div className="relative z-10">
-                  <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                    {tickets.filter(t => t.status === "aberto").length}
-                  </p>
-                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mt-1">Chamados Abertos</p>
-                </div>
-                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
-                  <Plus className="h-10 w-10" />
-                </div>
+              <div className="relative z-10 text-center">
+                <p className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-3">
+                  {tickets.filter(t => t.status === "aberto").length}
+                </p>
+                <p className="text-lg font-semibold text-blue-700 dark:text-blue-300">Chamados Abertos</p>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -788,16 +783,11 @@ export default function TIPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
             <CardContent className="p-8 relative">
-              <div className="flex items-center justify-between">
-                <div className="relative z-10">
-                  <p className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent">
-                    {tickets.filter(t => t.status === "em_andamento").length}
-                  </p>
-                  <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300 mt-1">Em Andamento</p>
-                </div>
-                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
-                  <Clock className="h-10 w-10" />
-                </div>
+              <div className="relative z-10 text-center">
+                <p className="text-5xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-3">
+                  {tickets.filter(t => t.status === "em_andamento").length}
+                </p>
+                <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">Em Andamento</p>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -813,16 +803,11 @@ export default function TIPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
             <CardContent className="p-8 relative">
-              <div className="flex items-center justify-between">
-                <div className="relative z-10">
-                  <p className="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
-                    {tickets.filter(t => t.status === "resolvido").length}
-                  </p>
-                  <p className="text-sm font-semibold text-green-700 dark:text-green-300 mt-1">Resolvidos</p>
-                </div>
-                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
-                  <CheckCircle className="h-10 w-10" />
-                </div>
+              <div className="relative z-10 text-center">
+                <p className="text-5xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-3">
+                  {tickets.filter(t => t.status === "resolvido").length}
+                </p>
+                <p className="text-lg font-semibold text-green-700 dark:text-green-300">Resolvidos</p>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -838,16 +823,11 @@ export default function TIPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
             <CardContent className="p-8 relative">
-              <div className="flex items-center justify-between">
-                <div className="relative z-10">
-                  <p className="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                    {tickets.filter(t => t.urgency_level === "crítica").length}
-                  </p>
-                  <p className="text-sm font-semibold text-red-700 dark:text-red-300 mt-1">Críticos</p>
-                </div>
-                <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-500">
-                  <AlertTriangle className="h-10 w-10" />
-                </div>
+              <div className="relative z-10 text-center">
+                <p className="text-5xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-3">
+                  {tickets.filter(t => t.urgency_level === "crítica").length}
+                </p>
+                <p className="text-lg font-semibold text-red-700 dark:text-red-300">Críticos</p>
               </div>
               
               {/* Efeito de brilho no hover */}

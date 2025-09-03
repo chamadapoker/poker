@@ -119,9 +119,12 @@ export function MainSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={handleNavigationClick}
+                onClick={() => {
+                  console.log('🔗 Link clicado:', item.href)
+                  handleNavigationClick()
+                }}
                 className={`
-                  flex items-center gap-3 p-3 rounded-md transition-all duration-200 group relative
+                  flex items-center gap-3 p-3 rounded-md transition-all duration-200 group relative cursor-pointer
                   ${isActive 
                     ? 'bg-red-600 text-white shadow-sm' 
                     : 'text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400'

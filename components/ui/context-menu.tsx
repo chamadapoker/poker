@@ -147,17 +147,7 @@ const ContextMenuSubContent = React.forwardRef<
 ))
 ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName
 
-const ContextMenuSubLabel = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.SubLabel>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubLabel>
->(({ className, ...props }, ref) => (
-  <ContextMenuPrimitive.SubLabel
-    ref={ref}
-    className={cn("px-2 py-1.5 text-xs leading-none text-muted-foreground", className)}
-    {...props}
-  />
-))
-ContextMenuSubLabel.displayName = ContextMenuPrimitive.SubLabel.displayName
+
 
 export {
   ContextMenu,
@@ -171,6 +161,5 @@ export {
   ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
-  ContextMenuSubLabel,
   ContextMenuSubTrigger,
 }

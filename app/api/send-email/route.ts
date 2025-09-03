@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Configuração do transporter
-    const transporter = nodemailer.createTransporter(emailConfig.smtp)
+    const transporter = nodemailer.createTransport(emailConfig.smtp)
 
     // Formatar assunto e texto do email
     const emailSubject = subject || formatEmailSubject(new Date().toLocaleDateString('pt-BR'), callType)

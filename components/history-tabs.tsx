@@ -165,6 +165,7 @@ interface AttendanceRecord {
   date: string
   status: string
   justification_id: string | null
+  call_type?: string
 }
 
 interface JustificationRecord {

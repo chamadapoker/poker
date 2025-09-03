@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Music, Star, Shield, Award, Play, Pause, Volume2, Download, AlertCircle } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@supabase/supabase-js'
 import { useToast } from "@/hooks/use-toast"
 import { useRequireAuth } from "@/context/auth-context"
 
@@ -20,7 +20,10 @@ export default function CancaoPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
-  const supabase = createClientComponentClient()
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const { toast } = useToast()
 
   const togglePlay = () => {

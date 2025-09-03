@@ -446,8 +446,9 @@ export async function fetchMostUsedKeys() {
     // Count usage by key_id and get key details
     const keyUsage = data.reduce((acc, record) => {
       const keyId = record.key_id
-      const keyName = record.claviculario_keys?.key_name || `Chave ${keyId.slice(0, 8)}`
-      const location = record.claviculario_keys?.location || "Local não especificado"
+      const clavicularioKey = Array.isArray(record.claviculario_keys) ? record.claviculario_keys[0] : record.claviculario_keys
+      const keyName = clavicularioKey?.key_name || `Chave ${keyId.slice(0, 8)}`
+      const location = clavicularioKey?.location || "Local não especificado"
       
       if (!acc[keyId]) {
         acc[keyId] = { 

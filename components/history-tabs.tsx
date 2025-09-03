@@ -926,7 +926,7 @@ export function HistoryTabs() {
         // Se houver filtro por tipo de justificativa, aplicar também
         if (attendanceFilterJustificationType !== "all") {
           const justification = justificationRecords.find(j => j.id === r.justification_id)
-          justificationMatch = justification && justification.type === attendanceFilterJustificationType
+          justificationMatch = !!(justification && justification.type === attendanceFilterJustificationType)
         }
       }
       

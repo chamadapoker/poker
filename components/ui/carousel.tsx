@@ -7,14 +7,13 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-type CarouselCorePlugins = UseEmblaCarouselType[1]
+type CarouselApi = UseEmblaCarouselType[1]
 type CarouselOptions = UseEmblaCarouselType[0]
 
 type CarouselProps = {
   opts?: CarouselOptions
-  plugins?: CarouselCorePlugins
   orientation?: "horizontal" | "vertical"
-  setApi?: (api: UseEmblaCarouselType[1]) => void
+  setApi?: (api: CarouselApi) => void
 } & React.ComponentProps<"div">
 
 type CarouselContextProps = {
@@ -39,18 +38,15 @@ function useCarousel() {
 }
 
 const Carousel = React.forwardRef<HTMLDivElement, CarouselProps & React.ComponentPropsWithoutRef<"div">>(
-  ({ opts, plugins, orientation = "horizontal", setApi, className, children, ...props }, ref) => {
-    const [carouselRef, api] = useEmblaCarousel(
-      {
-        ...opts,
-        axis: orientation === "horizontal" ? "x" : "y",
-      },
-      plugins,
-    )
+  ({ opts, orientation = "horizontal", setApi, className, children, ...props }, ref) => {
+    const [carouselRef, api] = useEmblaCarousel({
+      ...opts,
+      axis: orientation === "horizontal" ? "x" : "y",
+    })
     const [canScrollPrev, setCanScrollPrev] = React.useState(false)
     const [canScrollNext, setCanScrollNext] = React.useState(false)
 
-    const onSelect = React.useCallback((api: any) => {
+    const onSelect = React.useCallback((api: CarouselApi) => {
       setCanScrollPrev(api.canScrollPrev())
       setCanScrollNext(api.canScrollNext())
     }, [])

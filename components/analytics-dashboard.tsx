@@ -1,13 +1,10 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Calendar, Clock, UserCheck, UserX, FileText, Key, TrendingUp, TrendingDown, Activity } from "lucide-react"
 import { useEffect, useState } from "react"
 import { 
   fetchTotalMilitaryPersonnel, 
   fetchCurrentDayAttendance, 
-  fetchMonthlyAttendanceStats, 
-  fetchJustificationTypes, 
   fetchUpcomingEvents 
 } from "@/lib/data"
 
@@ -19,17 +16,6 @@ interface AnalyticsData {
     justified: number
     percentage: number
   }
-  monthlyStats: {
-    month: string
-    present: number
-    absent: number
-    percentage: number
-  }[]
-  justificationTypes: {
-    type: string
-    count: number
-    percentage: number
-  }[]
   keyUsage: {
     keyName: string
     location: string
@@ -54,8 +40,6 @@ function AnalyticsDashboard() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     totalPersonnel: 0,
     currentAttendance: { present: 0, absent: 0, justified: 0, percentage: 0 },
-    monthlyStats: [],
-    justificationTypes: [],
     keyUsage: [],
     recentEvents: [],
     flightStats: { totalFlights: 0, completedFlights: 0, totalHours: 0 },
@@ -72,22 +56,16 @@ function AnalyticsDashboard() {
         const [
           totalPersonnel,
           currentAttendance,
-          monthlyStats,
-          justificationTypes,
           recentEvents
         ] = await Promise.all([
           fetchTotalMilitaryPersonnel(),
           fetchCurrentDayAttendance(),
-          fetchMonthlyAttendanceStats(),
-          fetchJustificationTypes(),
           fetchUpcomingEvents()
         ])
 
         setAnalyticsData({
           totalPersonnel,
           currentAttendance,
-          monthlyStats,
-          justificationTypes,
           keyUsage: [],
           recentEvents,
           flightStats: {
@@ -98,32 +76,25 @@ function AnalyticsDashboard() {
           loading: false,
           error: null
         })
-
-      } catch (error) {
-        console.error('Erro ao carregar dados analíticos:', error)
-        setAnalyticsData(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Erro ao carregar dados analíticos'
+      } catch (error: any) {
+        console.error("Erro ao carregar dados analíticos:", error)
+        setAnalyticsData(prev => ({ 
+          ...prev, 
+          loading: false, 
+          error: error.message || "Erro ao carregar dados" 
         }))
       }
     }
 
     loadAnalyticsData()
-
-    // Atualiza dados a cada 5 minutos
-    const interval = setInterval(loadAnalyticsData, 5 * 60 * 1000)
-
-    return () => clearInterval(interval)
   }, [])
 
   if (analyticsData.loading) {
     return (
-      <div className="grid gap-6 p-4 md:p-6">
-        <h1 className="text-2xl font-bold">Dashboard de Análise</h1>
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-blue-600 dark:text-blue-400">Carregando dados analíticos...</p>
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Carregando estatísticas...</p>
         </div>
       </div>
     )
@@ -131,187 +102,140 @@ function AnalyticsDashboard() {
 
   if (analyticsData.error) {
     return (
-      <div className="grid gap-6 p-4 md:p-6">
-        <h1 className="text-2xl font-bold">Dashboard de Análise</h1>
-        <div className="text-center py-8">
-          <p className="text-red-600 dark:text-red-400">{analyticsData.error}</p>
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+            <span className="text-2xl text-red-600 dark:text-red-400">⚠️</span>
+          </div>
+          <p className="text-red-600 dark:text-red-400 font-medium">Erro ao carregar dados</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{analyticsData.error}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="grid gap-6 p-4 md:p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard de Análise</h1>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          Última atualização: {new Date().toLocaleTimeString('pt-BR')}
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+          Dashboard Analítico
+        </h2>
+        <p className="text-slate-600 dark:text-slate-400">
+          Visão completa e detalhada das estatísticas do Esquadrão
+        </p>
       </div>
 
-      {/* Cards principais */}
+      {/* Cards principais - Design moderno */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-950/40 border-blue-200 dark:border-blue-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-300">Total de Militares</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
+        {/* Total de Militares */}
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-500 to-blue-600">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <CardHeader className="pb-3 relative z-10">
+            <CardTitle className="text-base font-semibold text-blue-100 text-center">
+              Total de Militares
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{analyticsData.totalPersonnel}</div>
-            <p className="text-xs text-blue-700 dark:text-blue-400">Esquadrão completo</p>
+          <CardContent className="relative z-10">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                <span className="text-2xl font-bold text-white">{analyticsData.totalPersonnel}</span>
+              </div>
+              <p className="text-sm font-medium text-blue-100">Esquadrão completo</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-950/40 border-green-200 dark:border-green-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">Presença Hoje</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
+        {/* Presença Hoje */}
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-emerald-500 to-emerald-600">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <CardHeader className="pb-3 relative z-10">
+            <CardTitle className="text-base font-semibold text-emerald-100 text-center">
+              Presença Hoje
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-900 dark:text-green-100">{analyticsData.currentAttendance.percentage}%</div>
-            <p className="text-xs text-green-700 dark:text-green-400">
-              {analyticsData.currentAttendance.present} presentes, {analyticsData.currentAttendance.absent} ausentes
-            </p>
+          <CardContent className="relative z-10">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                <span className="text-2xl font-bold text-white">{analyticsData.currentAttendance.percentage}%</span>
+              </div>
+              <p className="text-sm font-medium text-emerald-100">{analyticsData.currentAttendance.present} presentes, {analyticsData.currentAttendance.absent} ausentes</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-950/40 border-amber-200 dark:border-amber-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-amber-800 dark:text-amber-300">Justificativas</CardTitle>
-            <FileText className="h-4 w-4 text-amber-600" />
+        {/* Justificativas */}
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-amber-500 to-amber-600">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <CardHeader className="pb-3 relative z-10">
+            <CardTitle className="text-base font-semibold text-amber-100 text-center">
+              Justificativas
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">{analyticsData.currentAttendance.justified}</div>
-            <p className="text-xs text-amber-700 dark:text-amber-400">Com justificativa hoje</p>
+          <CardContent className="relative z-10">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                <span className="text-2xl font-bold text-white">{analyticsData.currentAttendance.justified}</span>
+              </div>
+              <p className="text-sm font-medium text-amber-100">Com justificativa hoje</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-950/40 border-purple-200 dark:border-purple-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800 dark:text-purple-300">Total de Voos</CardTitle>
-            <Clock className="h-4 w-4 text-purple-600" />
+        {/* Total de Voos */}
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-500 to-purple-600">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <CardHeader className="pb-3 relative z-10">
+            <CardTitle className="text-base font-semibold text-purple-100 text-center">
+              Total de Voos
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{analyticsData.flightStats.totalFlights}</div>
-            <p className="text-xs text-purple-700 dark:text-purple-400">{analyticsData.flightStats.totalHours}h acumuladas</p>
+          <CardContent className="relative z-10">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                <span className="text-2xl font-bold text-white">{analyticsData.flightStats.totalFlights}</span>
+              </div>
+              <p className="text-sm font-medium text-purple-100">{analyticsData.flightStats.totalHours}h acumuladas</p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Gráficos e estatísticas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Presença Mensal */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-              Presença Mensal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analyticsData.monthlyStats.length > 0 ? (
-              <div className="space-y-4">
-                {analyticsData.monthlyStats.map((month, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{month.month}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${month.percentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400 w-12 text-right">
-                        {month.percentage}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>Nenhum dado de presença mensal disponível</p>
-                <p className="text-xs mt-1">Os dados aparecerão conforme o uso do sistema</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Tipos de Justificativa */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-amber-600" />
-              Tipos de Justificativa
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analyticsData.justificationTypes.length > 0 ? (
-              <div className="space-y-3">
-                {analyticsData.justificationTypes.map((justification, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{justification.type}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-amber-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${justification.percentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400 w-8 text-right">
-                        {justification.count}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>Nenhuma justificativa registrada</p>
-                <p className="text-xs mt-1">Os dados aparecerão conforme o uso do sistema</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Próximos Eventos */}
+      {/* Próximos Eventos - Design moderno */}
       <div className="grid grid-cols-1 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-purple-600" />
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
+          <CardHeader className="bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
+            <CardTitle className="text-lg font-bold text-center">
               Próximos Eventos
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="space-y-3">
               {analyticsData.recentEvents.length > 0 ? (
                 analyticsData.recentEvents.map((event, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all duration-200">
                     <div>
-                      <div className="font-medium">{event.title}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{event.date}</div>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200">{event.title}</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400">{event.date}</div>
                     </div>
-                    <div className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full">
+                    <div className="text-xs bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 text-purple-800 dark:text-purple-200 px-3 py-2 rounded-full font-medium">
                       {event.type}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-                  <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>Nenhum evento próximo</p>
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                  <div className="mx-auto w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                    <span className="text-2xl font-bold text-slate-600 dark:text-slate-300">E</span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400">Nenhum evento próximo</p>
+                  <p className="text-xs mt-1 text-slate-500 dark:text-slate-500">Os eventos aparecerão conforme forem cadastrados</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-
     </div>
   )
 }

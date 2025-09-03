@@ -13,6 +13,7 @@ import { Calendar, CalendarDays, CheckCircle, AlertTriangle, XCircle, Plus, Edit
 import { format, differenceInDays, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/context/auth-context"
 
 // Tipos de dados
 interface CleaningRecord {
@@ -96,6 +97,9 @@ const availableMilitary = [
 ]
 
 export default function FaxinaPage() {
+  const { profile } = useAuth()
+  const isAdmin = profile?.role === 'admin'
+  
   const [cleaningRecords, setCleaningRecords] = useState<CleaningRecord[]>([])
   const [selectedSector, setSelectedSector] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
@@ -228,6 +232,15 @@ export default function FaxinaPage() {
 
   // Adicionar novo registro
   const handleAddRecord = () => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso Negado",
+        description: "Apenas usuários administradores podem adicionar registros",
+        variant: "destructive"
+      })
+      return
+    }
+
     if (!newRecord.sector || !newRecord.location || !newRecord.lastCleaningDate || !newRecord.checkedBy) {
       toast({
         title: "Erro",
@@ -262,6 +275,15 @@ export default function FaxinaPage() {
 
   // Editar registro
   const handleEditRecord = (record: CleaningRecord) => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso Negado",
+        description: "Apenas usuários administradores podem editar registros",
+        variant: "destructive"
+      })
+      return
+    }
+
     setEditingRecord(record)
     setNewRecord({
       sector: record.sector,
@@ -275,6 +297,15 @@ export default function FaxinaPage() {
 
   // Salvar edição
   const handleSaveEdit = () => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso Negado",
+        description: "Apenas usuários administradores podem editar registros",
+        variant: "destructive"
+      })
+      return
+    }
+
     if (!editingRecord) return
 
     setCleaningRecords(prev => prev.map(record => 
@@ -301,6 +332,15 @@ export default function FaxinaPage() {
 
   // Excluir registro
   const handleDeleteRecord = (id: string) => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso Negado",
+        description: "Apenas usuários administradores podem excluir registros",
+        variant: "destructive"
+      })
+      return
+    }
+
     setCleaningRecords(prev => prev.filter(record => record.id !== id))
     toast({
       title: "Sucesso",
@@ -336,23 +376,31 @@ export default function FaxinaPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-             {/* Header */}
-       <div className="flex items-center justify-between">
-         <div>
-           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-             FAXINA DAS INSTALAÇÕES
-           </h1>
-           <p className="text-sm text-gray-600 dark:text-gray-400">
-             1º/10º GAV - Sistema de Gestão de Limpeza
-           </p>
-         </div>
-         <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300">
-           <CalendarDays className="w-4 h-4" />
-           {format(currentDate, "dd/MM/yyyy", { locale: ptBR })}
-         </div>
-       </div>
+      {/* Header padronizado */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          FAXINA DAS INSTALAÇÕES
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          1º/10º GAV - Sistema de Gestão de Limpeza
+        </p>
+      </div>
 
-      {/* Instruções */}
+       {/* Aviso de permissão para usuários não-administradores */}
+       {!isAdmin && (
+         <Card className="border-2 border-yellow-200 dark:border-yellow-800">
+           <CardHeader className="bg-yellow-50 dark:bg-yellow-950/20">
+             <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+               👁️ Modo Visualização
+             </CardTitle>
+           </CardHeader>
+           <CardContent className="p-4 text-sm text-yellow-700 dark:text-yellow-300">
+             <p>Você está visualizando esta página em <strong>modo somente leitura</strong>. Apenas usuários administradores podem adicionar, editar ou excluir registros de faxina.</p>
+           </CardContent>
+         </Card>
+       )}
+
+       {/* Instruções */}
       <Card className="border-2 border-blue-200 dark:border-blue-800">
         <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
           <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
@@ -374,31 +422,31 @@ export default function FaxinaPage() {
              🎨 LEGENDA
            </CardTitle>
          </CardHeader>
-         <CardContent className="p-6">
-           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border-2 border-green-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-5 h-5 bg-green-500 border-2 border-green-600 rounded-md shadow-inner"></div>
-               <span className="text-sm font-medium text-green-800 dark:text-green-200">FAXINA EM D</span>
+         <CardContent className="p-4">
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-green-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-4 h-4 bg-green-500 border-2 border-green-600 rounded shadow-inner"></div>
+               <span className="text-xs font-medium text-green-800 dark:text-green-200 whitespace-nowrap">FAXINA EM D</span>
              </div>
-             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border-2 border-yellow-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-5 h-5 bg-yellow-500 border-2 border-yellow-600 rounded-md shadow-inner"></div>
-               <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">FAXINA EM D-1</span>
+             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-yellow-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-4 h-4 bg-yellow-500 border-2 border-yellow-600 rounded shadow-inner"></div>
+               <span className="text-xs font-medium text-yellow-800 dark:text-yellow-200 whitespace-nowrap">FAXINA EM D-1</span>
              </div>
-             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border-2 border-orange-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-5 h-5 bg-orange-500 border-2 border-orange-600 rounded-md shadow-inner"></div>
-               <span className="text-sm font-medium text-orange-800 dark:text-orange-200">FAXINA EM D-2</span>
+             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-orange-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-4 h-4 bg-orange-500 border-2 border-orange-600 rounded shadow-inner"></div>
+               <span className="text-xs font-medium text-orange-800 dark:text-orange-200 whitespace-nowrap">FAXINA EM D-2</span>
              </div>
-             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border-2 border-red-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-5 h-5 bg-red-500 border-2 border-red-600 rounded-md shadow-inner"></div>
-               <span className="text-sm font-medium text-red-800 dark:text-red-200">FAXINA EM ATÉ D-6</span>
+             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-4 h-4 bg-red-500 border-2 border-red-600 rounded shadow-inner"></div>
+               <span className="text-xs font-medium text-red-800 dark:text-red-200 whitespace-nowrap">FAXINA EM ATÉ D-6</span>
              </div>
-             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border-2 border-red-500 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-5 h-5 bg-red-600 border-2 border-red-700 rounded-md shadow-inner"></div>
-               <span className="text-sm font-medium text-red-900 dark:text-red-100">FAXINA EM ATÉ D-13</span>
+             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-500 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-4 h-4 bg-red-600 border-2 border-red-700 rounded shadow-inner"></div>
+               <span className="text-xs font-medium text-red-900 dark:text-red-100 whitespace-nowrap">FAXINA EM ATÉ D-13</span>
              </div>
-             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border-2 border-red-600 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-5 h-5 bg-red-700 border-2 border-red-800 rounded-md shadow-inner"></div>
-               <span className="text-sm font-medium text-red-950 dark:text-red-50">FAXINA EM D-14+</span>
+                                        <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-600 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-4 h-4 bg-red-700 border-2 border-red-800 rounded shadow-inner"></div>
+               <span className="text-xs font-medium text-red-950 dark:text-red-50 whitespace-nowrap">FAXINA EM D-14+</span>
              </div>
            </div>
          </CardContent>
@@ -431,19 +479,20 @@ export default function FaxinaPage() {
           </div>
         </div>
         
-        <div className="flex gap-2">
-          <Button onClick={exportToCSV} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar CSV
-          </Button>
-          
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Faxina
-              </Button>
-            </DialogTrigger>
+                 <div className="flex gap-2">
+           <Button onClick={exportToCSV} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+             <Download className="w-4 h-4 mr-2" />
+             Exportar CSV
+           </Button>
+           
+           {isAdmin && (
+             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+               <DialogTrigger asChild>
+                 <Button className="bg-blue-600 hover:bg-blue-700">
+                   <Plus className="w-4 h-4 mr-2" />
+                   Nova Faxina
+                   </Button>
+               </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
@@ -542,10 +591,11 @@ export default function FaxinaPage() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+                             </div>
+             </DialogContent>
+           </Dialog>
+           )}
+         </div>
       </div>
 
              {/* Estatísticas */}
@@ -578,17 +628,19 @@ export default function FaxinaPage() {
                 {/* Background decorativo */}
                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${currentColors}`}></div>
                 
-                {/* Botão de adicionar nova sala */}
-                <button 
-                  className="absolute top-3 right-3 w-7 h-7 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-110"
-                  title="Adicionar nova sala ao setor"
-                  onClick={() => {
-                    setNewRecord(prev => ({ ...prev, sector: sectorId }))
-                    setIsAddDialogOpen(true)
-                  }}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+                                 {/* Botão de adicionar nova sala */}
+                 {isAdmin && (
+                   <button 
+                     className="absolute top-3 right-3 w-7 h-7 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-110"
+                     title="Adicionar nova sala ao setor"
+                     onClick={() => {
+                       setNewRecord(prev => ({ ...prev, sector: sectorId }))
+                       setIsAddDialogOpen(true)
+                     }}
+                   >
+                     <Plus className="w-4 h-4" />
+                   </button>
+                 )}
                 
                 {/* Número de localizações */}
                 <div className="relative mb-3">
@@ -607,24 +659,24 @@ export default function FaxinaPage() {
                   </div>
                 </div>
                 
-                {/* Status badges */}
-                <div className="space-y-2">
-                  {statusCounts["em-dia"] > 0 && (
-                    <div className="text-xs bg-green-100 text-green-800 px-3 py-2 rounded-full font-medium border border-green-200 shadow-sm">
-                      ✅ {statusCounts["em-dia"]} em dia
-                    </div>
-                  )}
-                  {statusCounts["atrasada-1"] > 0 && (
-                    <div className="text-xs bg-yellow-100 text-yellow-800 px-3 py-2 rounded-full font-medium border border-yellow-200 shadow-sm">
-                      ⚠️ {statusCounts["atrasada-1"]} D-1
-                    </div>
-                  )}
-                  {(statusCounts["atrasada-2"] || 0) + (statusCounts["atrasada-6"] || 0) + (statusCounts["atrasada-13"] || 0) + (statusCounts["atrasada-14"] || 0) > 0 && (
-                    <div className="text-xs bg-red-100 text-red-800 px-3 py-2 rounded-full font-medium border border-red-200 shadow-sm">
-                      🚨 {(statusCounts["atrasada-2"] || 0) + (statusCounts["atrasada-6"] || 0) + (statusCounts["atrasada-13"] || 0) + (statusCounts["atrasada-14"] || 0)} atrasadas
-                    </div>
-                  )}
-                </div>
+                                 {/* Status badges */}
+                 <div className="space-y-1">
+                   {statusCounts["em-dia"] > 0 && (
+                     <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium border border-green-200 shadow-sm whitespace-nowrap">
+                       ✅ {statusCounts["em-dia"]} em dia
+                     </div>
+                   )}
+                   {statusCounts["atrasada-1"] > 0 && (
+                     <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium border border-yellow-200 shadow-sm whitespace-nowrap">
+                       ⚠️ {statusCounts["atrasada-1"]} D-1
+                     </div>
+                   )}
+                   {(statusCounts["atrasada-2"] || 0) + (statusCounts["atrasada-6"] || 0) + (statusCounts["atrasada-13"] || 0) + (statusCounts["atrasada-14"] || 0) > 0 && (
+                     <div className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium border border-red-200 shadow-sm whitespace-nowrap">
+                       🚨 {(statusCounts["atrasada-2"] || 0) + (statusCounts["atrasada-6"] || 0) + (statusCounts["atrasada-13"] || 0) + (statusCounts["atrasada-14"] || 0)} atrasadas
+                     </div>
+                   )}
+                 </div>
                 
                 {/* Efeito de brilho no hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -666,41 +718,43 @@ export default function FaxinaPage() {
                      <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-sm font-semibold px-4 py-2">
                        📍 {records.length} localizações
                      </Badge>
-                     <button 
-                       className="w-10 h-10 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm"
-                       title="Adicionar nova sala ao setor"
-                       onClick={() => {
-                         setNewRecord(prev => ({ ...prev, sector: sectorId }))
-                         setIsAddDialogOpen(true)
-                       }}
-                     >
-                       <Plus className="w-5 h-5" />
-                     </button>
+                                           {isAdmin && (
+                        <button 
+                          className="w-10 h-10 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm"
+                          title="Adicionar nova sala ao setor"
+                          onClick={() => {
+                            setNewRecord(prev => ({ ...prev, sector: sectorId }))
+                            setIsAddDialogOpen(true)
+                          }}
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                      )}
                    </div>
                  </CardTitle>
                </CardHeader>
                <CardContent className="p-0">
                  <div className="overflow-x-auto">
                    <table className="w-full">
-                     <thead className="bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm">
-                       <tr>
-                         <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                           🏢 Localização
-                         </th>
-                         <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                           📅 Data da Última Limpeza
-                         </th>
-                         <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                           👤 Conferido Por
-                         </th>
-                         <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                           🎯 Status
-                         </th>
-                         <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                           ⚡ Ações
-                         </th>
-                       </tr>
-                     </thead>
+                                           <thead className="bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                            Localização
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                            Data da Última Limpeza
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                            Conferido Por
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                            Status
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                            Ações
+                          </th>
+                        </tr>
+                      </thead>
                      <tbody className="divide-y divide-gray-200/50 dark:divide-gray-600/50">
                        {records.map((record, index) => {
                          const status = getCleaningStatus(record.lastCleaningDate)
@@ -734,34 +788,40 @@ export default function FaxinaPage() {
                                  </span>
                                </div>
                              </td>
-                             <td className="px-6 py-4">
-                               <Badge className={`${status.color} flex items-center gap-2 px-3 py-2 rounded-full font-semibold text-xs shadow-sm border-0`}>
-                                 <StatusIcon className="w-4 h-4" />
-                                 {status.label}
-                               </Badge>
-                             </td>
-                             <td className="px-6 py-4">
-                               <div className="flex gap-2">
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => handleEditRecord(record)}
-                                   className="h-9 px-3 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300 shadow-sm transition-all duration-200 hover:scale-105"
-                                 >
-                                   <Edit3 className="w-4 h-4 mr-1" />
-                                   Editar
-                                 </Button>
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => handleDeleteRecord(record.id)}
-                                   className="h-9 px-3 bg-red-50 text-red-700 border-red-200 hover:bg-red-100 hover:border-red-300 shadow-sm transition-all duration-200 hover:scale-105"
-                                 >
-                                   <Trash2 className="w-4 h-4 mr-1" />
-                                   Excluir
-                                 </Button>
-                               </div>
-                             </td>
+                                                           <td className="px-6 py-4">
+                                <Badge className={`${status.color} flex items-center gap-1 px-2 py-1 rounded-full font-semibold text-xs shadow-sm border-0 whitespace-nowrap`}>
+                                  <StatusIcon className="w-3 h-3" />
+                                  {status.label}
+                                </Badge>
+                              </td>
+                                                           <td className="px-6 py-4">
+                                                                 {isAdmin ? (
+                                   <div className="flex gap-2">
+                                     <Button
+                                       size="sm"
+                                       variant="outline"
+                                       onClick={() => handleEditRecord(record)}
+                                       className="h-9 px-3 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm transition-all duration-200 hover:scale-105"
+                                     >
+                                       <Edit3 className="w-4 h-4 mr-1" />
+                                       Editar
+                                     </Button>
+                                     <Button
+                                       size="sm"
+                                       variant="outline"
+                                       onClick={() => handleDeleteRecord(record.id)}
+                                       className="h-9 px-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 shadow-sm transition-all duration-200 hover:scale-105"
+                                     >
+                                       <Trash2 className="w-4 h-4 mr-1" />
+                                       Excluir
+                                     </Button>
+                                   </div>
+                                 ) : (
+                                  <span className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Apenas visualização
+                                  </span>
+                                )}
+                              </td>
                            </tr>
                          )
                        })}

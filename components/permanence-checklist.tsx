@@ -347,11 +347,10 @@ function PermanenceChecklist() {
       {/* Grid de cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         {/* Card do Checklist */}
-        <Card className="w-full shadow-lg border-0 bg-white dark:bg-slate-800">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
-            <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-              <span className="text-xl sm:text-2xl">📋</span>
-              Checklist de Tarefas
+        <Card className="w-full border-0 shadow-lg bg-white dark:bg-slate-800">
+          <CardHeader className="bg-blue-50 dark:bg-blue-950/20 border-b border-blue-200 dark:border-blue-700">
+            <CardTitle className="text-lg sm:text-xl text-blue-800 dark:text-blue-200 text-center">
+              📋 Checklist de Tarefas
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -418,11 +417,10 @@ function PermanenceChecklist() {
         </Card>
 
         {/* Card de Notas */}
-        <Card className="w-full shadow-lg border-0 bg-white dark:bg-slate-800">
-          <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg">
-            <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-              <span className="text-xl sm:text-2xl">📝</span>
-              Notas e Observações
+        <Card className="w-full border-0 shadow-lg bg-white dark:bg-slate-800">
+          <CardHeader className="bg-green-50 dark:bg-green-950/20 border-b border-green-200 dark:border-green-700">
+            <CardTitle className="text-lg sm:text-xl text-green-800 dark:text-green-200 text-center">
+              📝 Notas e Observações
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -463,11 +461,10 @@ function PermanenceChecklist() {
       </div>
 
       {/* Card do Histórico */}
-      <Card className="w-full shadow-lg border-0 bg-white dark:bg-slate-800">
-        <CardHeader className="bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-t-lg">
-          <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-            <span className="text-xl sm:text-2xl">📊</span>
-            Histórico de Registros
+      <Card className="w-full border-0 shadow-lg bg-white dark:bg-slate-800">
+        <CardHeader className="bg-slate-50 dark:bg-slate-950/20 border-b border-slate-200 dark:border-slate-700">
+          <CardTitle className="text-lg sm:text-xl text-slate-800 dark:text-slate-200 text-center">
+            📊 Histórico de Registros
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">

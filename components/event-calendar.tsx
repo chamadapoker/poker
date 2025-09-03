@@ -357,63 +357,43 @@ function EventCalendar() {
 
       {/* Header com estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-blue-200 shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-600 font-semibold">Total de Eventos</p>
-                <p className="text-3xl font-bold text-blue-800">{events.length}</p>
-              </div>
-              <CalendarIcon className="h-8 w-8 text-blue-500" />
-            </div>
+        <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {events.length}
+            </p>
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total de Eventos</p>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200 shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-600 font-semibold">Este Mês</p>
-                <p className="text-3xl font-bold text-green-800">
-                  {events.filter(e => e.date.getMonth() === new Date().getMonth()).length}
-                </p>
-              </div>
-              <Clock className="h-8 w-8 text-green-500" />
-            </div>
+        <Card className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+              {events.filter(e => e.date.getMonth() === new Date().getMonth()).length}
+            </p>
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">Este Mês</p>
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200 shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-600 font-semibold">Próximos 7 dias</p>
-                <p className="text-3xl font-bold text-purple-800">
-                  {events.filter(e => {
-                    const diff = e.date.getTime() - new Date().getTime()
-                    return diff > 0 && diff <= 7 * 24 * 60 * 60 * 1000
-                  }).length}
-                </p>
-              </div>
-              <BellRing className="h-8 w-8 text-purple-500" />
-            </div>
+        <Card className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+              {events.filter(e => {
+                const diff = e.date.getTime() - new Date().getTime()
+                return diff > 0 && diff <= 7 * 24 * 60 * 60 * 1000
+              }).length}
+            </p>
+            <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Próximos 7 dias</p>
           </CardContent>
         </Card>
 
         {/* Card de eventos próximos */}
-        <Card className="border-orange-200 shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-600 font-semibold">Eventos Próximos (1h)</p>
-                <p className="text-3xl font-bold text-orange-800">
-                  {events.filter(e => isEventNearby(e)).length}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">⚠️</span>
-              </div>
-            </div>
+        <Card className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+              {events.filter(e => isEventNearby(e)).length}
+            </p>
+            <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Eventos Próximos (1h)</p>
           </CardContent>
         </Card>
       </div>
@@ -716,22 +696,26 @@ function EventCalendar() {
       )}
 
       {/* Lista de eventos */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BellRing className="h-5 w-5" />
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b border-blue-200 dark:border-blue-700">
+          <CardTitle className="flex items-center gap-3 text-blue-800 dark:text-blue-200 text-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <BellRing className="h-5 w-5 text-white" />
+            </div>
             Próximos Eventos ({sortedEvents.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
-                      {sortedEvents.length === 0 ? (
-              <div className="text-center py-12">
-                <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-foreground text-lg">Nenhum evento registrado</p>
-                <p className="text-sm text-muted-foreground">Clique em "Novo Evento" para começar</p>
+        <CardContent className="p-6">
+          {sortedEvents.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <CalendarIcon className="h-10 w-10 text-slate-600 dark:text-slate-300" />
               </div>
+              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Nenhum evento registrado</h3>
+              <p className="text-slate-600 dark:text-slate-400">Clique em "Novo Evento" para começar</p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {sortedEvents.map((event) => {
                 const timeInfo = getTimeUntilEvent(event)
                 const isNearby = isEventNearby(event)
@@ -740,96 +724,108 @@ function EventCalendar() {
                 return (
                   <div 
                     key={event.id} 
-                    className={`border rounded-lg p-4 transition-all duration-300 ${
+                    className={`group relative overflow-hidden rounded-2xl p-6 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
                       isVeryNearby 
-                        ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-lg animate-pulse' 
+                        ? 'border-2 border-red-400 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 shadow-xl animate-pulse' 
                         : isNearby 
-                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20 shadow-md' 
-                        : 'hover:bg-accent/50'
+                        ? 'border-2 border-orange-400 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 shadow-lg' 
+                        : 'border-2 border-slate-200 dark:border-slate-700 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:border-blue-300 dark:hover:border-blue-600'
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-lg text-foreground">{event.title}</h3>
-                          
-                          {/* Badge de tempo com alertas */}
-                          {event.time && (
-                            <div className="flex items-center gap-2">
-                              <Badge 
-                                variant={isVeryNearby ? "destructive" : isNearby ? "secondary" : "outline"} 
-                                className={`text-xs ${
-                                  isVeryNearby ? 'animate-pulse' : ''
-                                }`}
-                              >
-                                {event.time}
-                              </Badge>
-                              
-                              {/* Badge de alerta para eventos próximos */}
-                              {isNearby && (
+                    {/* Background decorativo */}
+                    <div className={`absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-500 ${
+                      isVeryNearby ? 'bg-red-500' : isNearby ? 'bg-orange-500' : 'bg-blue-500'
+                    }`}></div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{event.title}</h3>
+                            
+                            {/* Badge de tempo elegante */}
+                            {event.time && (
+                              <div className="flex items-center gap-2">
                                 <Badge 
-                                  variant="destructive" 
-                                  className="text-xs animate-pulse flex items-center gap-1"
+                                  variant={isVeryNearby ? "destructive" : isNearby ? "secondary" : "outline"} 
+                                  className={`px-3 py-1 text-sm font-semibold rounded-full shadow-sm ${
+                                    isVeryNearby ? 'animate-pulse bg-red-500 text-white' : 
+                                    isNearby ? 'bg-orange-500 text-white' : 
+                                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                  }`}
                                 >
-                                  <BellRing className="h-3 w-3" />
-                                  {isVeryNearby ? 'MUITO PRÓXIMO!' : 'PRÓXIMO!'}
+                                  🕐 {event.time}
                                 </Badge>
-                              )}
+                                
+                                {/* Badge de alerta para eventos próximos */}
+                                {isNearby && (
+                                  <Badge 
+                                    variant="destructive" 
+                                    className="px-3 py-1 text-sm font-semibold rounded-full shadow-sm animate-pulse flex items-center gap-2"
+                                  >
+                                    <BellRing className="h-3 w-3" />
+                                    {isVeryNearby ? '🚨 MUITO PRÓXIMO!' : '⚠️ PRÓXIMO!'}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        
+                          <div className="flex items-center gap-6 text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                              <CalendarIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              <span className="font-medium">{format(event.date, "dd/MM/yyyy", { locale: ptBR })}</span>
+                            </div>
+                            {event.createdByMilitaryId && (
+                              <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                                <User className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                <span className="font-medium">{getMilitaryName(event.createdByMilitaryId)}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Contador regressivo para eventos próximos */}
+                          {isNearby && timeInfo && (
+                            <div className="mb-3">
+                              <Badge 
+                                variant={isVeryNearby ? "destructive" : "secondary"}
+                                className="px-4 py-2 text-sm font-mono bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                              >
+                                ⏰ Começa em: {timeInfo.diffHours > 0 ? `${timeInfo.diffHours}h ` : ''}{timeInfo.diffMinutes}min
+                              </Badge>
+                            </div>
+                          )}
+                          
+                          {event.description && (
+                            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{event.description}</p>
                             </div>
                           )}
                         </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                        <div className="flex items-center gap-1">
-                          <CalendarIcon className="h-4 w-4" />
-                          {format(event.date, "dd/MM/yyyy", { locale: ptBR })}
-                        </div>
-                        {event.createdByMilitaryId && (
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {getMilitaryName(event.createdByMilitaryId)}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Contador regressivo para eventos próximos */}
-                      {isNearby && timeInfo && (
-                        <div className="mb-2">
-                          <Badge 
-                            variant={isVeryNearby ? "destructive" : "secondary"}
-                            className="text-xs font-mono"
+                        
+                        <div className="flex gap-2 ml-6">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditClick(event)}
+                            className="h-10 w-10 p-0 border-2 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-200"
                           >
-                            ⏰ Começa em: {timeInfo.diffHours > 0 ? `${timeInfo.diffHours}h ` : ''}{timeInfo.diffMinutes}min
-                          </Badge>
+                            <Pencil className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="h-10 w-10 p-0 border-2 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-200"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                          </Button>
                         </div>
-                      )}
-                      
-                      {event.description && (
-                        <p className="text-sm text-muted-foreground mt-2">{event.description}</p>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditClick(event)}
-                        className="hover:bg-accent hover:text-accent-foreground"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteEvent(event.id)}
-                        className="hover:bg-destructive/10 hover:text-destructive text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )})}
+                )
+              })}
             </div>
           )}
         </CardContent>

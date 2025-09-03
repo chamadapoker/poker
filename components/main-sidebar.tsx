@@ -19,7 +19,8 @@ import {
   LogOut,
   User,
   Crown,
-  X
+  X,
+  Music
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
@@ -36,10 +37,11 @@ export function MainSidebar() {
     { title: "Chaves", href: "/key-management", icon: Key, access: "all" },
     { title: "Checklist", href: "/permanence-checklist", icon: ClipboardList, access: "all" },
     { title: "Eventos", href: "/event-calendar", icon: Calendar, access: "all" },
-    { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "all" },
+    { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "admin" },
     { title: "Faxina", href: "/faxina", icon: Sparkles, access: "all" },
     { title: "TI", href: "/ti", icon: Monitor, access: "admin" },
     { title: "Histórico", href: "/history", icon: History, access: "admin" },
+    { title: "Canção", href: "/cancao", icon: Music, access: "all" },
   ]
 
   // Filtrar itens baseado no role do usuário
@@ -51,18 +53,27 @@ export function MainSidebar() {
 
   const handleLogout = async () => {
     try {
-      await signOut()
+      // Mostrar toast de loading
       toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado do sistema com sucesso.",
+        title: "Fazendo logout...",
+        description: "Aguarde um momento...",
       })
+      
+      await signOut()
+      
+      // O toast de sucesso não será mostrado pois a página será redirecionada
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
       toast({
         title: "Erro no logout",
-        description: "Ocorreu um erro ao tentar sair do sistema.",
+        description: "Ocorreu um erro ao tentar sair do sistema. Tentando redirecionar...",
         variant: "destructive",
       })
+      
+      // Forçar redirecionamento mesmo com erro
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 2000)
     }
   }
 

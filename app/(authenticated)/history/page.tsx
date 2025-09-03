@@ -35,17 +35,14 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-          📚 Histórico do Sistema
+      {/* Header padronizado */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          Histórico do Sistema
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
+        <p className="text-slate-600 dark:text-slate-400">
           Visualize e gerencie todo o histórico de atividades
         </p>
-        <div className="flex items-center justify-center gap-2 text-yellow-600">
-          <Crown className="h-5 w-5" />
-          <span className="text-sm font-medium">Acesso Administrativo</span>
-        </div>
       </div>
       
       <HistoryTabs />

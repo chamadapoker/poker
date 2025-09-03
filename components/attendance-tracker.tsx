@@ -409,51 +409,39 @@ function AttendanceTracker() {
     <div className="space-y-6 sm:space-y-8">
       {/* Cards de estatísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-300">Total</p>
-                <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-200">{totalCount}</p>
-              </div>
-              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-300" />
-            </div>
+        <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {totalCount}
+            </p>
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 dark:text-green-300">Presentes</p>
-                <p className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-200">{presentCount}</p>
-              </div>
-              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-300" />
-            </div>
+        <Card className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+              {presentCount}
+            </p>
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">Presentes</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-red-600 dark:text-red-300">Ausentes</p>
-                <p className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-200">{absentCount}</p>
-              </div>
-              <XCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 dark:text-red-300" />
-            </div>
+        <Card className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+              {absentCount}
+            </p>
+            <p className="text-sm font-medium text-red-700 dark:text-red-300">Ausentes</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-300">Justificados</p>
-                <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-200">{justifiedCount}</p>
-              </div>
-              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-300" />
-            </div>
+        <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+          <CardContent className="p-4 text-center">
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {justifiedCount}
+            </p>
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Justificados</p>
           </CardContent>
         </Card>
       </div>

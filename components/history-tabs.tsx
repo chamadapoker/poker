@@ -23,10 +23,55 @@ function safeLower(value: string | null | undefined) {
 }
 
 function formatDate(dateString: string | null | undefined) {
-  if (!dateString) return "—"
-  const d = new Date(dateString)
-  if (!isValid(d)) return dateString
-  return format(d, "dd/MM/yyyy", { locale: ptBR })
+  if (!dateString) {
+    console.error("❌ FORMATDATE - Data vazia ou nula")
+    return "—"
+  }
+  
+  // LOG CRÍTICO: Verificar entrada da função
+  console.log("🚨 FORMATDATE - Entrada:", dateString, "Tipo:", typeof dateString)
+  
+  // Se a data já estiver no formato dd/MM/yyyy, retornar como está
+  if (typeof dateString === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+    console.log("✅ FORMATDATE - Data já formatada:", dateString)
+    return dateString
+  }
+  
+  // Tentar criar uma data válida
+  let d: Date
+  
+  // Se a data estiver no formato ISO (YYYY-MM-DD)
+  if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateString)) {
+    // CORREÇÃO CRÍTICA DE FUSO HORÁRIO: Supabase está com 1 dia de atraso
+    const [year, month, day] = dateString.split('-').map(Number)
+    
+    // Criar data no fuso horário local brasileiro
+    d = new Date(year, month - 1, day)
+    
+    // CORREÇÃO: Adicionar 1 dia para compensar o atraso do Supabase
+    d.setDate(d.getDate() + 1)
+    
+    console.log("🚨 CORREÇÃO FUSO HORÁRIO:", {
+      original: dateString,
+      corrigida: d.toISOString(),
+      explicacao: "Supabase com 1 dia de atraso - corrigindo para fuso local"
+    })
+  } else {
+    // Tentar outros formatos
+    d = new Date(dateString)
+    console.log("⚠️ FORMATDATE - Data convertida com fallback:", dateString, "→", d.toISOString())
+  }
+  
+  if (!isValid(d)) {
+    console.error("❌ FORMATDATE - Data inválida:", dateString)
+    return "—"
+  }
+  
+  const resultado = format(d, "dd/MM/yyyy", { locale: ptBR })
+  console.log("✅ FORMATDATE - Resultado final:", dateString, "→", resultado)
+  
+  // Datas corrigidas para fuso horário local brasileiro
+  return resultado
 }
 
 /**
@@ -568,19 +613,165 @@ export function HistoryTabs() {
 
   // Definir todas as abas disponíveis
   const availableTabs = [
-    { value: "attendance", label: "Presença", icon: "👥", description: "Histórico de presença dos militares" },
-    { value: "justifications", label: "Justificativas", icon: "📋", description: "Histórico de justificativas de ausência" },
-    { value: "events", label: "Eventos", icon: "📅", description: "Histórico de eventos do Esquadrão" },
-    { value: "flights", label: "Voos", icon: "✈️", description: "Histórico de agendamentos de voos" },
-    { value: "permanence", label: "Permanência", icon: "🏠", description: "Histórico de permanência diária" },
-    { value: "notes", label: "Notas Pessoais", icon: "📝", description: "Histórico de notas e anotações" },
-    { value: "keys", label: "Chaves", icon: "🔑", description: "Histórico de movimentação de chaves" },
-    { value: "ti", label: "TI", icon: "🖥️", description: "Histórico de chamados de tecnologia da informação" },
-    { value: "analytics", label: "Análises", icon: "📈", description: "Dashboard de análises e estatísticas" }
+    { value: "attendance", label: "Presença", description: "Histórico de presença dos militares" },
+    { value: "justifications", label: "Justificativas", description: "Histórico de justificativas de ausência" },
+    { value: "events", label: "Eventos", description: "Histórico de eventos do Esquadrão" },
+    { value: "flights", label: "Voos", description: "Histórico de agendamentos de voos" },
+    { value: "permanence", label: "Permanência", description: "Histórico de permanência diária" },
+    { value: "notes", label: "Notas Pessoais", description: "Histórico de notas e anotações" },
+    { value: "keys", label: "Chaves", description: "Histórico de movimentação de chaves" },
+    { value: "ti", label: "TI", description: "Histórico de chamados de tecnologia da informação" },
+    { value: "analytics", label: "Análises", description: "Dashboard de análises e estatísticas" }
   ]
 
-  // Gerar datas únicas para o filtro
-  const uniqueDates = [...new Set(attendanceRecords.map(r => r.date))].sort().reverse()
+  // Gerar datas únicas para o filtro - normalizadas
+  const uniqueDates = [...new Set(attendanceRecords.map(r => formatDate(r.date)))]
+    .filter(date => date && date !== "—")
+    .sort((a, b) => {
+      // Ordenar datas no formato dd/MM/yyyy
+      const [dayA, monthA, yearA] = a.split('/').map(Number)
+      const [dayB, monthB, yearB] = b.split('/').map(Number)
+      const dateA = new Date(yearA, monthA - 1, dayA)
+      const dateB = new Date(yearB, monthB - 1, dayB)
+      return dateB.getTime() - dateA.getTime() // Mais recente primeiro
+    })
+  
+  // LOG CRÍTICO: Verificar datas únicas geradas
+  console.log("🚨 DATAS ÚNICAS GERADAS:", uniqueDates)
+  console.log("📊 Total de datas únicas:", uniqueDates.length)
+  
+  // Verificar se a data de hoje está incluída
+  const hoje = format(new Date(), "dd/MM/yyyy", { locale: ptBR })
+  console.log("📅 Data de hoje formatada:", hoje)
+  console.log("🔍 Data de hoje está nas datas únicas?", uniqueDates.includes(hoje))
+  
+  // LOG CRÍTICO: Verificar correção de fuso horário
+  console.log("🚨 VERIFICAÇÃO CORREÇÃO FUSO HORÁRIO:")
+  console.log("📅 Data atual do sistema:", hoje)
+  console.log("📅 Data atual ISO:", new Date().toISOString())
+  console.log("🌍 Fuso horário local:", Intl.DateTimeFormat().resolvedOptions().timeZone)
+  
+  // Verificar se há registros que foram corrigidos
+  const registrosCorrigidos = attendanceRecords.filter(r => {
+    if (!r.date) return false
+    const dataOriginal = r.date
+    const dataCorrigida = formatDate(r.date)
+    return dataOriginal !== dataCorrigida
+  })
+  
+  if (registrosCorrigidos.length > 0) {
+    console.log("✅ REGISTROS COM DATAS CORRIGIDAS:", registrosCorrigidos.length)
+    console.log("📝 Exemplos de correção:", registrosCorrigidos.slice(0, 3).map(r => ({
+      military: r.military_name,
+      dataOriginal: r.date,
+      dataCorrigida: formatDate(r.date)
+    })))
+  }
+  
+  // Verificar todas as datas originais do banco
+  console.log("📋 DATAS ORIGINAIS DO BANCO:", attendanceRecords.map(r => r.date))
+  console.log("📊 Total de registros:", attendanceRecords.length)
+
+  // Log para debug das datas únicas
+  console.log("📅 Datas únicas encontradas:", uniqueDates)
+  console.log("📅 Exemplo de dados de presença:", attendanceRecords.slice(0, 3).map(r => ({ 
+    date: r.date, 
+    formatted: formatDate(r.date),
+    call_type: r.call_type,
+    military: r.military_name,
+    status: r.status
+  })))
+  
+  // Verificar especificamente as chamadas do dia 01/09/2025
+  const chamadas0109 = attendanceRecords.filter(r => {
+    const recordDate = new Date(r.date)
+    return recordDate.getDate() === 1 && recordDate.getMonth() === 8 && recordDate.getFullYear() === 2025
+  })
+  
+  if (chamadas0109.length > 0) {
+    console.log("🔍 Chamadas encontradas para 01/09/2025:", chamadas0109.map(r => ({
+      military: r.military_name,
+      call_type: r.call_type,
+      status: r.status,
+      date: r.date,
+      formatted: formatDate(r.date)
+    })))
+    console.log("📊 Total de chamadas para 01/09/2025:", chamadas0109.length)
+    
+    // Verificar se há duas chamadas diferentes (início e final de expediente)
+    const tiposChamada = [...new Set(chamadas0109.map(r => r.call_type))]
+    console.log("🎯 Tipos de chamada encontrados:", tiposChamada)
+  } else {
+    console.log("❌ Nenhuma chamada encontrada para 01/09/2025")
+  }
+  
+  // Verificar especificamente as chamadas de hoje (02/09/2025)
+  const today = new Date()
+  const todayDate = today.getDate()
+  const todayMonth = today.getMonth()
+  const todayYear = today.getFullYear()
+  
+  const chamadasHoje = attendanceRecords.filter(r => {
+    const recordDate = new Date(r.date)
+    return recordDate.getDate() === todayDate && recordDate.getMonth() === todayMonth && recordDate.getFullYear() === todayYear
+  })
+  
+  if (chamadasHoje.length > 0) {
+    console.log("🔍 Chamadas encontradas para HOJE:", chamadasHoje.map(r => ({
+      military: r.military_name,
+      call_type: r.call_type,
+      status: r.status,
+      date: r.date,
+      formatted: formatDate(r.date)
+    })))
+    console.log("📊 Total de chamadas para HOJE:", chamadasHoje.length)
+    
+    // Verificar tipos de chamada de hoje
+    const tiposChamadaHoje = [...new Set(chamadasHoje.map(r => r.call_type))]
+    console.log("🎯 Tipos de chamada de HOJE:", tiposChamadaHoje)
+  } else {
+    console.log("❌ Nenhuma chamada encontrada para HOJE")
+  }
+  
+  // Verificar todos os tipos de chamada disponíveis
+  const todosTiposChamada = [...new Set(attendanceRecords.map(r => r.call_type).filter(Boolean))]
+  console.log("🎯 Todos os tipos de chamada disponíveis:", todosTiposChamada)
+  
+  // Verificar se há registros sem tipo de chamada
+  const registrosSemTipo = attendanceRecords.filter(r => !r.call_type || r.call_type === "")
+  if (registrosSemTipo.length > 0) {
+    console.log("⚠️ Registros sem tipo de chamada:", registrosSemTipo.length)
+    console.log("📝 Exemplos:", registrosSemTipo.slice(0, 3).map(r => ({
+      military: r.military_name,
+      date: r.date,
+      call_type: r.call_type
+    })))
+  }
+  
+  // Verificar se há problemas de fuso horário
+  const todayFormatted = format(today, "dd/MM/yyyy", { locale: ptBR })
+  console.log("📅 Data atual do sistema:", {
+    today: today.toISOString(),
+    todayFormatted,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  })
+  
+  // Verificar se há datas que parecem estar um dia atrasadas
+  const suspiciousDates = attendanceRecords.filter(r => {
+    if (!r.date) return false
+    const recordDate = new Date(r.date)
+    const diffDays = Math.abs(today.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24)
+    return diffDays <= 1 && diffDays > 0
+  })
+  
+  if (suspiciousDates.length > 0) {
+    console.log("⚠️ Possíveis problemas de fuso horário detectados:", suspiciousDates.map(r => ({
+      military: r.military_name,
+      date: r.date,
+      formatted: formatDate(r.date),
+      diffDays: Math.abs(today.getTime() - new Date(r.date).getTime()) / (1000 * 60 * 60 * 24)
+    })))
+  }
 
   useEffect(() => {
     const fetchAllRecords = async () => {
@@ -595,6 +786,29 @@ export function HistoryTabs() {
         console.log("🔄 Carregando histórico de presença...")
         const attendanceData = await fetchTableSafe<AttendanceRecord>("military_attendance_records")
         console.log("📊 Dados de presença recebidos:", attendanceData)
+        
+        // LOG CRÍTICO: Verificar estrutura dos dados de presença
+        if (attendanceData.length > 0) {
+          console.log("🚨 ESTRUTURA CRÍTICA DOS DADOS DE PRESENÇA:")
+          console.log("📋 Primeiro registro completo:", attendanceData[0])
+          console.log("🔑 Campos disponíveis:", Object.keys(attendanceData[0]))
+          console.log("📅 Campo 'date':", attendanceData[0].date)
+          console.log("📞 Campo 'call_type':", attendanceData[0].call_type)
+          console.log("👤 Campo 'military_name':", attendanceData[0].military_name)
+          console.log("✅ Campo 'status':", attendanceData[0].status)
+          
+          // Verificar se há registros com call_type vazio
+          const registrosSemTipo = attendanceData.filter(r => !r.call_type || r.call_type === "")
+          console.log("⚠️ REGISTROS SEM TIPO DE CHAMADA:", registrosSemTipo.length)
+          if (registrosSemTipo.length > 0) {
+            console.log("📝 Exemplos de registros sem tipo:", registrosSemTipo.slice(0, 3))
+          }
+          
+          // Verificar tipos de chamada disponíveis
+          const tiposDisponiveis = [...new Set(attendanceData.map(r => r.call_type).filter(Boolean))]
+          console.log("🎯 TIPOS DE CHAMADA DISPONÍVEIS:", tiposDisponiveis)
+        }
+        
         setAttendanceRecords(attendanceData)
         console.log("✅ Presença carregada:", attendanceData.length, "registros")
 
@@ -674,14 +888,35 @@ export function HistoryTabs() {
 
   const filteredAttendance = attendanceRecords.filter(
     (r) => {
+      // LOG CRÍTICO: Verificar filtro para cada registro
+      console.log("🚨 FILTRO - Processando registro:", {
+        military: r.military_name,
+        date: r.date,
+        status: r.status,
+        search: attendanceSearch,
+        filterStatus: attendanceFilterStatus,
+        filterDate: attendanceFilterDate
+      })
+      
       // Busca por nome do militar
       const nameMatch = safeLower(r.military_name).includes(attendanceSearch.toLowerCase())
       
       // Busca por status
       const statusMatch = attendanceFilterStatus === "all" || r.status === attendanceFilterStatus
       
-      // Busca por data
-      const dateMatch = attendanceFilterDate === "all" || r.date === attendanceFilterDate
+      // Busca por data - comparar datas normalizadas
+      let dateMatch = true
+      if (attendanceFilterDate !== "all") {
+        // Normalizar a data do registro para comparação
+        const recordDate = formatDate(r.date)
+        const filterDate = formatDate(attendanceFilterDate)
+        dateMatch = recordDate === filterDate
+        console.log("🚨 FILTRO - Comparação de data:", {
+          recordDate,
+          filterDate,
+          dateMatch
+        })
+      }
       
       // Busca por justificativa (se o filtro de status for "justificado")
       let justificationMatch = true
@@ -695,7 +930,17 @@ export function HistoryTabs() {
         }
       }
       
-      return nameMatch && statusMatch && dateMatch && justificationMatch
+      const resultado = nameMatch && statusMatch && dateMatch && justificationMatch
+      console.log("🚨 FILTRO - Resultado final:", {
+        military: r.military_name,
+        nameMatch,
+        statusMatch,
+        dateMatch,
+        justificationMatch,
+        resultado
+      })
+      
+      return resultado
     }
   )
 
@@ -815,105 +1060,61 @@ export function HistoryTabs() {
       </CardHeader>
       <CardContent>
         {/* Botões de Exportação Geral */}
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Exportação Geral:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Exportação Geral:</span>
           </div>
           <Button 
             onClick={() => generateCompleteReport()}
             variant="outline"
-            className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 text-sm"
+            className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950/20 dark:text-green-300 dark:border-green-700 dark:hover:bg-green-900/30 text-sm"
           >
             📋 Relatório Completo PDF
           </Button>
           <Button 
             onClick={() => exportAllToCSV()}
             variant="outline"
-            className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 text-sm"
+            className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/20 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30 text-sm"
           >
             📊 Todos os Dados (CSV)
           </Button>
         </div>
 
-        {/* Estatísticas Premium */}
+        {/* Estatísticas */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-1">
-                  {attendanceRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300">Presença</div>
+          <Card className="border-2 border-blue-200 bg-white dark:bg-gray-800 dark:border-blue-700 shadow-md hover:shadow-lg transition-all duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                {attendanceRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-blue-800 dark:text-blue-200">Presença</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-green-50 to-green-100 dark:from-gray-800 dark:via-green-950/20 dark:to-green-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-1">
-                  {justificationRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-300">Justificativas</div>
+          <Card className="border-2 border-green-200 bg-white dark:bg-gray-800 dark:border-green-700 shadow-md hover:shadow-lg transition-all duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                {justificationRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200">Justificativas</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-purple-50 to-purple-100 dark:from-gray-800 dark:via-purple-950/20 dark:to-purple-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-1">
-                  {eventRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300">Eventos</div>
+          <Card className="border-2 border-purple-200 bg-white dark:bg-gray-800 dark:border-purple-700 shadow-md hover:shadow-lg transition-all duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+                {eventRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-purple-800 dark:text-purple-200">Eventos</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-orange-50 to-orange-100 dark:from-gray-800 dark:via-orange-950/20 dark:to-orange-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent mb-1">
-                  {flightRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-300">Voos</div>
+          <Card className="border-2 border-orange-200 bg-white dark:bg-gray-800 dark:border-orange-700 shadow-md hover:shadow-lg transition-all duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+                {flightRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-orange-800 dark:text-orange-200">Voos</div>
             </CardContent>
           </Card>
           
@@ -926,10 +1127,10 @@ export function HistoryTabs() {
             
             <CardContent className="p-4 text-center relative">
               <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-1">
+                <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
                   {permanenceRecords.length}
                 </div>
-                <div className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-300">Permanência</div>
+                <div className="text-xs sm:text-sm font-semibold text-red-800 dark:text-red-200">Permanência</div>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -946,10 +1147,10 @@ export function HistoryTabs() {
             
             <CardContent className="p-4 text-center relative">
               <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent mb-1">
+                <div className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
                   {personalNoteRecords.length}
                 </div>
-                <div className="text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300">Notas</div>
+                <div className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200">Notas</div>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -966,10 +1167,10 @@ export function HistoryTabs() {
             
             <CardContent className="p-4 text-center relative">
               <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-1">
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                   {keyHistoryRecords.length}
                 </div>
-                <div className="text-xs sm:text-sm font-semibold text-yellow-700 dark:text-yellow-300">Chaves</div>
+                <div className="text-xs sm:text-sm font-semibold text-yellow-800 dark:text-yellow-200">Chaves</div>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -986,10 +1187,10 @@ export function HistoryTabs() {
             
             <CardContent className="p-4 text-center relative">
               <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-cyan-800 bg-clip-text text-transparent mb-1">
+                <div className="text-2xl sm:text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1">
                   {tiTicketRecords.length}
                 </div>
-                <div className="text-xs sm:text-sm font-semibold text-cyan-700 dark:text-cyan-300">TI</div>
+                <div className="text-xs sm:text-sm font-semibold text-cyan-800 dark:text-cyan-200">TI</div>
               </div>
               
               {/* Efeito de brilho no hover */}
@@ -1006,13 +1207,13 @@ export function HistoryTabs() {
             
             <CardContent className="p-4 text-center relative">
               <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent mb-1">
-                  {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
-                   flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
-                   keyHistoryRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Total</div>
-              </div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
+              {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
+               flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
+               keyHistoryRecords.length}
+            </div>
+                <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Total</div>
+          </div>
               
               {/* Efeito de brilho no hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -1020,17 +1221,14 @@ export function HistoryTabs() {
           </Card>
         </div>
 
-        {/* Dropdown Premium para todas as abas */}
+        {/* Dropdown para todas as abas */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
             <div className="w-full sm:w-96">
-              <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="w-full h-16 text-base border-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 focus:from-blue-50 focus:to-indigo-50 dark:focus:from-blue-900/20 dark:focus:to-indigo-900/20 focus:ring-2 focus:ring-blue-200/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
-                  <SelectValue>
+            <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-full h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg">
+                <SelectValue>
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                        <span className="text-2xl">{availableTabs.find(tab => tab.value === activeTab)?.icon}</span>
-                      </div>
                       <div className="flex flex-col items-start">
                         <span className="font-bold text-gray-900 dark:text-white text-lg">
                           {availableTabs.find(tab => tab.value === activeTab)?.label}
@@ -1040,32 +1238,26 @@ export function HistoryTabs() {
                         </span>
                       </div>
                     </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-96 bg-white dark:bg-gray-800 border-0 shadow-2xl rounded-2xl overflow-hidden">
+                </SelectValue>
+              </SelectTrigger>
+                <SelectContent className="max-h-96 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
                   {availableTabs.map(tab => (
-                    <SelectItem key={tab.value} value={tab.value} className="py-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20 transition-all duration-200">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                          <span className="text-2xl">{tab.icon}</span>
-                        </div>
-                        <div className="flex flex-col items-start">
-                          <span className="font-bold text-gray-900 dark:text-white text-lg">{tab.label}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{tab.description}</span>
-                        </div>
+                    <SelectItem key={tab.value} value={tab.value} className="py-4 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-200">
+                      <div className="flex flex-col items-start">
+                        <span className="font-bold text-gray-900 dark:text-white text-lg">{tab.label}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{tab.description}</span>
                       </div>
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+              </SelectContent>
+            </Select>
+          </div>
             
-            {/* Indicador de registros Premium */}
+            {/* Indicador de registros */}
             <div className="w-full sm:w-auto">
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
-                <div className="p-6 text-center relative">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">
+              <Card className="border-2 border-blue-200 bg-white dark:bg-gray-800 dark:border-blue-700 shadow-md hover:shadow-lg transition-all duration-200">
+                <div className="p-6 text-center">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
                     {(() => {
                       switch (activeTab) {
                         case "attendance": return attendanceRecords.length
@@ -1081,7 +1273,7 @@ export function HistoryTabs() {
                       }
                     })()}
                   </div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300 font-semibold">
+                  <div className="text-sm text-blue-800 dark:text-blue-200 font-semibold">
                     Registros
                   </div>
                 </div>
@@ -1104,7 +1296,7 @@ export function HistoryTabs() {
                         📊 CSV
                       </Button>
                       <Button 
-                        onClick={() => generatePDF(filteredAttendance, 'historico-presenca', 'Histórico de Presença', ['Militar', 'Data', 'Status', 'Justificativa', 'Detalhes'])}
+                        onClick={() => generatePDF(filteredAttendance, 'historico-presenca', 'Histórico de Presença', ['Militar', 'Data', 'Tipo de Chamada', 'Status', 'Justificativa', 'Detalhes'])}
                         variant="outline"
                         className="w-fit bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
                       >
@@ -1136,14 +1328,14 @@ export function HistoryTabs() {
                     <Select value={attendanceFilterDate} onValueChange={setAttendanceFilterDate}>
                       <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue>
-                          {attendanceFilterDate === "all" ? "Todas as Datas" : formatDate(attendanceFilterDate)}
+                          {attendanceFilterDate === "all" ? "Todas as Datas" : attendanceFilterDate}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todas as Datas</SelectItem>
                         {uniqueDates.map((date) => (
                           <SelectItem key={date} value={date}>
-                            {formatDate(date)}
+                            {date}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1173,6 +1365,7 @@ export function HistoryTabs() {
                       <tr>
                         <th className="px-6 py-3">Militar</th>
                         <th className="px-6 py-3">Data</th>
+                        <th className="px-6 py-3">Tipo de Chamada</th>
                         <th className="px-6 py-3">Status</th>
                         <th className="px-6 py-3">Justificativa</th>
                         <th className="px-6 py-3">Detalhes</th>
@@ -1180,6 +1373,15 @@ export function HistoryTabs() {
                     </thead>
                     <tbody>
                       {filteredAttendance.map((r) => {
+                        // LOG CRÍTICO: Verificar dados sendo renderizados
+                        console.log("🚨 RENDERIZANDO REGISTRO:", {
+                          id: r.id,
+                          military: r.military_name,
+                          date: r.date,
+                          call_type: r.call_type,
+                          status: r.status
+                        })
+                        
                         // Buscar informações da justificativa se existir
                         const justification = r.justification_id ? 
                           justificationRecords.find(j => j.id === r.justification_id) : null
@@ -1188,6 +1390,19 @@ export function HistoryTabs() {
                           <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
                             <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
                             <td className="px-6 py-4">{formatDate(r.date)}</td>
+                            <td className="px-6 py-4">
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {(() => {
+                                  const tipoChamada = r.call_type || 'N/A'
+                                  console.log("🚨 RENDERIZANDO TIPO DE CHAMADA:", {
+                                    military: r.military_name,
+                                    call_type: r.call_type,
+                                    tipoChamada: tipoChamada
+                                  })
+                                  return tipoChamada
+                                })()}
+                              </span>
+                            </td>
                             <td className="px-6 py-4">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 r.status === 'presente' ? 'bg-green-100 text-green-800' : 
@@ -1809,9 +2024,9 @@ export function HistoryTabs() {
             {/* Aba de Análises para Desktop */}
             {activeTab === "analytics" && (
               <div>
-                <AnalyticsDashboard />
+              <AnalyticsDashboard />
               </div>
-            )}
+        )}
 
         {/* Conteúdo das abas para Mobile */}
         {isMobile && (

@@ -408,7 +408,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
             size="sm"
             variant="outline"
             onClick={() => setIsEditing(true)}
-            className="text-xs h-8 px-3 font-medium border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-950/20"
+            className="text-xs h-8 px-3 font-medium border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/30 dark:hover:border-blue-500"
           >
             <Edit3 className="h-3 w-3 mr-1" />
             Editar
@@ -423,7 +423,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
                 size="sm"
                 variant="outline"
                 onClick={() => onStatusUpdate(ticket.id, targetStatus.value as Ticket["status"])}
-                className="text-xs h-8 px-3 font-medium"
+                className="text-xs h-8 px-3 font-medium border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:border-gray-500"
               >
                 <span className="hidden sm:inline">Mover para {targetStatus.label}</span>
                 <span className="sm:hidden">{targetStatus.label.split(' ')[0]}</span>
@@ -725,116 +725,54 @@ export default function TIPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header Premium */}
-        <div className="text-center space-y-6 p-10 bg-gradient-to-br from-white via-blue-50 to-indigo-100 dark:from-gray-800 dark:via-blue-950/30 dark:to-indigo-900/40 rounded-3xl border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden relative">
-          {/* Background decorativo com gradiente */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 shadow-lg"></div>
-          
-          {/* Efeito de brilho sutil no fundo */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-          
-          <div className="relative z-10">
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl group-hover:scale-110 transition-transform duration-500">
-              <span className="text-5xl">🖥️</span>
-            </div>
-            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              Sistema de Chamados de TI
-            </h1>
-            <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Gerenciamento completo e intuitivo de solicitações de tecnologia da informação
-            </p>
-            <div className="flex items-center justify-center gap-3 text-sm text-blue-600 dark:text-blue-400 mt-6">
-              <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse shadow-lg"></div>
-              <span className="font-medium">Sistema ativo e funcionando</span>
-            </div>
-          </div>
-          
-          {/* Efeito de brilho no hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
+        {/* Header padronizado */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            Sistema de Chamados de TI
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            Gerenciamento completo e intuitivo de solicitações de tecnologia da informação
+          </p>
         </div>
 
-        {/* Estatísticas Premium */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-blue-950/20 dark:to-blue-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-8 relative">
-              <div className="relative z-10 text-center">
-                <p className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-3">
-                  {tickets.filter(t => t.status === "aberto").length}
-                </p>
-                <p className="text-lg font-semibold text-blue-700 dark:text-blue-300">Chamados Abertos</p>
-              </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            </CardContent>
-          </Card>
+                 {/* Estatísticas Simples */}
+         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+           <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+             <CardContent className="p-4 text-center">
+               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                 {tickets.filter(t => t.status === "aberto").length}
+               </p>
+               <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Abertos</p>
+             </CardContent>
+           </Card>
 
-          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-yellow-50 to-yellow-100 dark:from-gray-800 dark:via-yellow-950/20 dark:to-yellow-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-8 relative">
-              <div className="relative z-10 text-center">
-                <p className="text-5xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-3">
-                  {tickets.filter(t => t.status === "em_andamento").length}
-                </p>
-                <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">Em Andamento</p>
-              </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            </CardContent>
-          </Card>
+           <Card className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800">
+             <CardContent className="p-4 text-center">
+               <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                 {tickets.filter(t => t.status === "em_andamento").length}
+               </p>
+               <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300">Em Andamento</p>
+             </CardContent>
+           </Card>
 
-          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-green-50 to-green-100 dark:from-gray-800 dark:via-green-950/20 dark:to-green-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 to-green-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-8 relative">
-              <div className="relative z-10 text-center">
-                <p className="text-5xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-3">
-                  {tickets.filter(t => t.status === "resolvido").length}
-                </p>
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">Resolvidos</p>
-              </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            </CardContent>
-          </Card>
+           <Card className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+             <CardContent className="p-4 text-center">
+               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                 {tickets.filter(t => t.status === "resolvido").length}
+               </p>
+               <p className="text-xs font-medium text-green-700 dark:text-green-300">Resolvidos</p>
+             </CardContent>
+           </Card>
 
-          <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-red-50 to-red-100 dark:from-gray-800 dark:via-red-950/20 dark:to-red-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-8 relative">
-              <div className="relative z-10 text-center">
-                <p className="text-5xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-3">
-                  {tickets.filter(t => t.urgency_level === "crítica").length}
-                </p>
-                <p className="text-lg font-semibold text-red-700 dark:text-red-300">Críticos</p>
-              </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            </CardContent>
-          </Card>
-        </div>
+           <Card className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+             <CardContent className="p-4 text-center">
+               <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                 {tickets.filter(t => t.urgency_level === "crítica").length}
+               </p>
+               <p className="text-xs font-medium text-red-700 dark:text-red-300">Críticos</p>
+             </CardContent>
+           </Card>
+         </div>
 
         {/* Filtros e Busca Premium */}
         <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
@@ -843,139 +781,90 @@ export default function TIPage() {
           
           <CardContent className="p-8 relative">
             <div className="flex flex-col sm:flex-row gap-6">
-              <div className="flex-1">
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                    <Search className="h-4 w-4 text-white" />
-                  </div>
-                  <Input
-                    placeholder="🔍 Buscar chamados por título, descrição ou solicitante..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-16 h-14 text-base border-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 focus:from-blue-50 focus:to-indigo-50 dark:focus:from-blue-900/20 dark:focus:to-indigo-900/20 focus:ring-2 focus:ring-blue-200/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                  />
-                </div>
-              </div>
+                             <div className="flex-1">
+                 <div className="relative">
+                   <Input
+                     placeholder="Buscar chamados por título, descrição ou solicitante..."
+                     value={searchTerm}
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     className="h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                   />
+                 </div>
+               </div>
 
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[220px] h-14 border-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 focus:from-blue-50 focus:to-indigo-50 dark:focus:from-blue-900/20 dark:focus:to-indigo-900/20 focus:ring-2 focus:ring-blue-200/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                  <SelectValue>
-                    {filterStatus === "all" ? (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-lg">📊</span>
-                        </div>
-                        <span className="font-semibold text-gray-900 dark:text-white">Todos os Status</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white">
-                          {ticketStatuses.find(s => s.value === filterStatus)?.icon}
-                        </div>
-                        <span className="font-semibold text-gray-900 dark:text-white">{ticketStatuses.find(s => s.value === filterStatus)?.label}</span>
-                      </div>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-0 shadow-2xl rounded-xl overflow-hidden">
-                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-lg">📊</span>
-                      </div>
+                              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-full sm:w-[220px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg">
+                    <SelectValue>
+                      {filterStatus === "all" ? (
+                        <span>Todos os Status</span>
+                      ) : (
+                        <span>{ticketStatuses.find(s => s.value === filterStatus)?.label}</span>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                    <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
                       <span>Todos os Status</span>
-                    </div>
-                  </SelectItem>
-                  {ticketStatuses.map(status => (
-                    <SelectItem key={status.value} value={status.value} className="font-medium text-gray-900 dark:text-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white">
-                          {status.icon}
-                        </div>
+                    </SelectItem>
+                    {ticketStatuses.map(status => (
+                      <SelectItem key={status.value} value={status.value} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
                         <span>{status.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={filterUrgency} onValueChange={setFilterUrgency}>
-                <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                  <SelectValue>
-                    {filterUrgency === "all" ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">⚡</span>
+                              <Select value={filterUrgency} onValueChange={setFilterUrgency}>
+                  <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    <SelectValue>
+                      {filterUrgency === "all" ? (
                         <span>Todas as Urgências</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className={`w-3 h-3 rounded-full ${filterUrgency === 'baixa' ? 'bg-green-500' : filterUrgency === 'média' ? 'bg-yellow-500' : filterUrgency === 'alta' ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                      ) : (
                         <span>{urgencyLevels.find(l => l.value === filterUrgency)?.label}</span>
-                      </div>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">⚡</span>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                    <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
                       <span>Todas as Urgências</span>
-                    </div>
-                  </SelectItem>
-                  {urgencyLevels.map(level => (
-                    <SelectItem key={level.value} value={level.value} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-3 h-3 rounded-full ${level.value === 'baixa' ? 'bg-green-500' : level.value === 'média' ? 'bg-yellow-500' : level.value === 'alta' ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                    </SelectItem>
+                    {urgencyLevels.map(level => (
+                      <SelectItem key={level.value} value={level.value} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
                         <span>{level.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                  <SelectValue>
-                    {filterCategory === "all" ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">🏷️</span>
+                              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="w-full sm:w-[200px] h-12 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    <SelectValue>
+                      {filterCategory === "all" ? (
                         <span>Todas as Categorias</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-blue-600 dark:text-blue-400">🔧</span>
+                      ) : (
                         <span>{filterCategory}</span>
-                      </div>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                  <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🏷️</span>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                    <SelectItem value="all" className="font-semibold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
                       <span>Todas as Categorias</span>
-                    </div>
-                  </SelectItem>
-                  {tiCategories.map(category => (
-                    <SelectItem key={category} value={category} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                      <div className="flex items-center gap-2">
-                        <span className="text-blue-600 dark:text-blue-400">🔧</span>
-                        <span>{category}</span>
-                      </div>
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    {tiCategories.map(category => (
+                      <SelectItem key={category} value={category} className="font-medium text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                        <span>{category}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="h-14 px-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105 rounded-2xl border-0">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
-                      <Plus className="h-5 w-5 text-white" />
-                    </div>
-                    🆕 Novo Chamado
-                  </Button>
-                </DialogTrigger>
+                                  <DialogTrigger asChild>
+                    <Button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all duration-200 rounded-lg">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Novo Chamado
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
                     <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -1004,30 +893,20 @@ export default function TIPage() {
 
                       <div>
                         <Label htmlFor="category" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Categoria *</Label>
-                        <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                            <SelectValue>
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                                  <span className="text-blue-700 dark:text-blue-300 text-lg">🔧</span>
-                                </div>
+                                                  <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                              <SelectValue>
                                 <span className="font-semibold text-gray-900 dark:text-white">{formData.category}</span>
-                              </div>
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                            {tiCategories.map(category => (
-                              <SelectItem key={category} value={category} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                                    <span className="text-blue-700 dark:text-blue-300 text-lg">🔧</span>
-                                  </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                              {tiCategories.map(category => (
+                                <SelectItem key={category} value={category} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
                                   <span className="font-semibold text-gray-900 dark:text-white">{category}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                       </div>
                     </div>
 
@@ -1046,77 +925,46 @@ export default function TIPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="requester_name" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nome do Solicitante *</Label>
-                        <Select value={formData.requester_name} onValueChange={(value) => setFormData(prev => ({ ...prev, requester_name: value }))}>
-                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                            <SelectValue>
-                              {formData.requester_name ? (
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                                    <span className="text-blue-700 dark:text-blue-300 font-bold text-sm">
-                                      {militaryPersonnel.find(p => p.name === formData.requester_name)?.rank}
-                                    </span>
-                                  </div>
+                                                  <Select value={formData.requester_name} onValueChange={(value) => setFormData(prev => ({ ...prev, requester_name: value }))}>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                              <SelectValue>
+                                {formData.requester_name ? (
                                   <span className="font-semibold text-gray-900 dark:text-white">
                                     {formData.requester_name}
                                   </span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-500 dark:text-gray-400">👤 Selecione um militar</span>
-                              )}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                            {militaryPersonnel.map(person => (
-                              <SelectItem key={person.id} value={person.name} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                                    <span className="text-blue-700 dark:text-blue-300 font-bold text-sm">{person.rank}</span>
-                                  </div>
+                                ) : (
+                                  <span className="text-gray-500 dark:text-gray-400">Selecione um militar</span>
+                                )}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                              {militaryPersonnel.map(person => (
+                                <SelectItem key={person.id} value={person.name} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
                                   <div className="flex flex-col">
                                     <span className="font-semibold text-gray-900 dark:text-white">{person.name}</span>
                                     <span className="text-xs text-gray-500 dark:text-gray-400">{person.rank}</span>
                                   </div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="urgency_level" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nível de Urgência *</Label>
-                        <Select value={formData.urgency_level} onValueChange={(value: any) => setFormData(prev => ({ ...prev, urgency_level: value }))}>
-                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                            <SelectValue>
-                              <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getUrgencyBgColor(formData.urgency_level)}`}>
-                                  <span className={`w-3 h-3 rounded-full ${getUrgencyDotColor(formData.urgency_level)}`}></span>
-                                </div>
+                                                  <Select value={formData.urgency_level} onValueChange={(value: any) => setFormData(prev => ({ ...prev, urgency_level: value }))}>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                              <SelectValue>
                                 <span className="font-semibold text-gray-900 dark:text-white">
                                   {urgencyLevels.find(l => l.value === formData.urgency_level)?.label}
                                 </span>
-                              </div>
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                            {urgencyLevels.map(level => (
-                              <SelectItem key={level.value} value={level.value} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                    level.value === 'baixa' ? 'bg-green-100 dark:bg-green-900' : 
-                                    level.value === 'média' ? 'bg-yellow-100 dark:bg-yellow-900' : 
-                                    level.value === 'alta' ? 'bg-orange-100 dark:bg-orange-900' : 
-                                    'bg-red-100 dark:bg-red-900'
-                                  }`}>
-                                    <span className={`w-3 h-3 rounded-full ${
-                                      level.value === 'baixa' ? 'bg-green-500' : 
-                                      level.value === 'média' ? 'bg-yellow-500' : 
-                                      level.value === 'alta' ? 'bg-orange-500' : 
-                                      'bg-red-500'
-                                    }`}></span>
-                                  </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                              {urgencyLevels.map(level => (
+                                <SelectItem key={level.value} value={level.value} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
                                   <div className="flex flex-col">
                                     <span className="font-semibold text-gray-900 dark:text-white">{level.label}</span>
                                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -1126,11 +974,10 @@ export default function TIPage() {
                                        'Resolução imediata'}
                                     </span>
                                   </div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                       </div>
 
 
@@ -1151,41 +998,29 @@ export default function TIPage() {
 
                       <div>
                         <Label htmlFor="assigned_to" className="text-sm font-semibold text-gray-700 dark:text-gray-300">Atribuir para</Label>
-                        <Select value={formData.assigned_to} onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}>
-                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                            <SelectValue>
-                              {formData.assigned_to ? (
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                                    <span className="text-green-700 dark:text-green-300 font-bold text-sm">
-                                      {availableSAUs.find(s => s.id === formData.assigned_to)?.rank}
-                                    </span>
-                                  </div>
+                                                  <Select value={formData.assigned_to} onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                              <SelectValue>
+                                {formData.assigned_to ? (
                                   <span className="font-semibold text-gray-900 dark:text-white">
                                     {availableSAUs.find(s => s.id === formData.assigned_to)?.name}
                                   </span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-500 dark:text-gray-400">👨‍💻 Selecione um SAU</span>
-                              )}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                            {availableSAUs.map(sau => (
-                              <SelectItem key={sau.id} value={sau.id} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                                    <span className="text-green-700 dark:text-green-300 font-bold text-sm">{sau.rank}</span>
-                                  </div>
+                                ) : (
+                                  <span className="text-gray-500 dark:text-gray-400">Selecione um SAU</span>
+                                )}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                              {availableSAUs.map(sau => (
+                                <SelectItem key={sau.id} value={sau.id} className="text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-950/20 py-3">
                                   <div className="flex flex-col">
                                     <span className="font-semibold text-gray-900 dark:text-white">{sau.name}</span>
                                     <span className="text-xs text-green-600 dark:text-green-400">SAU - Suporte Técnico</span>
                                   </div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                       </div>
                     </div>
 
@@ -1217,7 +1052,7 @@ export default function TIPage() {
                           id="image-upload"
                         />
                         <Label htmlFor="image-upload" className="cursor-pointer">
-                          <Button variant="outline" type="button" className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-950/20">
+                          <Button variant="outline" type="button" className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/30 dark:hover:border-blue-500">
                             <Upload className="h-4 w-4 mr-2" />
                             Selecionar Imagens
                           </Button>
@@ -1257,7 +1092,7 @@ export default function TIPage() {
                       <Button
                         variant="outline"
                         onClick={() => setIsCreateDialogOpen(false)}
-                        className="h-12 px-6 font-medium border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-800"
+                        className="h-12 px-6 font-medium border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-800"
                       >
                         <X className="h-4 w-4 mr-2" />
                         Cancelar
@@ -1291,70 +1126,41 @@ export default function TIPage() {
          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
            {ticketStatuses.map(status => (
              <div key={status.value} className="space-y-6">
-               {/* Header da Coluna com Gradiente */}
-               <div className="flex items-center justify-between p-6 bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden relative">
-                 {/* Borda decorativa colorida baseada no status */}
-                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${
-                   status.value === 'aberto' ? 'from-blue-500 to-blue-600' :
-                   status.value === 'em_andamento' ? 'from-yellow-500 to-yellow-600' :
-                   status.value === 'resolvido' ? 'from-green-500 to-green-600' :
-                   'from-gray-500 to-gray-600'
-                 }`}></div>
-                 
-                 {/* Efeito de brilho sutil */}
-                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                 
-                 <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-4 relative z-10">
-                   <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
-                     status.value === 'aberto' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
-                     status.value === 'em_andamento' ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
-                     status.value === 'resolvido' ? 'bg-gradient-to-br from-green-400 to-green-600' :
-                     'bg-gradient-to-br from-gray-400 to-gray-600'
-                   } text-white`}>
-                     {status.icon}
-                   </div>
-                   <span className="bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-200 dark:to-gray-100 bg-clip-text text-transparent">
-                     {status.label}
-                   </span>
-                 </h3>
-                 
-                 <Badge className={`${status.color} text-sm font-bold px-4 py-2 rounded-full shadow-lg border-0 relative z-10`}>
-                   📊 {getTicketsByStatus(status.value as Ticket["status"]).length}
-                 </Badge>
-                 
-                 {/* Efeito de brilho no hover */}
-                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
-               </div>
+                               {/* Header da Coluna Simples */}
+                <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      status.value === 'aberto' ? 'bg-blue-500' :
+                      status.value === 'em_andamento' ? 'bg-yellow-500' :
+                      status.value === 'resolvido' ? 'bg-green-500' :
+                      'bg-gray-500'
+                    } text-white`}>
+                      {status.icon}
+                    </div>
+                    <span>{status.label}</span>
+                  </h3>
+                  
+                  <Badge className={`${status.color} text-sm font-medium px-3 py-1 rounded-full`}>
+                    {getTicketsByStatus(status.value as Ticket["status"]).length}
+                  </Badge>
+                </div>
 
-               {/* Área de Drop com Design Premium */}
-               <div className="min-h-[400px] p-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-950 rounded-2xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-                 {/* Background decorativo */}
-                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                 
-                 {/* Borda interna sutil */}
-                 <div className="absolute inset-2 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl opacity-50"></div>
-                 
-                 <div className="space-y-4 relative z-10">
-                   {getTicketsByStatus(status.value as Ticket["status"]).map(ticket => (
-                     <div key={ticket.id} className="space-y-4">
-                       <TicketCard ticket={ticket} onStatusUpdate={updateTicketStatus} />
-                     </div>
-                   ))}
-                 </div>
-                 
-                 {getTicketsByStatus(status.value as Ticket["status"]).length === 0 && (
-                   <div className="text-center text-gray-500 dark:text-gray-400 py-16 relative z-10">
-                     <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                       <span className="text-3xl">📋</span>
-                     </div>
-                     <p className="text-base font-medium text-gray-600 dark:text-gray-300">Nenhum chamado</p>
-                     <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Use os botões para mover chamados</p>
-                   </div>
-                 )}
-                 
-                 {/* Efeito de brilho no hover */}
-                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
-               </div>
+                               {/* Área de Drop Simples */}
+                <div className="min-h-[400px] p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="space-y-4">
+                    {getTicketsByStatus(status.value as Ticket["status"]).map(ticket => (
+                      <div key={ticket.id}>
+                        <TicketCard ticket={ticket} onStatusUpdate={updateTicketStatus} />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {getTicketsByStatus(status.value as Ticket["status"]).length === 0 && (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Nenhum chamado</p>
+                    </div>
+                  )}
+                </div>
              </div>
            ))}
          </div>

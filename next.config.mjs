@@ -1,21 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'img.clerk.com',
-      },
-    ],
-    unoptimized: true,
-  },
-};
+}
 
-export default nextConfig;
+export default nextConfig

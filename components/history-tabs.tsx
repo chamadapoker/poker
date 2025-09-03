@@ -873,11 +873,13 @@ export function HistoryTabs() {
         
       } catch (error) {
         console.error("❌ Erro ao carregar dados do histórico:", error)
-        console.error("🔍 Detalhes do erro:", {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        })
+        if (error instanceof Error) {
+          console.error("🔍 Detalhes do erro:", {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          })
+        }
       }
     }
 

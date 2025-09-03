@@ -74,104 +74,9 @@ function formatDate(dateString: string | null | undefined) {
   return resultado
 }
 
-/**
- * Exporta dados para CSV
- */
-function exportToCSV(data: any[], filename: string) {
-  if (data.length === 0) {
-    alert("Nenhum dado para exportar")
-    return
-  }
 
-  const headers = Object.keys(data[0])
-  const csvContent = [
-    headers.join(','),
-    ...data.map(row => 
-      headers.map(header => {
-        const value = row[header]
-        if (typeof value === 'string' && value.includes(',')) {
-          return `"${value}"`
-        }
-        return value || ''
-      }).join(',')
-    )
-  ].join('\n')
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(blob)
-  link.setAttribute('href', url)
-  link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`)
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
 
-/**
- * Gera PDF usando jsPDF (fallback para quando a biblioteca não estiver disponível)
- */
-function generatePDF(data: any[], filename: string, title: string, columns: string[]) {
-  if (data.length === 0) {
-    alert("Nenhum dado para exportar")
-    return
-  }
-
-  try {
-    // Tentar usar jsPDF se disponível
-    if (typeof window !== 'undefined' && (window as any).jsPDF) {
-      const { jsPDF } = (window as any).jsPDF
-      const doc = new jsPDF()
-      
-      // Título do documento
-      doc.setFontSize(18)
-      doc.text(title, 14, 22)
-      doc.setFontSize(12)
-      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 30)
-      doc.text(`Total de registros: ${data.length}`, 14, 37)
-      
-      // Preparar dados para a tabela
-      const tableData = data.map(row => 
-        columns.map(col => {
-          const value = row[col]
-          if (value === null || value === undefined) return ''
-          if (typeof value === 'string' && value.length > 50) {
-            return value.substring(0, 50) + '...'
-          }
-          return String(value)
-        })
-      )
-      
-      // Adicionar tabela
-      if ((doc as any).autoTable) {
-        (doc as any).autoTable({
-          head: [columns],
-          body: tableData,
-          startY: 45,
-          styles: {
-            fontSize: 8,
-            cellPadding: 2
-          },
-          headStyles: {
-            fillColor: [41, 128, 185],
-            textColor: 255
-          }
-        })
-      }
-      
-      // Salvar PDF
-      doc.save(`${filename}-${new Date().toISOString().split('T')[0]}.pdf`)
-    } else {
-      // Fallback: criar PDF simples usando canvas
-      createSimplePDF(data, filename, title, columns)
-    }
-  } catch (error) {
-    console.error("Erro ao gerar PDF:", error)
-    // Fallback para CSV
-    exportToCSV(data, filename)
-    alert("Erro ao gerar PDF. Arquivo CSV foi gerado como alternativa.")
-  }
-}
 
 /**
  * Cria PDF simples usando canvas (fallback)
@@ -242,253 +147,13 @@ function createSimplePDF(data: any[], filename: string, title: string, columns: 
   })
 }
 
-  /**
-   * Gera relatório completo em PDF
-   */
-  function generateCompleteReport() {
-    try {
-      if (typeof window !== 'undefined' && (window as any).jsPDF) {
-        const { jsPDF } = (window as any).jsPDF
-        const doc = new jsPDF()
-        
-        // Título principal
-        doc.setFontSize(20)
-        doc.text('RELATÓRIO COMPLETO DO SISTEMA', 14, 22)
-        doc.setFontSize(12)
-        doc.text(`Esquadrão - ${new Date().toLocaleString('pt-BR')}`, 14, 30)
-        
-        let currentY = 40
-        
-        // Seção de Presença
-        if (attendanceRecords.length > 0) {
-          doc.setFontSize(16)
-          doc.text('1. HISTÓRICO DE PRESENÇA', 14, currentY)
-          currentY += 10
-          
-          const attendanceData = attendanceRecords.map(r => [
-            `${r.rank} ${r.military_name}`,
-            formatDate(r.date),
-            r.status,
-            r.justification_id ? 'Sim' : 'Não'
-          ])
-          
-          if ((doc as any).autoTable) {
-            (doc as any).autoTable({
-              head: [['Militar', 'Data', 'Status', 'Justificativa']],
-              body: attendanceData,
-              startY: currentY,
-              styles: { fontSize: 8 }
-            })
-            currentY = (doc as any).lastAutoTable.finalY + 10
-          }
-        }
-        
-        // Seção de Justificativas
-        if (justificationRecords.length > 0) {
-          doc.setFontSize(16)
-          doc.text('2. HISTÓRICO DE JUSTIFICATIVAS', 14, currentY)
-          currentY += 10
-          
-          const justificationData = justificationRecords.map(r => [
-            r.military_name,
-            r.type,
-            `${formatDate(r.start_date)} - ${formatDate(r.end_date)}`,
-            r.approved ? 'Aprovada' : 'Pendente'
-          ])
-          
-          if ((doc as any).autoTable) {
-            (doc as any).autoTable({
-              head: [['Militar', 'Tipo', 'Período', 'Status']],
-              body: justificationData,
-              startY: currentY,
-              styles: { fontSize: 8 }
-            })
-            currentY = (doc as any).lastAutoTable.finalY + 10
-          }
-        }
-        
-        // Seção de Eventos
-        if (eventRecords.length > 0) {
-          doc.setFontSize(16)
-          doc.text('3. HISTÓRICO DE EVENTOS', 14, currentY)
-          currentY += 10
-          
-          const eventData = eventRecords.map(r => [
-            r.title,
-            formatDate(r.date),
-            r.time || '—',
-            r.created_by_military_id ? 'Sim' : 'Não'
-          ])
-          
-          if ((doc as any).autoTable) {
-            (doc as any).autoTable({
-              head: [['Título', 'Data', 'Horário', 'Responsável']],
-              body: eventData,
-              startY: currentY,
-              styles: { fontSize: 8 }
-            })
-            currentY = (doc as any).lastAutoTable.finalY + 10
-          }
-        }
-        
-        // Seção de Voos
-        if (flightRecords.length > 0) {
-          doc.setFontSize(16)
-          doc.text('4. HISTÓRICO DE VOOS', 14, currentY)
-          currentY += 10
-          
-          const flightData = flightRecords.map(r => [
-            formatDate(r.flight_date),
-            r.flight_time,
-            r.military_ids ? JSON.parse(r.military_ids).length : 0
-          ])
-          
-          if ((doc as any).autoTable) {
-            (doc as any).autoTable({
-              head: [['Data', 'Horário Zulu', 'Militares']],
-              body: flightData,
-              startY: currentY,
-              styles: { fontSize: 8 }
-            })
-            currentY = (doc as any).lastAutoTable.finalY + 10
-          }
-        }
-        
-        // Seção de Permanência
-        if (permanenceRecords.length > 0) {
-          doc.setFontSize(16)
-          doc.text('5. HISTÓRICO DE PERMANÊNCIA', 14, currentY)
-          currentY += 10
-          
-          const permanenceData = permanenceRecords.map(r => [
-            `${r.rank} ${r.military_name}`,
-            formatDate(r.date),
-            r.status
-          ])
-          
-          if ((doc as any).autoTable) {
-            (doc as any).autoTable({
-              head: [['Militar', 'Data', 'Status']],
-              body: permanenceData,
-              startY: currentY,
-              styles: { fontSize: 8 }
-            })
-          }
-        }
-        
-        // Salvar PDF
-        doc.save(`relatorio-completo-${new Date().toISOString().split('T')[0]}.pdf`)
-      } else {
-        alert("Biblioteca jsPDF não disponível. Use os botões individuais de cada aba.")
-      }
-    } catch (error) {
-      console.error("Erro ao gerar relatório completo:", error)
-      alert("Erro ao gerar relatório completo. Use os botões individuais de cada aba.")
-    }
-  }
 
-  /**
-   * Exporta todos os dados para CSV
-   */
-  function exportAllToCSV() {
-    // Exportar cada seção individualmente
-    alert("Exportando cada seção individualmente...")
-    
-    if (attendanceRecords.length > 0) exportToCSV(attendanceRecords, 'historico-presenca')
-    if (justificationRecords.length > 0) exportToCSV(justificationRecords, 'historico-justificativas')
-    if (eventRecords.length > 0) exportToCSV(eventRecords, 'historico-eventos')
-    if (flightRecords.length > 0) exportToCSV(flightRecords, 'historico-voos')
-    if (permanenceRecords.length > 0) exportToCSV(permanenceRecords, 'historico-permanencia')
-    if (personalNoteRecords.length > 0) exportToCSV(personalNoteRecords, 'historico-notas')
-    if (keyHistoryRecords.length > 0) exportToCSV(keyHistoryRecords, 'historico-chaves')
-    
-    // Mostrar resumo
-    setTimeout(() => {
-      alert(`Exportação concluída!\n\nTotal de arquivos CSV gerados:\n` +
-        `• Presença: ${attendanceRecords.length} registros\n` +
-        `• Justificativas: ${justificationRecords.length} registros\n` +
-        `• Eventos: ${eventRecords.length} registros\n` +
-        `• Voos: ${flightRecords.length} registros\n` +
-        `• Permanência: ${permanenceRecords.length} registros\n` +
-        `• Notas: ${personalNoteRecords.length} registros\n` +
-        `• Chaves: ${keyHistoryRecords.length} registros`)
-    }, 1000)
-  }
 
-  /**
-   * Faz SELECT * em <tableName>, mas devolve [] se a tabela não existir
-   * (error.code === "42P01") ou se outro erro acontecer.
-   */
-  async function fetchTableSafe<T>(tableName: string): Promise<T[]> {
-    console.log(`🔍 Tentando buscar dados da tabela: ${tableName}`)
-    
-    try {
-      const { data, error } = await supabase.from(tableName).select("*")
-      
-      if (error) {
-        if (error.code === "42P01") {
-          console.warn(`⚠️ Tabela '${tableName}' não encontrada — ignorando.`)
-          return []
-        }
-        console.error(`❌ Erro ao buscar '${tableName}':`, error)
-        return []
-      }
-      
-      console.log(`✅ Tabela '${tableName}' carregada com sucesso:`, data?.length || 0, "registros")
-      return (data as T[]) ?? []
-      
-    } catch (catchError) {
-      console.error(`💥 Erro inesperado ao buscar '${tableName}':`, catchError)
-      return []
-    }
-  }
 
-  /**
-   * Busca histórico de chaves com detalhes das chaves (nome e número da sala)
-   */
-  async function fetchKeyHistoryWithDetails(): Promise<KeyHistoryRecord[]> {
-    try {
-      const { data, error } = await supabase
-        .from("claviculario_movements")
-        .select(`
-          *,
-          claviculario_keys (
-            room_name,
-            room_number
-          )
-        `)
-        .order("timestamp", { ascending: false })
 
-      if (error) {
-        if (error.code === "42P01") {
-          console.warn("Tabela 'claviculario_movements' não encontrada — ignorando.")
-          return []
-        }
-        console.error("Erro ao buscar histórico de chaves:", error)
-        return []
-      }
 
-      // Processar os dados para incluir informações das chaves
-      const processedData = (data || []).map(record => ({
-        id: record.id,
-        key_id: record.key_id,
-        key_name: record.claviculario_keys?.room_name || "Chave não encontrada",
-        key_number: record.claviculario_keys?.room_number || null,
-        military_id: record.military_id,
-        military_name: record.military_name || "Militar não encontrado",
-        military_rank: record.military_rank || "",
-        type: record.type,
-        timestamp: record.timestamp,
-        notes: record.notes,
-        created_at: record.created_at
-      }))
 
-      return processedData
-    } catch (error) {
-      console.error("Erro ao buscar histórico de chaves com detalhes:", error)
-      return []
-    }
-  }
+
 
 /* --------------------------------------------------
    Tipos
@@ -731,6 +396,338 @@ export function HistoryTabs() {
     console.log("🎯 Tipos de chamada de HOJE:", tiposChamadaHoje)
   } else {
     console.log("❌ Nenhuma chamada encontrada para HOJE")
+  }
+
+  // Funções helper para exportação e geração de relatórios
+  const exportToCSV = (data: any[], filename: string) => {
+    if (data.length === 0) {
+      alert("Nenhum dado para exportar")
+      return
+    }
+
+    const headers = Object.keys(data[0])
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => 
+        headers.map(header => {
+          const value = row[header]
+          if (typeof value === 'string' && value.includes(',')) {
+            return `"${value}"`
+          }
+          return value || ''
+        }).join(',')
+      )
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const generatePDF = (data: any[], filename: string, title: string, columns: string[]) => {
+    if (data.length === 0) {
+      alert("Nenhum dado para exportar")
+      return
+    }
+
+    try {
+      // Tentar usar jsPDF se disponível
+      if (typeof window !== 'undefined' && (window as any).jsPDF) {
+        const { jsPDF } = (window as any).jsPDF
+        const doc = new jsPDF()
+        
+        // Título do documento
+        doc.setFontSize(18)
+        doc.text(title, 14, 22)
+        doc.setFontSize(12)
+        doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 30)
+        doc.text(`Total de registros: ${data.length}`, 14, 37)
+        
+        // Preparar dados para a tabela
+        const tableData = data.map(row => 
+          columns.map(col => {
+            const value = row[col]
+            if (value === null || value === undefined) return ''
+            if (typeof value === 'string' && value.length > 50) {
+              return value.substring(0, 50) + '...'
+            }
+            return String(value)
+          })
+        )
+        
+        // Adicionar tabela
+        if ((doc as any).autoTable) {
+          (doc as any).autoTable({
+            head: [columns],
+            body: tableData,
+            startY: 45,
+            styles: {
+              fontSize: 8,
+              cellPadding: 2
+            },
+            headStyles: {
+              fillColor: [41, 128, 185],
+              textColor: 255
+            }
+          })
+        }
+        
+        // Salvar PDF
+        doc.save(`${filename}-${new Date().toISOString().split('T')[0]}.pdf`)
+      } else {
+        // Fallback para CSV
+        exportToCSV(data, filename)
+        alert("jsPDF não disponível. Arquivo CSV foi gerado como alternativa.")
+      }
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error)
+      // Fallback para CSV
+      exportToCSV(data, filename)
+      alert("Erro ao gerar PDF. Arquivo CSV foi gerado como alternativa.")
+    }
+  }
+
+  const generateCompleteReport = () => {
+    try {
+      if (typeof window !== 'undefined' && (window as any).jsPDF) {
+        const { jsPDF } = (window as any).jsPDF
+        const doc = new jsPDF()
+        
+        // Título principal
+        doc.setFontSize(20)
+        doc.text('RELATÓRIO COMPLETO DO SISTEMA', 14, 22)
+        doc.setFontSize(12)
+        doc.text(`Esquadrão - ${new Date().toLocaleString('pt-BR')}`, 14, 30)
+        
+        let currentY = 40
+        
+        // Seção de Presença
+        if (attendanceRecords.length > 0) {
+          doc.setFontSize(16)
+          doc.text('1. HISTÓRICO DE PRESENÇA', 14, currentY)
+          currentY += 10
+          
+          const attendanceData = attendanceRecords.map(r => [
+            `${r.rank} ${r.military_name}`,
+            formatDate(r.date),
+            r.status,
+            r.justification_id ? 'Sim' : 'Não'
+          ])
+          
+          if ((doc as any).autoTable) {
+            (doc as any).autoTable({
+              head: [['Militar', 'Data', 'Status', 'Justificativa']],
+              body: attendanceData,
+              startY: currentY,
+              styles: { fontSize: 8 }
+            })
+            currentY = (doc as any).lastAutoTable.finalY + 10
+          }
+        }
+        
+        // Seção de Justificativas
+        if (justificationRecords.length > 0) {
+          doc.setFontSize(16)
+          doc.text('2. HISTÓRICO DE JUSTIFICATIVAS', 14, currentY)
+          currentY += 10
+          
+          const justificationData = justificationRecords.map(r => [
+            r.military_name,
+            r.type,
+            `${formatDate(r.start_date)} - ${formatDate(r.end_date)}`,
+            r.approved ? 'Aprovada' : 'Pendente'
+          ])
+          
+          if ((doc as any).autoTable) {
+            (doc as any).autoTable({
+              head: [['Militar', 'Tipo', 'Período', 'Status']],
+              body: justificationData,
+              startY: currentY,
+              styles: { fontSize: 8 }
+            })
+            currentY = (doc as any).lastAutoTable.finalY + 10
+          }
+        }
+        
+        // Seção de Eventos
+        if (eventRecords.length > 0) {
+          doc.setFontSize(16)
+          doc.text('3. HISTÓRICO DE EVENTOS', 14, currentY)
+          currentY += 10
+          
+          const eventData = eventRecords.map(r => [
+            r.title,
+            formatDate(r.date),
+            r.time || '—',
+            r.created_by_military_id ? 'Sim' : 'Não'
+          ])
+          
+          if ((doc as any).autoTable) {
+            (doc as any).autoTable({
+              head: [['Título', 'Data', 'Horário', 'Responsável']],
+              body: eventData,
+              startY: currentY,
+              styles: { fontSize: 8 }
+            })
+            currentY = (doc as any).lastAutoTable.finalY + 10
+          }
+        }
+        
+        // Seção de Voos
+        if (flightRecords.length > 0) {
+          doc.setFontSize(16)
+          doc.text('4. HISTÓRICO DE VOOS', 14, currentY)
+          currentY += 10
+          
+          const flightData = flightRecords.map(r => [
+            formatDate(r.flight_date),
+            r.flight_time,
+            r.military_ids ? JSON.parse(r.military_ids).length : 0
+          ])
+          
+          if ((doc as any).autoTable) {
+            (doc as any).autoTable({
+              head: [['Data', 'Horário Zulu', 'Militares']],
+              body: flightData,
+              startY: currentY,
+              styles: { fontSize: 8 }
+            })
+            currentY = (doc as any).lastAutoTable.finalY + 10
+          }
+        }
+        
+        // Seção de Permanência
+        if (permanenceRecords.length > 0) {
+          doc.setFontSize(16)
+          doc.text('5. HISTÓRICO DE PERMANÊNCIA', 14, currentY)
+          currentY += 10
+          
+          const permanenceData = permanenceRecords.map(r => [
+            `${r.rank} ${r.military_name}`,
+            formatDate(r.date),
+            r.status
+          ])
+          
+          if ((doc as any).autoTable) {
+            (doc as any).autoTable({
+              head: [['Militar', 'Data', 'Status']],
+              body: permanenceData,
+              startY: currentY,
+              styles: { fontSize: 8 }
+            })
+          }
+        }
+        
+        // Salvar PDF
+        doc.save(`relatorio-completo-${new Date().toISOString().split('T')[0]}.pdf`)
+        
+      } else {
+        alert("jsPDF não está disponível. Por favor, instale a biblioteca.")
+      }
+    } catch (error) {
+      console.error("Erro ao gerar relatório completo:", error)
+      alert("Erro ao gerar relatório completo. Tente novamente.")
+    }
+  }
+
+  const exportAllToCSV = () => {
+    // Exportar cada seção individualmente
+    alert("Exportando cada seção individualmente...")
+    
+    if (attendanceRecords.length > 0) exportToCSV(attendanceRecords, 'historico-presenca')
+    if (justificationRecords.length > 0) exportToCSV(justificationRecords, 'historico-justificativas')
+    if (eventRecords.length > 0) exportToCSV(eventRecords, 'historico-eventos')
+    if (flightRecords.length > 0) exportToCSV(flightRecords, 'historico-voos')
+    if (permanenceRecords.length > 0) exportToCSV(permanenceRecords, 'historico-permanencia')
+    if (personalNoteRecords.length > 0) exportToCSV(personalNoteRecords, 'historico-notas')
+    if (keyHistoryRecords.length > 0) exportToCSV(keyHistoryRecords, 'historico-chaves')
+    
+    // Mostrar resumo
+    setTimeout(() => {
+      alert(`Exportação concluída!\n\nTotal de arquivos CSV gerados:\n` +
+        `• Presença: ${attendanceRecords.length} registros\n` +
+        `• Justificativas: ${justificationRecords.length} registros\n` +
+        `• Eventos: ${eventRecords.length} registros\n` +
+        `• Voos: ${flightRecords.length} registros\n` +
+        `• Permanência: ${permanenceRecords.length} registros\n` +
+        `• Notas: ${personalNoteRecords.length} registros\n` +
+        `• Chaves: ${keyHistoryRecords.length} registros`)
+    }, 1000)
+  }
+
+  const fetchTableSafe = async <T,>(tableName: string): Promise<T[]> => {
+    console.log(`🔍 Tentando buscar dados da tabela: ${tableName}`)
+    
+    try {
+      const { data, error } = await supabase.from(tableName).select("*")
+      
+      if (error) {
+        if (error.code === "42P01") {
+          console.warn(`⚠️ Tabela '${tableName}' não encontrada — ignorando.`)
+          return []
+        }
+        console.error(`❌ Erro ao buscar '${tableName}':`, error)
+        return []
+      }
+      
+      console.log(`✅ Tabela '${tableName}' carregada com sucesso:`, data?.length || 0, "registros")
+      return (data as T[]) ?? []
+      
+    } catch (catchError) {
+      console.error(`💥 Erro inesperado ao buscar '${tableName}':`, catchError)
+      return []
+    }
+  }
+
+  const fetchKeyHistoryWithDetails = async (): Promise<KeyHistoryRecord[]> => {
+    try {
+      const { data, error } = await supabase
+        .from("claviculario_movements")
+        .select(`
+          *,
+          claviculario_keys (
+            room_name,
+            room_number
+          )
+        `)
+        .order("timestamp", { ascending: false })
+
+      if (error) {
+        if (error.code === "42P01") {
+          console.warn("Tabela 'claviculario_movements' não encontrada — ignorando.")
+          return []
+        }
+        console.error("Erro ao buscar histórico de chaves:", error)
+        return []
+      }
+
+      // Processar os dados para incluir informações das chaves
+      const processedData = (data || []).map(record => ({
+        id: record.id,
+        key_id: record.key_id,
+        key_name: record.claviculario_keys?.room_name || "Chave não encontrada",
+        key_number: record.claviculario_keys?.room_number || null,
+        military_id: record.military_id,
+        military_name: record.military_name || "Militar não encontrado",
+        military_rank: record.military_rank || "",
+        type: record.type,
+        timestamp: record.timestamp,
+        notes: record.notes,
+        created_at: record.created_at
+      }))
+
+      return processedData
+    } catch (error) {
+      console.error("Erro ao buscar histórico de chaves com detalhes:", error)
+      return []
+    }
   }
   
   // Verificar todos os tipos de chamada disponíveis

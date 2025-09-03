@@ -366,12 +366,15 @@ export async function fetchMonthlyAttendanceStats() {
       return acc
     }, {} as Record<string, { present: number, absent: number, total: number }>)
 
-    return Object.entries(monthlyData || {}).map(([month, stats]) => ({
-      month,
-      present: stats.present,
-      absent: stats.absent,
-      percentage: stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0
-    }))
+    return Object.entries(monthlyData || {}).map(([month, stats]) => {
+      const typedStats = stats as { present: number, absent: number, total: number }
+      return {
+        month,
+        present: typedStats.present,
+        absent: typedStats.absent,
+        percentage: typedStats.total > 0 ? Math.round((typedStats.present / typedStats.total) * 100) : 0
+      }
+    })
   } catch (error) {
     console.error("Failed to fetch monthly attendance stats:", error)
     return []

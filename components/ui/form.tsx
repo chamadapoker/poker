@@ -9,6 +9,7 @@ import {
   type FieldPath,
   type FieldValues,
   type ControllerProps,
+  type Path,
 } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
@@ -18,7 +19,7 @@ const Form = FormProvider
 
 const FormFieldContext = React.createContext<string>("")
 
-const FormField = <TField extends FieldPath<FieldValues>, TForm extends FieldValues>({
+const FormField = <TForm extends FieldValues, TField extends Path<TForm>>({
   ...props
 }: ControllerProps<TForm, TField>) => {
   return (

@@ -71,7 +71,7 @@ function EventCalendar() {
   const fetchEvents = useCallback(async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("military_events")
         .select("*")
         .order("date", { ascending: true })
@@ -138,7 +138,7 @@ function EventCalendar() {
 
     try {
       if (editingEvent) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("military_events")
           .update(eventData)
           .eq("id", editingEvent.id)
@@ -160,7 +160,7 @@ function EventCalendar() {
           resetForm()
         }
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("military_events")
           .insert([eventData])
 
@@ -205,7 +205,7 @@ function EventCalendar() {
   // Deletar evento
   const handleDeleteEvent = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("military_events")
         .delete()
         .eq("id", id)

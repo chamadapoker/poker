@@ -1,5 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
-import { supabaseConfig } from "./supabase-config"
+import { supabase } from "./supabase"
 import type {
   MilitaryPersonnel,
   DailyPermanenceRecord,
@@ -15,9 +14,6 @@ import type {
   MilitaryPersonalChecklist,
   ChecklistItemStatus,
 } from "./types"
-
-// Initialize Supabase client for client-side operations
-const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey)
 
 // Fetch Military Personnel (Read-only)
 export async function fetchMilitaryPersonnel(): Promise<MilitaryPersonnel[]> {

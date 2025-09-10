@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
       setIsLoading(false)
-    }, 8000) // 8 segundos
+    }, 5000) // 5 segundos (reduzido)
 
     // Verificar sessão atual
     const getSession = async () => {

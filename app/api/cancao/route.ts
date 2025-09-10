@@ -1,13 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabase.auth.getUser()

@@ -78,14 +78,14 @@ function AttendanceTracker() {
 
   // NOVO: useEffect separado para reagir às mudanças em justifications
   useEffect(() => {
-    if (justifications.length >= 0) { // Mudança: >= 0 em vez de > 0
+    if (justifications.length > 0) { // Volta para > 0 para evitar loop
       console.log('=== JUSTIFICATIVAS ATUALIZADAS, INICIALIZANDO LISTA ===')
       console.log('Justificativas disponíveis:', justifications)
       console.log('militaryPersonnel disponível:', militaryPersonnel)
       initializeAttendance()
       fetchAttendanceHistory()
     }
-  }, [justifications])
+  }, [justifications.length]) // Dependência apenas do length para evitar loop
 
   const fetchJustifications = async () => {
     console.log("Buscando justificativas para a data:", today)

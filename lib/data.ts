@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { supabase } from "./supabase"
 import { unstable_noStore as noStore } from "next/cache"
 import type {
   MilitaryPersonnel,
@@ -15,18 +15,6 @@ import type {
   MilitaryPersonalChecklist,
   ChecklistItemStatus,
 } from "./types"
-
-// Initialize Supabase client - usar chave anônima para operações do cliente
-import { supabaseConfig } from './supabase-config'
-
-const supabaseUrl = supabaseConfig.url
-const supabaseAnonKey = supabaseConfig.anonKey
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase URL or Anon Key environment variables.")
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Fetch Military Personnel
 export async function fetchMilitaryPersonnel(): Promise<MilitaryPersonnel[]> {

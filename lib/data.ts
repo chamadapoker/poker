@@ -343,7 +343,7 @@ export async function fetchMonthlyAttendanceStats() {
     }
 
     // Group by month and calculate stats
-    const monthlyData = data?.reduce((acc, record) => {
+    const monthlyData = data?.reduce((acc: any, record: any) => {
       const month = new Date(record.date).toLocaleDateString('pt-BR', { month: 'short' })
       if (!acc[month]) {
         acc[month] = { present: 0, absent: 0, total: 0 }

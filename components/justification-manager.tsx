@@ -49,7 +49,7 @@ export function JustificationManager() {
       console.log('📡 URL do Supabase:', process.env.NEXT_PUBLIC_SUPABASE_URL)
       console.log('🔑 Chave anônima configurada:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('military_justifications')
         .select('*')
         .order('created_at', { ascending: false })
@@ -103,7 +103,7 @@ export function JustificationManager() {
     try {
       if (editingId) {
         // Atualizar justificativa existente
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('military_justifications')
           .update({
             military_id: formData.military_id,
@@ -124,7 +124,7 @@ export function JustificationManager() {
         })
       } else {
         // Criar nova justificativa
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('military_justifications')
           .insert([{
             military_id: formData.military_id,
@@ -185,7 +185,7 @@ export function JustificationManager() {
     if (!confirm('Tem certeza que deseja excluir esta justificativa?')) return
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('military_justifications')
         .delete()
         .eq('id', id)

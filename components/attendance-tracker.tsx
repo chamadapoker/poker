@@ -103,7 +103,7 @@ function AttendanceTracker() {
       
       // Debug das datas de cada justificativa
       if (allRecords && allRecords.length > 0) {
-        allRecords.forEach((record, index) => {
+        allRecords.forEach((record: any, index) => {
           console.log(`Justificativa ${index + 1}:`, {
             military_name: record.military_name,
             start_date: record.start_date,

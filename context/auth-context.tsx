@@ -31,7 +31,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
+  // Funções para persistência local do perfil
+  const saveProfileToLocalStorage = (profile: UserProfile) => {
+    try {
+      localStorage.setItem('poker_profile', JSON.stringify(profile))
+      console.log('💾 Perfil salvo no localStorage:', profile)
+    } catch (error) {
+      console.error('❌ Erro ao salvar perfil no localStorage:', error)
+    }
+  }
+
+  const loadProfileFromLocalStorage = (): UserProfile | null => {
+    try {
+      const savedProfile = localStorage.getItem('poker_profile')
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile)
+        console.log('📱 Perfil carregado do localStorage:', profile)
+        return profile
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar perfil do localStorage:', error)
+    }
+    return null
+  }
+
+  const clearProfileFromLocalStorage = () => {
+    try {
+      localStorage.removeItem('poker_profile')
+      console.log('🗑️ Perfil removido do localStorage')
+    } catch (error) {
+      console.error('❌ Erro ao remover perfil do localStorage:', error)
+    }
+  }
+
   useEffect(() => {
+    // Carregar perfil do localStorage imediatamente para melhor UX
+    const savedProfile = loadProfileFromLocalStorage()
+    if (savedProfile) {
+      setProfile(savedProfile)
+      console.log('⚡ Perfil carregado instantaneamente do localStorage')
+    }
+
     // Timeout de segurança para evitar travamento
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
@@ -57,9 +97,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           console.log('👤 Usuário autenticado:', session.user.email)
-          await fetchUserProfile(session.user.id)
+          // Verificar se o perfil do localStorage é do mesmo usuário
+          if (savedProfile && savedProfile.user_id === session.user.id) {
+            console.log('✅ Perfil do localStorage é válido para este usuário')
+            // Sincronizar com o banco em background
+            fetchUserProfile(session.user.id)
+          } else {
+            console.log('🔄 Perfil do localStorage não é válido, buscando do banco...')
+            await fetchUserProfile(session.user.id)
+          }
         } else {
           console.log('👤 Nenhum usuário autenticado')
+          // Limpar perfil se não há usuário
+          setProfile(null)
+          clearProfileFromLocalStorage()
         }
         
         setIsLoading(false)
@@ -84,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await fetchUserProfile(session.user.id)
         } else {
           setProfile(null)
+          clearProfileFromLocalStorage()
         }
         
         setIsLoading(false)
@@ -122,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log('✅ Perfil encontrado:', data)
         setProfile(data)
+        saveProfileToLocalStorage(data)
       }
     } catch (error) {
       console.error('❌ Erro inesperado ao buscar perfil:', error)
@@ -175,6 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log('✅ Perfil criado com sucesso:', data)
         setProfile(data)
+        saveProfileToLocalStorage(data)
       }
     } catch (error) {
       console.error('❌ Erro inesperado ao criar perfil:', error)
@@ -195,6 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null)
       setSession(null)
       setProfile(null)
+      clearProfileFromLocalStorage()
       
       // Fazer logout no Supabase
       const { error } = await supabase.auth.signOut()

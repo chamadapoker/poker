@@ -189,4 +189,4 @@ SELECT
     COUNT(CASE WHEN checked_by IS NULL THEN 1 END) as locations_unchecked
 FROM cleaning_records
 GROUP BY sector
-ORDER BY sector; 
+ORDER BY sector;  b

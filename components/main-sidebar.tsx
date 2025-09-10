@@ -27,7 +27,7 @@ import { toast } from "@/hooks/use-toast"
 
 export function MainSidebar() {
   const pathname = usePathname()
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, isLoading, signOut } = useAuth()
   const { isMobileOpen, toggleMobile } = useMobileMenu()
 
   const navigationItems = [
@@ -157,7 +157,16 @@ export function MainSidebar() {
 
       {/* Footer com Informações de Autenticação */}
       <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800">
-        {user && profile ? (
+        {isLoading ? (
+          <div className="text-center p-3">
+            <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-600 mx-auto mb-2 flex items-center justify-center animate-pulse">
+              <BarChart3 className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 animate-pulse">
+              Carregando perfil...
+            </p>
+          </div>
+        ) : user && profile ? (
           <div className="space-y-3">
             {/* Informações do Usuário */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-white dark:bg-slate-700 shadow-sm">
@@ -221,7 +230,9 @@ export function MainSidebar() {
             <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-600 mx-auto mb-2 flex items-center justify-center">
               <BarChart3 className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Carregando...</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Não autenticado
+            </p>
           </div>
         )}
       </div>

@@ -57,7 +57,7 @@ export async function fetchDailyPermanenceRecords(): Promise<DailyPermanenceReco
 export async function fetchMilitaryAttendanceRecords(): Promise<MilitaryAttendanceRecord[]> {
   noStore()
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("military_attendance_records")
       .select("*")
       .order("date", { ascending: false })
@@ -300,7 +300,7 @@ export async function fetchCurrentDayAttendance() {
   try {
     const today = new Date().toISOString().split('T')[0]
     
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("military_attendance_records")
       .select("*")
       .eq("date", today)
@@ -311,9 +311,9 @@ export async function fetchCurrentDayAttendance() {
     }
 
     const records = data || []
-    const present = records.filter(r => r.status === 'presente').length
-    const absent = records.filter(r => r.status === 'ausente').length
-    const justified = records.filter(r => r.is_justified).length
+    const present = records.filter((r: any) => r.status === 'presente').length
+    const absent = records.filter((r: any) => r.status === 'ausente').length
+    const justified = records.filter((r: any) => r.is_justified).length
     const total = records.length
     const percentage = total > 0 ? Math.round((present / total) * 100) : 0
 
@@ -332,7 +332,7 @@ export async function fetchMonthlyAttendanceStats() {
     tomorrow.setDate(tomorrow.getDate() + 1)
     const startDate = tomorrow.toISOString().split('T')[0]
     
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("military_attendance_records")
       .select("*")
       .gte("date", startDate)

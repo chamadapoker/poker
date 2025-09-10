@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     }
 
     // Incrementar contador de downloads
-    const { error: incrementError } = await supabase
+    const { error: incrementError } = await (supabase as any)
       .rpc('increment_download_count', { cancao_uuid: cancaoId })
 
     if (incrementError) {

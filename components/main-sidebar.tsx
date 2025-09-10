@@ -37,11 +37,11 @@ export function MainSidebar() {
     { title: "Chaves", href: "/key-management", icon: Key, access: "all" },
     { title: "Checklist", href: "/permanence-checklist", icon: ClipboardList, access: "all" },
     { title: "Eventos", href: "/event-calendar", icon: Calendar, access: "all" },
-    { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "admin" },
+    { title: "Canção", href: "/cancao", icon: Music, access: "all" },
     { title: "Faxina", href: "/faxina", icon: Sparkles, access: "all" },
+    { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "admin" },
     { title: "TI", href: "/ti", icon: Monitor, access: "admin" },
     { title: "Histórico", href: "/history", icon: History, access: "admin" },
-    { title: "Canção", href: "/cancao", icon: Music, access: "all" },
   ]
 
   // Filtrar itens baseado no role do usuário

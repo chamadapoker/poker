@@ -37,7 +37,8 @@ function AttendanceTracker() {
   const [militaryAttendance, setMilitaryAttendance] = useState<MilitaryAttendance[]>([])
   const [justifications, setJustifications] = useState<JustificationRecord[]>([])
   const [showPDFButton, setShowPDFButton] = useState(false)
-  const today = format(new Date(), "yyyy-MM-dd")
+  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"))
+  const [isBackdating, setIsBackdating] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -87,9 +88,18 @@ function AttendanceTracker() {
     }
   }, [justifications.length]) // Dependência apenas do length para evitar loop
 
+  // useEffect para reagir às mudanças de data
+  useEffect(() => {
+    if (selectedDate) {
+      console.log('=== DATA ALTERADA, RECARREGANDO DADOS ===')
+      console.log('Nova data selecionada:', selectedDate)
+      fetchJustifications()
+    }
+  }, [selectedDate])
+
   const fetchJustifications = async () => {
-    console.log("Buscando justificativas para a data:", today)
-    console.log("Data atual formatada:", today)
+    console.log("Buscando justificativas para a data:", selectedDate)
+    console.log("Data selecionada formatada:", selectedDate)
     
     // Primeiro, buscar TODAS as justificativas para debug
     const { data: allRecords, error: allError } = await (supabase as any)
@@ -110,24 +120,24 @@ function AttendanceTracker() {
             end_date: record.end_date,
             start_date_type: typeof record.start_date,
             end_date_type: typeof record.end_date,
-            today: today,
-            today_type: typeof today
+            today: selectedDate,
+            today_type: typeof selectedDate
           })
         })
       }
     }
     
-    // Agora buscar apenas as válidas para hoje
+    // Agora buscar apenas as válidas para a data selecionada
     const { data: records, error } = await (supabase as any)
       .from("military_justifications")
       .select("*")
-      .lte("start_date", today)
-      .gte("end_date", today)
+      .lte("start_date", selectedDate)
+      .gte("end_date", selectedDate)
 
     if (error) {
-      console.error("Error fetching justifications for today:", error)
+      console.error("Error fetching justifications for selected date:", error)
     } else {
-      console.log("Justificativas válidas para hoje:", records)
+      console.log("Justificativas válidas para a data selecionada:", records)
       setJustifications(records || [])
     }
   }
@@ -135,7 +145,7 @@ function AttendanceTracker() {
   const initializeAttendance = () => {
     console.log("Inicializando lista de presença...")
     console.log("Justificativas disponíveis:", justifications)
-    console.log("Data atual (today):", today)
+    console.log("Data selecionada:", selectedDate)
     
     const initialAttendance = militaryPersonnel.map((military) => {
       // CORREÇÃO: Comparar datas como strings para evitar problemas de timezone
@@ -143,7 +153,7 @@ function AttendanceTracker() {
         (justification: any) => {
           const justificationStart = justification.start_date
           const justificationEnd = justification.end_date
-          const todayStr = today
+          const todayStr = selectedDate
           
           console.log(`=== VERIFICAÇÃO DETALHADA PARA ${military.rank} ${military.name} ===`)
           console.log('Justificativa sendo verificada:', {
@@ -154,13 +164,13 @@ function AttendanceTracker() {
           })
           
           const nameMatch = justification.military_name === military.name
-          const dateRange = todayStr >= justificationStart && todayStr <= justificationEnd
+          const dateRange = selectedDate >= justificationStart && selectedDate <= justificationEnd
           
           console.log('Resultados da verificação:', {
             name_match: nameMatch,
             date_range: dateRange,
-            start_date_check: `${todayStr} >= ${justificationStart} = ${todayStr >= justificationStart}`,
-            end_date_check: `${todayStr} <= ${justificationEnd} = ${todayStr <= justificationEnd}`
+            start_date_check: `${selectedDate} >= ${justificationStart} = ${selectedDate >= justificationStart}`,
+            end_date_check: `${selectedDate} <= ${justificationEnd} = ${selectedDate <= justificationEnd}`
           })
           
           const result = nameMatch && dateRange
@@ -180,7 +190,7 @@ function AttendanceTracker() {
         rank: military.rank,
         status: isJustified ? "justificado" : "ausente",
         callType: "",
-        date: today,
+        date: selectedDate,
         isJustified,
       }
     })
@@ -189,13 +199,13 @@ function AttendanceTracker() {
   }
 
   const fetchAttendanceHistory = async () => {
-    console.log("Buscando histórico de presença para:", today)
+    console.log("Buscando histórico de presença para:", selectedDate)
     
     try {
       const { data: records, error } = await (supabase as any)
         .from("military_attendance_records")
         .select("*")
-        .eq("date", today)
+        .eq("date", selectedDate)
 
       if (error) {
         console.error("Error fetching attendance history:", error)
@@ -208,7 +218,7 @@ function AttendanceTracker() {
           const isJustified = justifications.some(
             (justification: any) => {
               const nameMatch = justification.military_name === military.name
-              const dateRange = today >= justification.start_date && today <= justification.end_date
+              const dateRange = selectedDate >= justification.start_date && selectedDate <= justification.end_date
               return nameMatch && dateRange
             }
           )
@@ -220,7 +230,7 @@ function AttendanceTracker() {
             rank: military.rank,
             status: record ? record.status : (isJustified ? "justificado" : "ausente"),
             callType: record ? record.call_type : "",
-            date: today,
+            date: selectedDate,
             isJustified,
           }
         })
@@ -286,15 +296,15 @@ function AttendanceTracker() {
     try {
       console.log('=== INICIANDO SALVAMENTO DE PRESENÇA ===')
       console.log('Tipo de chamada selecionado:', selectedCallType)
-      console.log('Data:', today)
+      console.log('Data:', selectedDate)
       console.log('Lista de presença:', militaryAttendance)
       
-      // Remove registros existentes para hoje
+      // Remove registros existentes para a data selecionada
       console.log('1. Removendo registros existentes...')
       const { error: deleteError } = await (supabase as any)
         .from("military_attendance_records")
         .delete()
-        .eq("date", today)
+        .eq("date", selectedDate)
 
       if (deleteError) {
         console.error('Erro ao deletar registros existentes:', deleteError)
@@ -446,12 +456,51 @@ function AttendanceTracker() {
         </Card>
       </div>
 
+      {/* Seletor de Data */}
+      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
+            <Calendar className="h-6 w-6 text-red-600 dark:text-red-400" />
+            Data da Chamada
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 sm:gap-4">
+            <div className="flex-1">
+              <label htmlFor="date-select" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Selecione a data para lançar a presença:
+              </label>
+              <input
+                id="date-select"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => {
+                  console.log('Data alterada para:', e.target.value)
+                  setSelectedDate(e.target.value)
+                  setIsBackdating(e.target.value !== format(new Date(), "yyyy-MM-dd"))
+                }}
+                max={format(new Date(), "yyyy-MM-dd")}
+                className="w-full max-w-md px-3 py-2 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 rounded-md transition-colors duration-200 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            {isBackdating && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                  Lançando presença em data passada
+                </span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Tipo de Chamada */}
       <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Settings className="h-6 w-6 text-red-600 dark:text-red-400" />
-            Tipo de Chamada
+            Tipo de Chamada - {format(new Date(selectedDate), "dd/MM/yyyy")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -490,7 +539,7 @@ function AttendanceTracker() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Users className="h-6 w-6 text-red-600 dark:text-red-400" />
-            Militares ({format(new Date(), "dd/MM/yyyy")})
+            Militares ({format(new Date(selectedDate), "dd/MM/yyyy")})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6">

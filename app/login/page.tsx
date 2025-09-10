@@ -20,16 +20,9 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Verificar se já está logado
-    checkUser()
+    // Não verificar usuário logado - sempre mostrar página de login
+    console.log('🔐 Página de login carregada - sempre requer novo login')
   }, [])
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      router.push("/dashboard")
-    }
-  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

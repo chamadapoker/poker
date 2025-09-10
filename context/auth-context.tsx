@@ -65,20 +65,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Carregar perfil do localStorage imediatamente para melhor UX
-    const savedProfile = loadProfileFromLocalStorage()
-    if (savedProfile) {
-      setProfile(savedProfile)
-      console.log('⚡ Perfil carregado instantaneamente do localStorage')
-    }
+    // Sempre limpar perfil persistente ao inicializar
+    clearProfileFromLocalStorage()
+    setProfile(null)
+    setUser(null)
+    setSession(null)
 
     // Timeout de segurança para evitar travamento
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
       setIsLoading(false)
-    }, 5000) // 5 segundos (reduzido)
+    }, 2000) // 2 segundos
 
-    // Verificar sessão atual
+    // Verificar sessão atual (mas não carregar automaticamente)
     const getSession = async () => {
       try {
         console.log('🔐 Verificando sessão atual...')
@@ -92,25 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         console.log('✅ Sessão encontrada:', session ? 'Sim' : 'Não')
-        setSession(session)
-        setUser(session?.user ?? null)
         
+        // Se há sessão, fazer logout automático para forçar novo login
         if (session?.user) {
-          console.log('👤 Usuário autenticado:', session.user.email)
-          // Verificar se o perfil do localStorage é do mesmo usuário
-          if (savedProfile && savedProfile.user_id === session.user.id) {
-            console.log('✅ Perfil do localStorage é válido para este usuário')
-            // Sincronizar com o banco em background
-            fetchUserProfile(session.user.id)
-          } else {
-            console.log('🔄 Perfil do localStorage não é válido, buscando do banco...')
-            await fetchUserProfile(session.user.id)
-          }
-        } else {
-          console.log('👤 Nenhum usuário autenticado')
-          // Limpar perfil se não há usuário
-          setProfile(null)
-          clearProfileFromLocalStorage()
+          console.log('🚪 Sessão encontrada, fazendo logout automático...')
+          await supabase.auth.signOut()
         }
         
         setIsLoading(false)
@@ -128,12 +113,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Evento de autenticação:', event, session?.user?.email)
-        setSession(session)
-        setUser(session?.user ?? null)
         
-        if (session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Quando usuário faz login, carregar perfil
+          setSession(session)
+          setUser(session.user)
           await fetchUserProfile(session.user.id)
-        } else {
+        } else if (event === 'SIGNED_OUT') {
+          // Quando usuário faz logout, limpar tudo
+          setSession(null)
+          setUser(null)
           setProfile(null)
           clearProfileFromLocalStorage()
         }
@@ -174,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log('✅ Perfil encontrado:', data)
         setProfile(data)
-        saveProfileToLocalStorage(data)
+        // Não salvar no localStorage para evitar persistência
       }
     } catch (error) {
       console.error('❌ Erro inesperado ao buscar perfil:', error)
@@ -228,7 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log('✅ Perfil criado com sucesso:', data)
         setProfile(data)
-        saveProfileToLocalStorage(data)
+        // Não salvar no localStorage para evitar persistência
       }
     } catch (error) {
       console.error('❌ Erro inesperado ao criar perfil:', error)

@@ -153,7 +153,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
           category: editData.category,
           notes: editData.notes,
           updated_at: new Date().toISOString()
-        })
+        } as any)
         .eq("id", ticket.id)
 
       if (error) {
@@ -476,7 +476,7 @@ export default function TIPage() {
       const { data, error } = await supabase
         .from("ti_tickets")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false }) as any
 
       if (error) {
         console.error("Erro ao buscar chamados:", error)
@@ -547,7 +547,7 @@ export default function TIPage() {
 
       const { error } = await supabase
         .from("ti_tickets")
-        .insert([newTicket])
+        .insert([newTicket] as any)
 
       if (error) {
         console.error("Erro ao criar chamado:", error)
@@ -601,7 +601,7 @@ export default function TIPage() {
         .from("ti_tickets")
         .select("id, status")
         .eq("id", ticketId)
-        .single()
+        .single() as any
       
       if (fetchError) {
         console.error("❌ Erro ao buscar chamado:", fetchError)
@@ -642,7 +642,7 @@ export default function TIPage() {
       
       const { data, error } = await supabase
         .from("ti_tickets")
-        .update(updateData)
+        .update(updateData as any)
         .eq("id", ticketId)
         .select()
 

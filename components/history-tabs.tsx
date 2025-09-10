@@ -687,11 +687,7 @@ export function HistoryTabs() {
 
   useEffect(() => {
     const fetchAllRecords = async () => {
-      console.log("📥 Carregando dados completos do histórico...")
-      console.log("🔧 Configuração Supabase:", {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'Config não encontrada',
-        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      })
+      // Carregar dados do histórico
 
       try {
         // 1. Histórico de Presença
@@ -700,93 +696,43 @@ export function HistoryTabs() {
         setAttendanceRecords(attendanceData)
 
         // 2. Histórico de Justificativas
-        console.log("🔄 Carregando histórico de justificativas...")
         const justificationData = await fetchTableSafe<JustificationRecord>("military_justifications")
-        console.log("📊 Dados de justificativas recebidos:", justificationData)
         setJustificationRecords(justificationData)
-        console.log("✅ Justificativas carregadas:", justificationData.length, "registros")
 
         // 3. Histórico de Eventos
-        console.log("🔄 Carregando histórico de eventos...")
         const eventData = await fetchTableSafe<EventRecord>("military_events")
-        console.log("📊 Dados de eventos recebidos:", eventData)
         setEventRecords(eventData)
-        console.log("✅ Eventos carregados:", eventData.length, "registros")
 
         // 4. Histórico de Voos
-        console.log("🔄 Carregando histórico de voos...")
         const flightData = await fetchTableSafe<FlightRecord>("flight_schedules")
-        console.log("📊 Dados de voos recebidos:", flightData)
         setFlightRecords(flightData)
-        console.log("✅ Voos carregados:", flightData.length, "registros")
 
         // 5. Histórico de Permanência
-        console.log("🔄 Carregando histórico de permanência...")
         const permanenceData = await fetchTableSafe<PermanenceRecord>("daily_permanence_records")
-        console.log("📊 Dados de permanência recebidos:", permanenceData)
         setPermanenceRecords(permanenceData)
-        console.log("✅ Permanência carregada:", permanenceData.length, "registros")
 
         // 6. Histórico de Notas Pessoais
-        console.log("🔄 Carregando histórico de notas pessoais...")
         const notesData = await fetchTableSafe<PersonalNoteRecord>("personal_notes")
-        console.log("📊 Dados de notas recebidos:", notesData)
         setPersonalNoteRecords(notesData)
-        console.log("✅ Notas carregadas:", notesData.length, "registros")
 
         // 7. Histórico de Chaves
-        console.log("🔄 Carregando histórico de chaves...")
         const keysData = await fetchKeyHistoryWithDetails()
-        console.log("📊 Dados de chaves recebidos:", keysData)
         setKeyHistoryRecords(keysData)
-        console.log("✅ Chaves carregadas:", keysData.length, "registros")
 
         // 8. Histórico de TI
-        console.log("🔄 Carregando histórico de TI...")
         const tiData = await fetchTableSafe<any>("ti_tickets")
-        console.log("📊 Dados de TI recebidos:", tiData)
         setTiTicketRecords(tiData)
-        console.log("✅ TI carregado:", tiData.length, "registros")
-
-        console.log("🎉 Todos os dados foram carregados com sucesso!")
-        console.log("📊 Resumo final:", {
-          attendance: attendanceData.length,
-          justifications: justificationData.length,
-          events: eventData.length,
-          flights: flightData.length,
-          permanence: permanenceData.length,
-          notes: notesData.length,
-          keys: keysData.length,
-          ti: tiData.length
-        })
         
       } catch (error) {
-        console.error("❌ Erro ao carregar dados do histórico:", error)
-        if (error instanceof Error) {
-          console.error("🔍 Detalhes do erro:", {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          })
-        }
+        console.error("Erro ao carregar dados do histórico:", error)
       }
     }
 
     fetchAllRecords()
   }, [])
 
-  const filteredAttendance = attendanceRecords.filter(
-    (r) => {
-      // LOG CRÍTICO: Verificar filtro para cada registro
-      console.log("🚨 FILTRO - Processando registro:", {
-        military: r.military_name,
-        date: r.date,
-        status: r.status,
-        search: attendanceSearch,
-        filterStatus: attendanceFilterStatus,
-        filterDate: attendanceFilterDate
-      })
-      
+  const filteredAttendance = useMemo(() => 
+    attendanceRecords.filter((r) => {
       // Busca por nome do militar
       const nameMatch = safeLower(r.military_name).includes(attendanceSearch.toLowerCase())
       
@@ -800,11 +746,6 @@ export function HistoryTabs() {
         const recordDate = formatDate(r.date)
         const filterDate = formatDate(attendanceFilterDate)
         dateMatch = recordDate === filterDate
-        console.log("🚨 FILTRO - Comparação de data:", {
-          recordDate,
-          filterDate,
-          dateMatch
-        })
       }
       
       // Busca por justificativa (se o filtro de status for "justificado")
@@ -819,47 +760,15 @@ export function HistoryTabs() {
         }
       }
       
-      const resultado = nameMatch && statusMatch && dateMatch && justificationMatch
-      console.log("🚨 FILTRO - Resultado final:", {
-        military: r.military_name,
-        nameMatch,
-        statusMatch,
-        dateMatch,
-        justificationMatch,
-        resultado
-      })
-      
-      return resultado
-    }
+      return nameMatch && statusMatch && dateMatch && justificationMatch
+    }), 
+    [attendanceRecords, attendanceSearch, attendanceFilterStatus, attendanceFilterDate, attendanceFilterJustificationType, justificationRecords]
   )
 
   // Log para debug do filtro
-  console.log("🔍 Filtros aplicados:", {
-    search: attendanceSearch,
-    status: attendanceFilterStatus,
-    date: attendanceFilterDate,
-    justificationType: attendanceFilterJustificationType,
-    totalRecords: attendanceRecords.length,
-    filteredRecords: filteredAttendance.length
-  })
+  // Filtros aplicados para presença
   
-  // Log específico para verificar o TC CARNEIRO no filtro
-  const tcCarneiroFiltered = filteredAttendance.find(r => r.military_name.includes("CARNEIRO"))
-  if (tcCarneiroFiltered) {
-    console.log("✅ TC CARNEIRO aparece no filtro:", tcCarneiroFiltered)
-  } else {
-    console.log("❌ TC CARNEIRO NÃO aparece no filtro")
-    // Verificar se está sendo filtrado incorretamente
-    const tcCarneiroOriginal = attendanceRecords.find(r => r.military_name.includes("CARNEIRO"))
-    if (tcCarneiroOriginal) {
-      console.log("🔍 TC CARNEIRO nos dados originais:", tcCarneiroOriginal)
-      console.log("🔍 Verificando filtros:", {
-        searchMatch: safeLower(tcCarneiroOriginal.military_name).includes(attendanceSearch.toLowerCase()),
-        statusMatch: attendanceFilterStatus === "all" || tcCarneiroOriginal.status === attendanceFilterStatus,
-        dateMatch: attendanceFilterDate === "all" || tcCarneiroOriginal.date === attendanceFilterDate
-      })
-    }
-  }
+  // Filtros de presença aplicados
 
   const filteredJustifications = justificationRecords.filter(
     (r) =>
@@ -1007,103 +916,50 @@ export function HistoryTabs() {
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-red-50 to-red-100 dark:from-gray-800 dark:via-red-950/20 dark:to-red-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600 shadow-lg"></div>
+          <Card className="border border-red-200 dark:border-red-700 shadow-sm hover:shadow-md transition-shadow duration-200">
             
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
-                  {permanenceRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-red-800 dark:text-red-200">Permanência</div>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
+                {permanenceRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Permanência</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-indigo-50 to-indigo-100 dark:from-gray-800 dark:via-indigo-950/20 dark:to-indigo-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-indigo-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
-                  {personalNoteRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200">Notas</div>
+          <Card className="border border-indigo-200 dark:border-indigo-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+                {personalNoteRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Notas</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-yellow-50 to-yellow-100 dark:from-gray-800 dark:via-yellow-950/20 dark:to-yellow-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
-                  {keyHistoryRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-yellow-800 dark:text-yellow-200">Chaves</div>
+          <Card className="border border-yellow-200 dark:border-yellow-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                {keyHistoryRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Chaves</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-cyan-50 to-cyan-100 dark:from-gray-800 dark:via-cyan-950/20 dark:to-cyan-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-cyan-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1">
-                  {tiTicketRecords.length}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-cyan-800 dark:text-cyan-200">TI</div>
+          <Card className="border border-cyan-200 dark:border-cyan-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1">
+                {tiTicketRecords.length}
               </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">TI</div>
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-950/20 dark:to-gray-900/30 group cursor-pointer hover:scale-105">
-            {/* Background decorativo com gradiente */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-500 to-gray-600 shadow-lg"></div>
-            
-            {/* Efeito de brilho sutil no fundo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <CardContent className="p-4 text-center relative">
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
-                  {totalRecords}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Total</div>
-          </div>
-              
-              {/* Efeito de brilho no hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <Card className="border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
+                {totalRecords}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Total</div>
             </CardContent>
           </Card>
         </div>

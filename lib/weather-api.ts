@@ -114,7 +114,20 @@ export async function fetchWeatherData(): Promise<WeatherData> {
 
     // Processa previsão de 5 dias
     const dailyForecasts = forecastData.list.filter((item: any, index: number) => index % 8 === 0).slice(0, 5)
-    const days = ['Hoje', 'Amanhã', 'Segunda', 'Terça', 'Quarta']
+    
+    // Gerar dias dinamicamente baseado na data atual
+    const getDayName = (date: Date, index: number) => {
+      if (index === 0) return 'Hoje'
+      if (index === 1) return 'Amanhã'
+      
+      const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+      return dayNames[date.getDay()]
+    }
+    
+    const days = dailyForecasts.map((item: any, index: number) => {
+      const date = new Date(item.dt * 1000)
+      return getDayName(date, index)
+    })
     
     const forecast = dailyForecasts.map((item: any, index: number) => {
       const date = new Date(item.dt * 1000)
@@ -199,6 +212,43 @@ function getWindDirection(degrees: number): string {
 }
 
 function getMockWeatherData(): WeatherData {
+  // Gerar dias dinamicamente baseado na data atual
+  const getDayName = (date: Date, index: number) => {
+    if (index === 0) return 'Hoje'
+    if (index === 1) return 'Amanhã'
+    
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+    return dayNames[date.getDay()]
+  }
+
+  const generateForecast = () => {
+    const forecast = []
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+    
+    for (let i = 0; i < 5; i++) {
+      const date = new Date()
+      date.setDate(date.getDate() + i)
+      
+      const dayName = i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : dayNames[date.getDay()]
+      
+      forecast.push({
+        day: dayName,
+        date: date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        temperature: 22 - i * 2,
+        maxTemp: 26 - i * 2,
+        minTemp: 16 - i * 2,
+        condition: i === 0 ? "Ensolarado" : i === 1 ? "Nublado" : i === 2 ? "Chuvoso" : "Nublado",
+        icon: i === 0 ? "sun" : i === 1 ? "cloud" : i === 2 ? "rain" : "cloud",
+        rainProbability: i === 0 ? 10 : i === 1 ? 30 : i === 2 ? 80 : 40,
+        wind: 15 + i * 3,
+        humidity: 65 + i * 5,
+        pressure: 1013 - i * 2
+      })
+    }
+    
+    return forecast
+  }
+
   return {
     current: {
       temperature: 22,
@@ -216,72 +266,6 @@ function getMockWeatherData(): WeatherData {
       feelsLike: 24,
       visibility: 10
     },
-    forecast: [
-      {
-        day: "Hoje",
-        date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        temperature: 22,
-        maxTemp: 26,
-        minTemp: 16,
-        condition: "Ensolarado",
-        icon: "sun",
-        rainProbability: 10,
-        wind: 15,
-        humidity: 65,
-        pressure: 1013
-      },
-      {
-        day: "Amanhã",
-        date: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        temperature: 20,
-        maxTemp: 24,
-        minTemp: 14,
-        condition: "Nublado",
-        icon: "cloud",
-        rainProbability: 30,
-        wind: 18,
-        humidity: 75,
-        pressure: 1010
-      },
-      {
-        day: "Segunda",
-        date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        temperature: 18,
-        maxTemp: 22,
-        minTemp: 12,
-        condition: "Chuvoso",
-        icon: "rain",
-        rainProbability: 80,
-        wind: 25,
-        humidity: 85,
-        pressure: 1005
-      },
-      {
-        day: "Terça",
-        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        temperature: 19,
-        maxTemp: 23,
-        minTemp: 13,
-        condition: "Nublado",
-        icon: "cloud",
-        rainProbability: 40,
-        wind: 16,
-        humidity: 70,
-        pressure: 1008
-      },
-      {
-        day: "Quarta",
-        date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        temperature: 24,
-        maxTemp: 28,
-        minTemp: 17,
-        condition: "Ensolarado",
-        icon: "sun",
-        rainProbability: 5,
-        wind: 12,
-        humidity: 60,
-        pressure: 1015
-      }
-    ]
+    forecast: generateForecast()
   }
 }

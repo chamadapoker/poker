@@ -62,7 +62,7 @@ function PermanenceChecklist() {
 
   const fetchChecklistItems = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("checklist_items")
         .select("*")
         .eq("is_active", true)
@@ -95,7 +95,7 @@ function PermanenceChecklist() {
   }
 
   const fetchDailyRecords = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("daily_permanence_records")
       .select("*")
       .order("date", { ascending: false })
@@ -119,7 +119,7 @@ function PermanenceChecklist() {
     try {
       console.log("🔍 Carregando checklist existente para militar:", militaryId)
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("daily_permanence_records")
         .select("*")
         .eq("military_id", militaryId)
@@ -222,7 +222,7 @@ function PermanenceChecklist() {
       console.log("Tentando salvar registro:", newRecord)
 
       // Tentar inserir sem o .select() primeiro
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("daily_permanence_records")
         .insert([newRecord])
 
@@ -290,7 +290,7 @@ function PermanenceChecklist() {
 
       console.log("💾 Salvando nota pessoal:", newNote)
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("personal_notes")
         .insert([newNote])
 

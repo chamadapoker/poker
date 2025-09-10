@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     }
 
     // Registrar download
-    const { error: downloadError } = await supabase
+    const { error: downloadError } = await (supabase as any)
       .from('cancao_downloads')
       .insert({
         cancao_id: cancaoId,

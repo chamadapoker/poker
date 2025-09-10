@@ -140,7 +140,7 @@ function AttendanceTracker() {
     const initialAttendance = militaryPersonnel.map((military) => {
       // CORREÇÃO: Comparar datas como strings para evitar problemas de timezone
       const isJustified = justifications.some(
-        (justification) => {
+        (justification: any) => {
           const justificationStart = justification.start_date
           const justificationEnd = justification.end_date
           const todayStr = today
@@ -204,9 +204,9 @@ function AttendanceTracker() {
       } else if (records && records.length > 0) {
         // Atualiza o estado com os dados do banco
         const updatedAttendance = militaryPersonnel.map((military) => {
-          const record = records.find(r => r.military_id === military.id)
+          const record = records.find((r: any) => r.military_id === military.id)
           const isJustified = justifications.some(
-            (justification) => {
+            (justification: any) => {
               const nameMatch = justification.military_name === military.name
               const dateRange = today >= justification.start_date && today <= justification.end_date
               return nameMatch && dateRange
@@ -234,7 +234,7 @@ function AttendanceTracker() {
 
   const handleStatusChange = (militaryId: string, newStatus: string) => {
     setMilitaryAttendance(prev => 
-      prev.map(military => 
+      prev.map((military: any) => 
         military.militaryId === militaryId 
           ? { ...military, status: newStatus }
           : military
@@ -249,7 +249,7 @@ function AttendanceTracker() {
     }
     
     // Limpar apenas os status não justificados, mantendo os justificados
-    const clearedAttendance = militaryAttendance.map(military => {
+    const clearedAttendance = militaryAttendance.map((military: any) => {
       if (military.isJustified) {
         // Manter justificados como estão
         return military
@@ -303,7 +303,7 @@ function AttendanceTracker() {
       console.log('Registros existentes removidos com sucesso')
 
       // Insere novos registros (incluindo militares justificados)
-      const recordsToInsert = militaryAttendance.map((attendance) => ({
+      const recordsToInsert = militaryAttendance.map((attendance: any) => ({
         military_id: attendance.militaryId,
         military_name: attendance.militaryName,
         rank: attendance.rank,
@@ -339,7 +339,7 @@ function AttendanceTracker() {
 
       toast({
         title: "✅ Presença Salva com Sucesso!",
-        description: `Dados de presença salvos para ${callTypes.find(t => t.id === selectedCallType)?.label}. Agora você pode gerar o PDF ou enviar por email.`,
+        description: `Dados de presença salvos para ${callTypes.find((t: any) => t.id === selectedCallType)?.label}. Agora você pode gerar o PDF ou enviar por email.`,
       })
       setShowPDFButton(true)
     } catch (error: any) {
@@ -462,11 +462,11 @@ function AttendanceTracker() {
             }}>
               <SelectTrigger className="w-full max-w-md border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
                 <SelectValue placeholder="Selecione o tipo de chamada">
-                  {selectedCallType && callTypes.find(t => t.id === selectedCallType)?.label}
+                  {selectedCallType && callTypes.find((t: any) => t.id === selectedCallType)?.label}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {callTypes.map((type) => (
+                {callTypes.map((type: any) => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.label}
                   </SelectItem>
@@ -495,7 +495,7 @@ function AttendanceTracker() {
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
           <div className="space-y-3">
-            {allMilitary.map((military) => (
+            {allMilitary.map((military: any) => (
               <div
                 key={military.id}
                 className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300 group`}
@@ -525,11 +525,11 @@ function AttendanceTracker() {
                   >
                     <SelectTrigger className="w-full sm:w-48 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
                       <SelectValue>
-                        {military.status && attendanceStatuses.find(s => s.id === military.status)?.label}
+                        {military.status && attendanceStatuses.find((s: any) => s.id === military.status)?.label}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {attendanceStatuses.map((status) => (
+                      {attendanceStatuses.map((status: any) => (
                         <SelectItem key={status.id} value={status.id}>
                           {status.label}
                         </SelectItem>
@@ -589,11 +589,11 @@ function AttendanceTracker() {
               <div className="flex flex-col items-center gap-4">
                 <div className="w-full max-w-md mx-auto px-2 sm:px-0">
                   <PDFGenerator
-                    militaryAttendance={allMilitary.map(military => {
+                    militaryAttendance={allMilitary.map((military: any) => {
                       // Buscar o motivo da justificativa se o militar estiver justificado
                       if (military.isJustified) {
                         // Buscar por nome completo ou apenas pelo nome
-                        const justification = justifications.find(j => 
+                        const justification = justifications.find((j: any) => 
                           j.military_name === `${military.rank} ${military.militaryName}` ||
                           j.military_name === military.militaryName ||
                           j.military_name.includes(military.militaryName)

@@ -391,10 +391,10 @@ export async function fetchJustificationTypes() {
 
     const total = (Object.values(reasonCounts || {}) as number[]).reduce((sum: number, count: number) => sum + count, 0)
 
-    return Object.entries(reasonCounts || {}).map(([type, count]: [string, number]) => ({
+    return Object.entries(reasonCounts || {}).map(([type, count]) => ({
       type,
-      count,
-      percentage: total > 0 ? Math.round((count / total) * 100) : 0
+      count: count as number,
+      percentage: total > 0 ? Math.round((count as number / total) * 100) : 0
     })).sort((a, b) => b.count - a.count)
   } catch (error) {
     console.error("Failed to fetch justification types:", error)
@@ -432,7 +432,7 @@ export async function fetchMostUsedKeys() {
     }
 
     // Count usage by key_id and get key details
-    const keyUsage = data.reduce((acc, record) => {
+    const keyUsage = data.reduce((acc, record: any) => {
       const keyId = record.key_id
       const clavicularioKey = Array.isArray(record.claviculario_keys) ? record.claviculario_keys[0] : record.claviculario_keys
       const keyName = clavicularioKey?.key_name || `Chave ${keyId.slice(0, 8)}`
@@ -488,7 +488,7 @@ export async function fetchUpcomingEvents() {
       return []
     }
 
-    return (data || []).map(event => ({
+    return (data || []).map((event: any) => ({
       title: event.title,
       date: new Date(event.date).toLocaleDateString('pt-BR'),
       type: event.description || 'Evento'

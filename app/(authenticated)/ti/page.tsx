@@ -168,7 +168,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
         updated_at: new Date().toISOString()
       }
 
-      // @ts-ignore - Supabase type inference issue with ti_tickets table
+      // @ts-expect-error - Supabase type inference issue with ti_tickets table
       const { error } = await supabase
         .from("ti_tickets")
         .update(updateData)
@@ -658,7 +658,7 @@ export default function TIPage() {
       
       console.log("🔍 Executando UPDATE no Supabase...")
       
-      // @ts-ignore - Supabase type inference issue with ti_tickets table
+      // @ts-expect-error - Supabase type inference issue with ti_tickets table
       const { data, error } = await supabase
         .from("ti_tickets")
         .update(updateData)

@@ -48,7 +48,7 @@ function FlightScheduler() {
   const fetchFlights = useCallback(async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("flight_schedules")
         .select("*")
         .order("flight_date", { ascending: true })
@@ -130,7 +130,7 @@ function FlightScheduler() {
 
     try {
       if (editingFlight) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("flight_schedules")
           .update(flightData)
           .eq("id", editingFlight.id)
@@ -153,7 +153,7 @@ function FlightScheduler() {
           resetForm()
         }
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("flight_schedules")
           .insert([flightData])
 
@@ -197,7 +197,7 @@ function FlightScheduler() {
   // Deletar voo
   const handleDeleteFlight = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("flight_schedules")
         .delete()
         .eq("id", id)

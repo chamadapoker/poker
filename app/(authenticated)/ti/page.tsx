@@ -38,6 +38,21 @@ interface Ticket {
   closed_at?: string
 }
 
+// Tipo para operações de update na tabela ti_tickets
+interface TicketUpdate {
+  title?: string
+  description?: string
+  requester_name?: string
+  urgency_level?: "baixa" | "média" | "alta" | "crítica"
+  category?: string
+  notes?: string
+  updated_at?: string
+  status?: "aberto" | "em_andamento" | "resolvido" | "fechado"
+  assigned_to?: string
+  resolution?: string
+  closed_at?: string
+}
+
 // Categorias de TI
 const tiCategories = [
   "Hardware",
@@ -143,17 +158,19 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
     }
 
     try {
+      const updateData: TicketUpdate = {
+        title: editData.title,
+        description: editData.description,
+        requester_name: editData.requester_name,
+        urgency_level: editData.urgency_level,
+        category: editData.category,
+        notes: editData.notes,
+        updated_at: new Date().toISOString()
+      }
+
       const { error } = await supabase
         .from("ti_tickets")
-        .update({
-          title: editData.title,
-          description: editData.description,
-          requester_name: editData.requester_name,
-          urgency_level: editData.urgency_level,
-          category: editData.category,
-          notes: editData.notes,
-          updated_at: new Date().toISOString()
-        } as any)
+        .update(updateData)
         .eq("id", ticket.id)
 
       if (error) {
@@ -642,7 +659,7 @@ export default function TIPage() {
       
       const { data, error } = await supabase
         .from("ti_tickets")
-        .update(updateData as any)
+        .update(updateData as TicketUpdate)
         .eq("id", ticketId)
         .select()
 

@@ -92,7 +92,7 @@ function AttendanceTracker() {
     console.log("Data atual formatada:", today)
     
     // Primeiro, buscar TODAS as justificativas para debug
-    const { data: allRecords, error: allError } = await supabase
+    const { data: allRecords, error: allError } = await (supabase as any)
       .from("military_justifications")
       .select("*")
 
@@ -118,7 +118,7 @@ function AttendanceTracker() {
     }
     
     // Agora buscar apenas as válidas para hoje
-    const { data: records, error } = await supabase
+    const { data: records, error } = await (supabase as any)
       .from("military_justifications")
       .select("*")
       .lte("start_date", today)
@@ -192,7 +192,7 @@ function AttendanceTracker() {
     console.log("Buscando histórico de presença para:", today)
     
     try {
-      const { data: records, error } = await supabase
+      const { data: records, error } = await (supabase as any)
         .from("military_attendance_records")
         .select("*")
         .eq("date", today)
@@ -291,7 +291,7 @@ function AttendanceTracker() {
       
       // Remove registros existentes para hoje
       console.log('1. Removendo registros existentes...')
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await (supabase as any)
         .from("military_attendance_records")
         .delete()
         .eq("date", today)
@@ -317,7 +317,7 @@ function AttendanceTracker() {
 
       if (recordsToInsert.length > 0) {
         console.log('3. Inserindo novos registros...')
-        const { data, error: insertError } = await supabase
+        const { data, error: insertError } = await (supabase as any)
           .from("military_attendance_records")
           .insert(recordsToInsert)
           .select()

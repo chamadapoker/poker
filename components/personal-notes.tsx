@@ -35,7 +35,7 @@ function PersonalNotes() {
   const fetchNotes = async () => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("personal_notes")
         .select("*")
         .order("created_at", { ascending: false })
@@ -82,7 +82,7 @@ function PersonalNotes() {
 
       console.log("💾 Tentando salvar nota:", newNote)
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("personal_notes")
         .insert([newNote])
         .select()
@@ -112,7 +112,7 @@ function PersonalNotes() {
 
   const handleDeleteNote = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("personal_notes")
         .delete()
         .eq("id", id)

@@ -65,6 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Carregar perfil do localStorage imediatamente para melhor UX
+    const savedProfile = loadProfileFromLocalStorage()
+    if (savedProfile) {
+      setProfile(savedProfile)
+      console.log('⚡ Perfil carregado instantaneamente do localStorage')
+    }
+
     // Timeout de segurança para evitar travamento
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
@@ -90,9 +97,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           console.log('👤 Usuário autenticado:', session.user.email)
-          await fetchUserProfile(session.user.id)
+          // Verificar se o perfil do localStorage é do mesmo usuário
+          if (savedProfile && savedProfile.user_id === session.user.id) {
+            console.log('✅ Perfil do localStorage é válido para este usuário')
+            // Sincronizar com o banco em background
+            fetchUserProfile(session.user.id)
+          } else {
+            console.log('🔄 Perfil do localStorage não é válido, buscando do banco...')
+            await fetchUserProfile(session.user.id)
+          }
         } else {
           console.log('👤 Nenhum usuário autenticado')
+          // Limpar perfil se não há usuário
           setProfile(null)
           clearProfileFromLocalStorage()
         }
@@ -158,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log('✅ Perfil encontrado:', data)
         setProfile(data)
-        // Não salvar no localStorage para evitar persistência
+        saveProfileToLocalStorage(data)
       }
     } catch (error) {
       console.error('❌ Erro inesperado ao buscar perfil:', error)
@@ -212,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log('✅ Perfil criado com sucesso:', data)
         setProfile(data)
-        // Não salvar no localStorage para evitar persistência
+        saveProfileToLocalStorage(data)
       }
     } catch (error) {
       console.error('❌ Erro inesperado ao criar perfil:', error)
@@ -296,10 +312,18 @@ export function useRequireAuth(requiredRole?: 'admin' | 'user') {
       return
     }
 
-    // Se há usuário mas não há perfil ainda, aguardar
+    // Se há usuário mas não há perfil ainda, aguardar um pouco mais
     if (user && !profile) {
       console.log('⏳ Usuário autenticado mas perfil ainda carregando...')
-      return
+      // Aguardar mais tempo para o perfil carregar
+      const timeout = setTimeout(() => {
+        if (!profile) {
+          console.log('⚠️ Timeout aguardando perfil, redirecionando para dashboard')
+          router.push('/dashboard')
+        }
+      }, 3000) // 3 segundos
+      
+      return () => clearTimeout(timeout)
     }
 
     // Verificar role se necessário

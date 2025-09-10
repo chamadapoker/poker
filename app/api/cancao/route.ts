@@ -36,10 +36,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabase.auth.getUser()

@@ -377,13 +377,13 @@ export default function FaxinaPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+    <div className="container mx-auto p-2 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
       {/* Header padronizado */}
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           FAXINA DAS INSTALAÇÕES
         </h1>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+        <p className="text-xs sm:text-sm lg:text-base text-slate-600 dark:text-slate-400">
           1º/10º GAV - Sistema de Gestão de Limpeza
         </p>
       </div>
@@ -391,12 +391,12 @@ export default function FaxinaPage() {
        {/* Aviso de permissão para usuários não-administradores */}
        {!isAdmin && (
          <Card className="border-2 border-yellow-200 dark:border-yellow-800">
-           <CardHeader className="bg-yellow-50 dark:bg-yellow-950/20">
-             <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+           <CardHeader className="bg-yellow-50 dark:bg-yellow-950/20 p-3 sm:p-4">
+             <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">
                👁️ Modo Visualização
              </CardTitle>
            </CardHeader>
-           <CardContent className="p-4 text-sm text-yellow-700 dark:text-yellow-300">
+           <CardContent className="p-3 sm:p-4 text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
              <p>Você está visualizando esta página em <strong>modo somente leitura</strong>. Apenas usuários administradores podem adicionar, editar ou excluir registros de faxina.</p>
            </CardContent>
          </Card>
@@ -404,12 +404,12 @@ export default function FaxinaPage() {
 
        {/* Instruções */}
       <Card className="border-2 border-blue-200 dark:border-blue-800">
-        <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
-          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+        <CardHeader className="bg-blue-50 dark:bg-blue-950/20 p-3 sm:p-4">
+          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200 text-sm sm:text-base">
             📋 INSTRUÇÕES
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6 space-y-3 text-sm text-gray-700 dark:text-gray-300">
+        <CardContent className="p-3 sm:p-4 lg:p-6 space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
           <p><strong>Graduados e Oficiais</strong> de cada Célula/Seção conferem do seu respectivo setor.</p>
           <p><strong>CGPAT</strong> - vestiários, corredores, auditório, churrasqueira/área externa, Esquadrilhas e setores que não possuem efetivo trabalhando.</p>
           <p><strong>CGDAP</strong> - salas de estar.</p>
@@ -419,35 +419,35 @@ export default function FaxinaPage() {
 
              {/* Legenda */}
        <Card className="border-2 border-gray-200 dark:border-gray-700">
-         <CardHeader className="bg-gray-50 dark:bg-gray-800">
-           <CardTitle className="flex items-center gap-2">
+         <CardHeader className="bg-gray-50 dark:bg-gray-800 p-3 sm:p-4">
+           <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
              🎨 LEGENDA
            </CardTitle>
          </CardHeader>
-         <CardContent className="p-4">
-           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-green-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-4 h-4 bg-green-500 border-2 border-green-600 rounded shadow-inner"></div>
+         <CardContent className="p-3 sm:p-4">
+           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
+             <div className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-green-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 border-2 border-green-600 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-green-800 dark:text-green-200 whitespace-nowrap">FAXINA EM D</span>
              </div>
-             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-yellow-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-4 h-4 bg-yellow-500 border-2 border-yellow-600 rounded shadow-inner"></div>
+             <div className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-yellow-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-500 border-2 border-yellow-600 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-yellow-800 dark:text-yellow-200 whitespace-nowrap">FAXINA EM D-1</span>
              </div>
-             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-orange-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-4 h-4 bg-orange-500 border-2 border-orange-600 rounded shadow-inner"></div>
+             <div className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-orange-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-orange-500 border-2 border-orange-600 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-orange-800 dark:text-orange-200 whitespace-nowrap">FAXINA EM D-2</span>
              </div>
-             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-400 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-4 h-4 bg-red-500 border-2 border-red-600 rounded shadow-inner"></div>
+             <div className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-400 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-500 border-2 border-red-600 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-red-800 dark:text-red-200 whitespace-nowrap">FAXINA EM ATÉ D-6</span>
              </div>
-             <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-500 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-4 h-4 bg-red-600 border-2 border-red-700 rounded shadow-inner"></div>
+             <div className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-500 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-600 border-2 border-red-700 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-red-900 dark:text-red-100 whitespace-nowrap">FAXINA EM ATÉ D-13</span>
              </div>
-                                        <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-600 shadow-sm hover:shadow-md transition-all duration-200">
-               <div className="w-4 h-4 bg-red-700 border-2 border-red-800 rounded shadow-inner"></div>
+             <div className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-red-600 shadow-sm hover:shadow-md transition-all duration-200">
+               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-700 border-2 border-red-800 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-red-950 dark:text-red-50 whitespace-nowrap">FAXINA EM D-14+</span>
              </div>
            </div>
@@ -455,8 +455,8 @@ export default function FaxinaPage() {
        </Card>
 
       {/* Controles */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Select value={selectedSector} onValueChange={setSelectedSector}>
             <SelectTrigger className="w-full sm:w-64">
               <SelectValue placeholder="Filtrar por Setor" />
@@ -480,7 +480,7 @@ export default function FaxinaPage() {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button onClick={exportToCSV} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 w-full sm:w-auto">
+          <Button onClick={exportToCSV} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 w-full sm:w-auto text-sm">
             <Download className="w-4 h-4 mr-2" />
             Exportar CSV
           </Button>
@@ -488,20 +488,20 @@ export default function FaxinaPage() {
           {isAdmin && (
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Nova Faxina
                 </Button>
               </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-sm sm:text-base">
                   {editingRecord ? "Editar Registro de Faxina" : "Novo Registro de Faxina"}
                 </DialogTitle>
               </DialogHeader>
               
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <Label htmlFor="sector">Setor</Label>
                     <Select value={newRecord.sector} onValueChange={(value) => setNewRecord(prev => ({ ...prev, sector: value }))}>
@@ -535,7 +535,7 @@ export default function FaxinaPage() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <Label htmlFor="lastCleaningDate">Data da Última Limpeza</Label>
                     <Input
@@ -573,19 +573,19 @@ export default function FaxinaPage() {
                   />
                 </div>
                 
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <div className="flex flex-col sm:flex-row justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="w-full sm:w-auto text-sm">
                     <X className="w-4 h-4 mr-2" />
                     Cancelar
                   </Button>
                   
                   {editingRecord ? (
-                    <Button onClick={handleSaveEdit} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={handleSaveEdit} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-sm">
                       <Save className="w-4 h-4 mr-2" />
                       Salvar
                     </Button>
                   ) : (
-                    <Button onClick={handleAddRecord} className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={handleAddRecord} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm">
                       <Plus className="w-4 h-4 mr-2" />
                       Adicionar
                     </Button>
@@ -599,7 +599,7 @@ export default function FaxinaPage() {
       </div>
 
              {/* Estatísticas */}
-       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
          {Object.entries(groupedRecords).map(([sectorId, { sector, records }]) => {
            const statusCounts = records.reduce((acc, record) => {
              const status = getCleaningStatus(record.lastCleaningDate).status
@@ -624,34 +624,34 @@ export default function FaxinaPage() {
            const currentColors = sectorColors[sectorId as keyof typeof sectorColors] || "from-gray-500 to-gray-600"
 
                                    return (
-              <Card key={sectorId} className="text-center p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 relative group hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden">
+              <Card key={sectorId} className="text-center p-3 sm:p-4 lg:p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 relative group hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden">
                 {/* Background decorativo */}
                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${currentColors}`}></div>
                 
                                  {/* Botão de adicionar nova sala */}
                  {isAdmin && (
                    <button 
-                     className="absolute top-3 right-3 w-7 h-7 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-110"
+                     className="absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-110"
                      title="Adicionar nova sala ao setor"
                      onClick={() => {
                        setNewRecord(prev => ({ ...prev, sector: sectorId }))
                        setIsAddDialogOpen(true)
                      }}
                    >
-                     <Plus className="w-4 h-4" />
+                     <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                    </button>
                  )}
                 
                 {/* Número de localizações */}
-                <div className="relative mb-3">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${currentColors} text-white rounded-full shadow-lg mb-3`}>
-                    <span className="text-2xl font-bold">{records.length}</span>
+                <div className="relative mb-2 sm:mb-3">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br ${currentColors} text-white rounded-full shadow-lg mb-2 sm:mb-3`}>
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold">{records.length}</span>
                   </div>
                 </div>
                 
                 {/* Nome do setor */}
-                <div className="mb-4">
-                  <div className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">
+                <div className="mb-3 sm:mb-4">
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">
                     {sector.name.split(" - ")[1] || sector.name}
                   </div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -662,17 +662,17 @@ export default function FaxinaPage() {
                                  {/* Status badges */}
                  <div className="space-y-1">
                    {statusCounts["em-dia"] > 0 && (
-                     <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium border border-green-200 shadow-sm whitespace-nowrap">
+                     <div className="text-xs bg-green-100 text-green-800 px-1 sm:px-2 py-1 rounded-full font-medium border border-green-200 shadow-sm whitespace-nowrap">
                        ✅ {statusCounts["em-dia"]} em dia
                      </div>
                    )}
                    {statusCounts["atrasada-1"] > 0 && (
-                     <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium border border-yellow-200 shadow-sm whitespace-nowrap">
+                     <div className="text-xs bg-yellow-100 text-yellow-800 px-1 sm:px-2 py-1 rounded-full font-medium border border-yellow-200 shadow-sm whitespace-nowrap">
                        ⚠️ {statusCounts["atrasada-1"]} D-1
                      </div>
                    )}
                    {(statusCounts["atrasada-2"] || 0) + (statusCounts["atrasada-6"] || 0) + (statusCounts["atrasada-13"] || 0) + (statusCounts["atrasada-14"] || 0) > 0 && (
-                     <div className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium border border-red-200 shadow-sm whitespace-nowrap">
+                     <div className="text-xs bg-red-100 text-red-800 px-1 sm:px-2 py-1 rounded-full font-medium border border-red-200 shadow-sm whitespace-nowrap">
                        🚨 {(statusCounts["atrasada-2"] || 0) + (statusCounts["atrasada-6"] || 0) + (statusCounts["atrasada-13"] || 0) + (statusCounts["atrasada-14"] || 0)} atrasadas
                      </div>
                    )}
@@ -686,7 +686,7 @@ export default function FaxinaPage() {
        </div>
 
              {/* Tabela de Registros */}
-       <div className="space-y-6">
+       <div className="space-y-4 sm:space-y-6">
          {Object.entries(groupedRecords).map(([sectorId, { sector, records }]) => {
            // Definir cores baseadas no setor para o header
            const sectorColors = {
@@ -706,28 +706,28 @@ export default function FaxinaPage() {
            
            return (
              <Card key={sectorId} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
-               <CardHeader className={`bg-gradient-to-r ${currentColors} text-white p-6`}>
-                 <CardTitle className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                     <div className="w-3 h-3 bg-white rounded-full shadow-lg"></div>
-                     <span className="text-xl font-bold text-white">
+               <CardHeader className={`bg-gradient-to-r ${currentColors} text-white p-4 sm:p-6`}>
+                 <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                   <div className="flex items-center gap-2 sm:gap-3">
+                     <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full shadow-lg"></div>
+                     <span className="text-lg sm:text-xl font-bold text-white">
                        {sector.name}
                      </span>
                    </div>
-                   <div className="flex items-center gap-3">
-                     <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-sm font-semibold px-4 py-2">
+                   <div className="flex items-center gap-2 sm:gap-3">
+                     <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-1 sm:py-2">
                        📍 {records.length} localizações
                      </Badge>
                                            {isAdmin && (
                         <button 
-                          className="w-10 h-10 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm"
+                          className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                           title="Adicionar nova sala ao setor"
                           onClick={() => {
                             setNewRecord(prev => ({ ...prev, sector: sectorId }))
                             setIsAddDialogOpen(true)
                           }}
                         >
-                          <Plus className="w-5 h-5" />
+                          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       )}
                    </div>
@@ -735,22 +735,22 @@ export default function FaxinaPage() {
                </CardHeader>
                <CardContent className="p-0">
                  <div className="overflow-x-auto">
-                   <table className="w-full min-w-[800px]">
+                   <table className="w-full min-w-[600px] sm:min-w-[800px]">
                                            <thead className="bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm">
                         <tr>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                             Localização
                           </th>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                             Data da Última Limpeza
                           </th>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                             Conferido Por
                           </th>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                             Status
                           </th>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                             Ações
                           </th>
                         </tr>
@@ -762,62 +762,62 @@ export default function FaxinaPage() {
                          
                          return (
                            <tr key={record.id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-all duration-200 group ${index % 2 === 0 ? 'bg-white/50 dark:bg-gray-800/50' : 'bg-gray-50/50 dark:bg-gray-900/50'}`}>
-                             <td className="px-6 py-4">
-                               <div className="flex items-center gap-3">
-                                 <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${currentColors} shadow-sm`}></div>
-                                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
+                             <td className="px-3 sm:px-6 py-3 sm:py-4">
+                               <div className="flex items-center gap-2 sm:gap-3">
+                                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r ${currentColors} shadow-sm`}></div>
+                                 <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
                                    {record.location}
                                  </span>
                                </div>
                              </td>
-                             <td className="px-6 py-4">
-                               <div className="flex items-center gap-2">
-                                 <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                             <td className="px-3 sm:px-6 py-3 sm:py-4">
+                               <div className="flex items-center gap-1 sm:gap-2">
+                                 <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 dark:text-gray-400" />
+                                 <span className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200">
                                    {format(parseISO(record.lastCleaningDate), "dd/MM/yyyy", { locale: ptBR })}
                                  </span>
                                </div>
                              </td>
-                             <td className="px-6 py-4">
-                               <div className="flex items-center gap-2">
-                                 <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                             <td className="px-3 sm:px-6 py-3 sm:py-4">
+                               <div className="flex items-center gap-1 sm:gap-2">
+                                 <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                    {record.checkedBy ? record.checkedBy.charAt(0) : "—"}
                                  </div>
-                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                 <span className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200">
                                    {record.checkedBy || "—"}
                                  </span>
                                </div>
                              </td>
-                                                           <td className="px-6 py-4">
-                                <Badge className={`${status.color} flex items-center gap-1 px-2 py-1 rounded-full font-semibold text-xs shadow-sm border-0 whitespace-nowrap`}>
+                                                           <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                <Badge className={`${status.color} flex items-center gap-1 px-1 sm:px-2 py-1 rounded-full font-semibold text-xs shadow-sm border-0 whitespace-nowrap`}>
                                   <StatusIcon className="w-3 h-3" />
                                   {status.label}
                                 </Badge>
                               </td>
-                                                           <td className="px-6 py-4">
+                                                           <td className="px-3 sm:px-6 py-3 sm:py-4">
                                                                  {isAdmin ? (
-                                   <div className="flex flex-col sm:flex-row gap-2">
+                                   <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                                      <Button
                                        size="sm"
                                        variant="outline"
                                        onClick={() => handleEditRecord(record)}
-                                       className="h-9 px-3 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm transition-all duration-200 hover:scale-105 text-xs sm:text-sm"
+                                       className="h-8 sm:h-9 px-2 sm:px-3 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm transition-all duration-200 hover:scale-105 text-xs"
                                      >
-                                       <Edit3 className="w-4 h-4 mr-1" />
+                                       <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                        <span className="hidden sm:inline">Editar</span>
                                      </Button>
                                      <Button
                                        size="sm"
                                        variant="outline"
                                        onClick={() => handleDeleteRecord(record.id)}
-                                       className="h-9 px-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 shadow-sm transition-all duration-200 hover:scale-105 text-xs sm:text-sm"
+                                       className="h-8 sm:h-9 px-2 sm:px-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 shadow-sm transition-all duration-200 hover:scale-105 text-xs"
                                      >
-                                       <Trash2 className="w-4 h-4 mr-1" />
+                                       <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                        <span className="hidden sm:inline">Excluir</span>
                                      </Button>
                                    </div>
                                  ) : (
-                                  <span className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                  <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
                                     Apenas visualização
                                   </span>
                                 )}

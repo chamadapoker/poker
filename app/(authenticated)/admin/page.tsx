@@ -1,4 +1,4 @@
-import SimpleAdminPanel from '@/components/simple-admin-panel'
+import SimpleCrudAdmin from '@/components/simple-crud-admin'
 
 export default function AdminPage() {
   return (
@@ -12,7 +12,7 @@ export default function AdminPage() {
         </p>
       </div>
       
-      <SimpleAdminPanel />
+      <SimpleCrudAdmin />
     </div>
   )
 }

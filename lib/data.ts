@@ -383,7 +383,7 @@ export async function fetchJustificationTypes() {
     }
 
     // Count by reason type
-    const reasonCounts = data?.reduce((acc, justification) => {
+    const reasonCounts = data?.reduce((acc: any, justification: any) => {
       const reason = justification.reason
       acc[reason] = (acc[reason] || 0) + 1
       return acc

@@ -130,10 +130,7 @@ export function MainSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => {
-                  console.log('🔗 Link clicado:', item.href)
-                  handleNavigationClick()
-                }}
+                onClick={handleNavigationClick}
                 className={`
                   flex items-center gap-3 p-3 rounded-md transition-all duration-200 group relative cursor-pointer
                   ${isActive 

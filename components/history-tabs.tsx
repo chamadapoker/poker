@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,16 +24,11 @@ function safeLower(value: string | null | undefined) {
 
 function formatDate(dateString: string | null | undefined) {
   if (!dateString) {
-    console.error("❌ FORMATDATE - Data vazia ou nula")
     return "—"
   }
   
-  // LOG CRÍTICO: Verificar entrada da função
-  console.log("🚨 FORMATDATE - Entrada:", dateString, "Tipo:", typeof dateString)
-  
   // Se a data já estiver no formato dd/MM/yyyy, retornar como está
   if (typeof dateString === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-    console.log("✅ FORMATDATE - Data já formatada:", dateString)
     return dateString
   }
   
@@ -42,36 +37,20 @@ function formatDate(dateString: string | null | undefined) {
   
   // Se a data estiver no formato ISO (YYYY-MM-DD)
   if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateString)) {
-    // CORREÇÃO CRÍTICA DE FUSO HORÁRIO: Supabase está com 1 dia de atraso
     const [year, month, day] = dateString.split('-').map(Number)
-    
-    // Criar data no fuso horário local brasileiro
     d = new Date(year, month - 1, day)
-    
     // CORREÇÃO: Adicionar 1 dia para compensar o atraso do Supabase
     d.setDate(d.getDate() + 1)
-    
-    console.log("🚨 CORREÇÃO FUSO HORÁRIO:", {
-      original: dateString,
-      corrigida: d.toISOString(),
-      explicacao: "Supabase com 1 dia de atraso - corrigindo para fuso local"
-    })
   } else {
     // Tentar outros formatos
     d = new Date(dateString)
-    console.log("⚠️ FORMATDATE - Data convertida com fallback:", dateString, "→", d.toISOString())
   }
   
   if (!isValid(d)) {
-    console.error("❌ FORMATDATE - Data inválida:", dateString)
     return "—"
   }
   
-  const resultado = format(d, "dd/MM/yyyy", { locale: ptBR })
-  console.log("✅ FORMATDATE - Resultado final:", dateString, "→", resultado)
-  
-  // Datas corrigidas para fuso horário local brasileiro
-  return resultado
+  return format(d, "dd/MM/yyyy", { locale: ptBR })
 }
 
 
@@ -277,6 +256,15 @@ export function HistoryTabs() {
   const [tiFilterUrgency, setTiFilterUrgency] = useState("all")
   const [tiFilterCategory, setTiFilterCategory] = useState("all")
 
+  // Memoizar cálculos dos cards para evitar re-renderizações desnecessárias
+  const totalRecords = useMemo(() => {
+    return attendanceRecords.length + justificationRecords.length + eventRecords.length + 
+           flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
+           keyHistoryRecords.length + tiTicketRecords.length
+  }, [attendanceRecords.length, justificationRecords.length, eventRecords.length, 
+      flightRecords.length, permanenceRecords.length, personalNoteRecords.length, 
+      keyHistoryRecords.length, tiTicketRecords.length])
+
   // Definir todas as abas disponíveis
   const availableTabs = [
     { value: "attendance", label: "Presença", description: "Histórico de presença dos militares" },
@@ -302,51 +290,9 @@ export function HistoryTabs() {
       return dateB.getTime() - dateA.getTime() // Mais recente primeiro
     })
   
-  // LOG CRÍTICO: Verificar datas únicas geradas
-  console.log("🚨 DATAS ÚNICAS GERADAS:", uniqueDates)
-  console.log("📊 Total de datas únicas:", uniqueDates.length)
-  
   // Verificar se a data de hoje está incluída
   const hoje = format(new Date(), "dd/MM/yyyy", { locale: ptBR })
-  console.log("📅 Data de hoje formatada:", hoje)
-  console.log("🔍 Data de hoje está nas datas únicas?", uniqueDates.includes(hoje))
-  
-  // LOG CRÍTICO: Verificar correção de fuso horário
-  console.log("🚨 VERIFICAÇÃO CORREÇÃO FUSO HORÁRIO:")
-  console.log("📅 Data atual do sistema:", hoje)
-  console.log("📅 Data atual ISO:", new Date().toISOString())
-  console.log("🌍 Fuso horário local:", Intl.DateTimeFormat().resolvedOptions().timeZone)
-  
-  // Verificar se há registros que foram corrigidos
-  const registrosCorrigidos = attendanceRecords.filter(r => {
-    if (!r.date) return false
-    const dataOriginal = r.date
-    const dataCorrigida = formatDate(r.date)
-    return dataOriginal !== dataCorrigida
-  })
-  
-  if (registrosCorrigidos.length > 0) {
-    console.log("✅ REGISTROS COM DATAS CORRIGIDAS:", registrosCorrigidos.length)
-    console.log("📝 Exemplos de correção:", registrosCorrigidos.slice(0, 3).map(r => ({
-      military: r.military_name,
-      dataOriginal: r.date,
-      dataCorrigida: formatDate(r.date)
-    })))
-  }
-  
-  // Verificar todas as datas originais do banco
-  console.log("📋 DATAS ORIGINAIS DO BANCO:", attendanceRecords.map(r => r.date))
-  console.log("📊 Total de registros:", attendanceRecords.length)
 
-  // Log para debug das datas únicas
-  console.log("📅 Datas únicas encontradas:", uniqueDates)
-  console.log("📅 Exemplo de dados de presença:", attendanceRecords.slice(0, 3).map(r => ({ 
-    date: r.date, 
-    formatted: formatDate(r.date),
-    call_type: r.call_type,
-    military: r.military_name,
-    status: r.status
-  })))
   
   // Verificar especificamente as chamadas do dia 01/09/2025
   const chamadas0109 = attendanceRecords.filter(r => {
@@ -354,22 +300,6 @@ export function HistoryTabs() {
     return recordDate.getDate() === 1 && recordDate.getMonth() === 8 && recordDate.getFullYear() === 2025
   })
   
-  if (chamadas0109.length > 0) {
-    console.log("🔍 Chamadas encontradas para 01/09/2025:", chamadas0109.map(r => ({
-      military: r.military_name,
-      call_type: r.call_type,
-      status: r.status,
-      date: r.date,
-      formatted: formatDate(r.date)
-    })))
-    console.log("📊 Total de chamadas para 01/09/2025:", chamadas0109.length)
-    
-    // Verificar se há duas chamadas diferentes (início e final de expediente)
-    const tiposChamada = [...new Set(chamadas0109.map(r => r.call_type))]
-    console.log("🎯 Tipos de chamada encontrados:", tiposChamada)
-  } else {
-    console.log("❌ Nenhuma chamada encontrada para 01/09/2025")
-  }
   
   // Verificar especificamente as chamadas de hoje (02/09/2025)
   const today = new Date()
@@ -382,22 +312,6 @@ export function HistoryTabs() {
     return recordDate.getDate() === todayDate && recordDate.getMonth() === todayMonth && recordDate.getFullYear() === todayYear
   })
   
-  if (chamadasHoje.length > 0) {
-    console.log("🔍 Chamadas encontradas para HOJE:", chamadasHoje.map(r => ({
-      military: r.military_name,
-      call_type: r.call_type,
-      status: r.status,
-      date: r.date,
-      formatted: formatDate(r.date)
-    })))
-    console.log("📊 Total de chamadas para HOJE:", chamadasHoje.length)
-    
-    // Verificar tipos de chamada de hoje
-    const tiposChamadaHoje = [...new Set(chamadasHoje.map(r => r.call_type))]
-    console.log("🎯 Tipos de chamada de HOJE:", tiposChamadaHoje)
-  } else {
-    console.log("❌ Nenhuma chamada encontrada para HOJE")
-  }
 
   // Funções helper para exportação e geração de relatórios
   const exportToCSV = (data: any[], filename: string) => {
@@ -781,34 +695,9 @@ export function HistoryTabs() {
 
       try {
         // 1. Histórico de Presença
-        console.log("🔄 Carregando histórico de presença...")
         const attendanceData = await fetchTableSafe<AttendanceRecord>("military_attendance_records")
-        console.log("📊 Dados de presença recebidos:", attendanceData)
-        
-        // LOG CRÍTICO: Verificar estrutura dos dados de presença
-        if (attendanceData.length > 0) {
-          console.log("🚨 ESTRUTURA CRÍTICA DOS DADOS DE PRESENÇA:")
-          console.log("📋 Primeiro registro completo:", attendanceData[0])
-          console.log("🔑 Campos disponíveis:", Object.keys(attendanceData[0]))
-          console.log("📅 Campo 'date':", attendanceData[0].date)
-          console.log("📞 Campo 'call_type':", attendanceData[0].call_type)
-          console.log("👤 Campo 'military_name':", attendanceData[0].military_name)
-          console.log("✅ Campo 'status':", attendanceData[0].status)
-          
-          // Verificar se há registros com call_type vazio
-          const registrosSemTipo = attendanceData.filter(r => !r.call_type || r.call_type === "")
-          console.log("⚠️ REGISTROS SEM TIPO DE CHAMADA:", registrosSemTipo.length)
-          if (registrosSemTipo.length > 0) {
-            console.log("📝 Exemplos de registros sem tipo:", registrosSemTipo.slice(0, 3))
-          }
-          
-          // Verificar tipos de chamada disponíveis
-          const tiposDisponiveis = [...new Set(attendanceData.map(r => r.call_type).filter(Boolean))]
-          console.log("🎯 TIPOS DE CHAMADA DISPONÍVEIS:", tiposDisponiveis)
-        }
         
         setAttendanceRecords(attendanceData)
-        console.log("✅ Presença carregada:", attendanceData.length, "registros")
 
         // 2. Histórico de Justificativas
         console.log("🔄 Carregando histórico de justificativas...")
@@ -1208,10 +1097,8 @@ export function HistoryTabs() {
             <CardContent className="p-4 text-center relative">
               <div className="relative z-10">
                 <div className="text-2xl sm:text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
-              {attendanceRecords.length + justificationRecords.length + eventRecords.length + 
-               flightRecords.length + permanenceRecords.length + personalNoteRecords.length + 
-               keyHistoryRecords.length}
-            </div>
+                  {totalRecords}
+                </div>
                 <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Total</div>
           </div>
               

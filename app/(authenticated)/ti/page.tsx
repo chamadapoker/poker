@@ -116,7 +116,14 @@ const getDaysUntilDeadline = (deadline: string) => {
 // Componente de Card Melhorado com Magic UI
 function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate: (ticketId: string, newStatus: Ticket["status"]) => void }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState({
+  const [editData, setEditData] = useState<{
+    title: string
+    description: string
+    requester_name: string
+    urgency_level: "baixa" | "média" | "alta" | "crítica"
+    category: string
+    notes: string
+  }>({
     title: ticket.title,
     description: ticket.description,
     requester_name: ticket.requester_name,

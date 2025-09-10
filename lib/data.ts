@@ -389,7 +389,7 @@ export async function fetchJustificationTypes() {
       return acc
     }, {} as Record<string, number>)
 
-    const total = Object.values(reasonCounts || {}).reduce((sum, count) => sum + count, 0)
+    const total = Object.values(reasonCounts || {}).reduce((sum: number, count: number) => sum + count, 0)
 
     return Object.entries(reasonCounts || {}).map(([type, count]) => ({
       type,

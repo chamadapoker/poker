@@ -168,7 +168,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
         updated_at: new Date().toISOString()
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ti_tickets")
         .update(updateData)
         .eq("id", ticket.id)
@@ -657,7 +657,7 @@ export default function TIPage() {
       
       console.log("🔍 Executando UPDATE no Supabase...")
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("ti_tickets")
         .update(updateData)
         .eq("id", ticketId)

@@ -14,6 +14,7 @@ import { format, differenceInDays, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/context/auth-context"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 // Tipos de dados
 interface CleaningRecord {
@@ -99,6 +100,7 @@ const availableMilitary = [
 export default function FaxinaPage() {
   const { profile } = useAuth()
   const isAdmin = profile?.role === 'admin'
+  const isMobile = useIsMobile()
   
   const [cleaningRecords, setCleaningRecords] = useState<CleaningRecord[]>([])
   const [selectedSector, setSelectedSector] = useState<string>("all")
@@ -375,13 +377,13 @@ export default function FaxinaPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-2 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
       {/* Header padronizado */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           FAXINA DAS INSTALAÇÕES
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
           1º/10º GAV - Sistema de Gestão de Limpeza
         </p>
       </div>
@@ -423,7 +425,7 @@ export default function FaxinaPage() {
            </CardTitle>
          </CardHeader>
          <CardContent className="p-4">
-           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
              <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md border-2 border-green-400 shadow-sm hover:shadow-md transition-all duration-200">
                <div className="w-4 h-4 bg-green-500 border-2 border-green-600 rounded shadow-inner"></div>
                <span className="text-xs font-medium text-green-800 dark:text-green-200 whitespace-nowrap">FAXINA EM D</span>
@@ -453,46 +455,44 @@ export default function FaxinaPage() {
        </Card>
 
       {/* Controles */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="flex-1 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Select value={selectedSector} onValueChange={setSelectedSector}>
-              <SelectTrigger className="w-full sm:w-64">
-                <SelectValue placeholder="Filtrar por Setor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Setores</SelectItem>
-                {sectors.map(sector => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Input
-              placeholder="🔍 Buscar por localização ou conferente..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1"
-            />
-          </div>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Select value={selectedSector} onValueChange={setSelectedSector}>
+            <SelectTrigger className="w-full sm:w-64">
+              <SelectValue placeholder="Filtrar por Setor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Setores</SelectItem>
+              {sectors.map(sector => (
+                <SelectItem key={sector.id} value={sector.id}>
+                  {sector.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Input
+            placeholder="🔍 Buscar por localização ou conferente..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+          />
         </div>
         
-                 <div className="flex gap-2">
-           <Button onClick={exportToCSV} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-             <Download className="w-4 h-4 mr-2" />
-             Exportar CSV
-           </Button>
-           
-           {isAdmin && (
-             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-               <DialogTrigger asChild>
-                 <Button className="bg-blue-600 hover:bg-blue-700">
-                   <Plus className="w-4 h-4 mr-2" />
-                   Nova Faxina
-                   </Button>
-               </DialogTrigger>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button onClick={exportToCSV} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 w-full sm:w-auto">
+            <Download className="w-4 h-4 mr-2" />
+            Exportar CSV
+          </Button>
+          
+          {isAdmin && (
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Faxina
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
@@ -599,7 +599,7 @@ export default function FaxinaPage() {
       </div>
 
              {/* Estatísticas */}
-       <div className="grid grid-cols-5 gap-4">
+       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
          {Object.entries(groupedRecords).map(([sectorId, { sector, records }]) => {
            const statusCounts = records.reduce((acc, record) => {
              const status = getCleaningStatus(record.lastCleaningDate).status
@@ -735,7 +735,7 @@ export default function FaxinaPage() {
                </CardHeader>
                <CardContent className="p-0">
                  <div className="overflow-x-auto">
-                   <table className="w-full">
+                   <table className="w-full min-w-[800px]">
                                            <thead className="bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm">
                         <tr>
                           <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
@@ -796,24 +796,24 @@ export default function FaxinaPage() {
                               </td>
                                                            <td className="px-6 py-4">
                                                                  {isAdmin ? (
-                                   <div className="flex gap-2">
+                                   <div className="flex flex-col sm:flex-row gap-2">
                                      <Button
                                        size="sm"
                                        variant="outline"
                                        onClick={() => handleEditRecord(record)}
-                                       className="h-9 px-3 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm transition-all duration-200 hover:scale-105"
+                                       className="h-9 px-3 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm transition-all duration-200 hover:scale-105 text-xs sm:text-sm"
                                      >
                                        <Edit3 className="w-4 h-4 mr-1" />
-                                       Editar
+                                       <span className="hidden sm:inline">Editar</span>
                                      </Button>
                                      <Button
                                        size="sm"
                                        variant="outline"
                                        onClick={() => handleDeleteRecord(record.id)}
-                                       className="h-9 px-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 shadow-sm transition-all duration-200 hover:scale-105"
+                                       className="h-9 px-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 shadow-sm transition-all duration-200 hover:scale-105 text-xs sm:text-sm"
                                      >
                                        <Trash2 className="w-4 h-4 mr-1" />
-                                       Excluir
+                                       <span className="hidden sm:inline">Excluir</span>
                                      </Button>
                                    </div>
                                  ) : (

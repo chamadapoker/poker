@@ -667,7 +667,7 @@ export function HistoryTabs() {
     console.log(`🔍 Tentando buscar dados da tabela: ${tableName}`)
     
     try {
-      const { data, error } = await supabase.from(tableName).select("*")
+      const { data, error } = await (supabase as any).from(tableName).select("*")
       
       if (error) {
         if (error.code === "42P01") {
@@ -689,7 +689,7 @@ export function HistoryTabs() {
 
   const fetchKeyHistoryWithDetails = async (): Promise<KeyHistoryRecord[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("claviculario_movements")
         .select(`
           *,
@@ -710,7 +710,7 @@ export function HistoryTabs() {
       }
 
       // Processar os dados para incluir informações das chaves
-      const processedData = (data || []).map(record => ({
+      const processedData = (data || []).map((record: any) => ({
         id: record.id,
         key_id: record.key_id,
         key_name: record.claviculario_keys?.room_name || "Chave não encontrada",

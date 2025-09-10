@@ -20,7 +20,7 @@ import type {
 export async function fetchMilitaryPersonnel(): Promise<MilitaryPersonnel[]> {
   noStore()
   try {
-    const { data, error } = await supabase.from("military_personnel").select("*").order("name", { ascending: true })
+    const { data, error } = await (supabase as any).from("military_personnel").select("*").order("name", { ascending: true })
 
     if (error) {
       console.error("Database Error:", error)
@@ -97,7 +97,7 @@ export async function fetchMilitaryJustifications(): Promise<MilitaryJustificati
 export async function fetchClavicularioKeys(): Promise<ClavicularioKey[]> {
   noStore()
   try {
-    const { data, error } = await supabase.from("claviculario_keys").select("*").order("key_name", { ascending: true })
+    const { data, error } = await (supabase as any).from("claviculario_keys").select("*").order("key_name", { ascending: true })
 
     if (error) {
       console.error("Database Error:", error)
@@ -134,7 +134,7 @@ export async function fetchClavicularioHistory(): Promise<ClavicularioHistory[]>
 export async function fetchEvents(): Promise<Event[]> {
   noStore()
   try {
-    const { data, error } = await supabase.from("events").select("*").order("start_time", { ascending: true })
+    const { data, error } = await (supabase as any).from("events").select("*").order("start_time", { ascending: true })
 
     if (error) {
       console.error("Database Error:", error)
@@ -151,7 +151,7 @@ export async function fetchEvents(): Promise<Event[]> {
 export async function fetchFlights(): Promise<Flight[]> {
   noStore()
   try {
-    const { data, error } = await supabase.from("flights").select("*").order("departure_time", { ascending: false })
+    const { data, error } = await (supabase as any).from("flights").select("*").order("departure_time", { ascending: false })
 
     if (error) {
       console.error("Database Error:", error)
@@ -168,7 +168,7 @@ export async function fetchFlights(): Promise<Flight[]> {
 export async function fetchPersonalNotes(): Promise<PersonalNote[]> {
   noStore()
   try {
-    const { data, error } = await supabase.from("personal_notes").select("*").order("created_at", { ascending: false })
+    const { data, error } = await (supabase as any).from("personal_notes").select("*").order("created_at", { ascending: false })
 
     if (error) {
       console.error("Database Error:", error)

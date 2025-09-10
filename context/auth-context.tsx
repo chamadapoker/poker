@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('🔍 Buscando perfil para usuário:', userId)
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isAdmin = user.email === 'pokeradmin@teste.com'
       console.log('👑 Role determinado:', isAdmin ? 'admin' : 'user')
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('user_profiles')
         .insert({
           user_id: userId,

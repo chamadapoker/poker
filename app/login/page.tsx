@@ -59,7 +59,7 @@ export default function LoginPage() {
         })
         
         // Redirecionar baseado no role do usuário
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('user_profiles')
           .select('role')
           .eq('user_id', data.user.id)

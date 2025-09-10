@@ -20,7 +20,8 @@ import {
   User,
   Crown,
   X,
-  Music
+  Music,
+  Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
@@ -42,6 +43,7 @@ export function MainSidebar() {
     { title: "Voos", href: "/flight-scheduler", icon: Plane, access: "admin" },
     { title: "TI", href: "/ti", icon: Monitor, access: "admin" },
     { title: "Histórico", href: "/history", icon: History, access: "admin" },
+    { title: "Administração", href: "/admin", icon: Settings, access: "admin" },
   ]
 
   // Filtrar itens baseado no role do usuário

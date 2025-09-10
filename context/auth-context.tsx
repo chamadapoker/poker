@@ -65,19 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Sempre limpar perfil persistente ao inicializar
-    clearProfileFromLocalStorage()
-    setProfile(null)
-    setUser(null)
-    setSession(null)
-
     // Timeout de segurança para evitar travamento
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
       setIsLoading(false)
-    }, 2000) // 2 segundos
+    }, 5000) // 5 segundos
 
-    // Verificar sessão atual (mas não carregar automaticamente)
+    // Verificar sessão atual
     const getSession = async () => {
       try {
         console.log('🔐 Verificando sessão atual...')
@@ -91,11 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         console.log('✅ Sessão encontrada:', session ? 'Sim' : 'Não')
+        setSession(session)
+        setUser(session?.user ?? null)
         
-        // Se há sessão, fazer logout automático para forçar novo login
         if (session?.user) {
-          console.log('🚪 Sessão encontrada, fazendo logout automático...')
-          await supabase.auth.signOut()
+          console.log('👤 Usuário autenticado:', session.user.email)
+          await fetchUserProfile(session.user.id)
+        } else {
+          console.log('👤 Nenhum usuário autenticado')
+          setProfile(null)
+          clearProfileFromLocalStorage()
         }
         
         setIsLoading(false)
@@ -113,16 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Evento de autenticação:', event, session?.user?.email)
+        setSession(session)
+        setUser(session?.user ?? null)
         
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Quando usuário faz login, carregar perfil
-          setSession(session)
-          setUser(session.user)
+        if (session?.user) {
           await fetchUserProfile(session.user.id)
-        } else if (event === 'SIGNED_OUT') {
-          // Quando usuário faz logout, limpar tudo
-          setSession(null)
-          setUser(null)
+        } else {
           setProfile(null)
           clearProfileFromLocalStorage()
         }
@@ -289,18 +284,32 @@ export function useRequireAuth(requiredRole?: 'admin' | 'user') {
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    // Aguardar o carregamento terminar
+    if (isLoading) {
+      return
+    }
+
+    // Se não há usuário, redirecionar para login
+    if (!user) {
+      console.log('🚪 Usuário não autenticado, redirecionando para login')
       router.push('/login')
       return
     }
 
-    if (!isLoading && user && requiredRole && profile?.role !== requiredRole) {
-      if (requiredRole === 'admin') {
-        router.push('/dashboard')
-      } else {
-        router.push('/dashboard')
-      }
+    // Se há usuário mas não há perfil ainda, aguardar
+    if (user && !profile) {
+      console.log('⏳ Usuário autenticado mas perfil ainda carregando...')
+      return
     }
+
+    // Verificar role se necessário
+    if (user && profile && requiredRole && profile.role !== requiredRole) {
+      console.log(`🚫 Usuário não tem role ${requiredRole}, redirecionando para dashboard`)
+      router.push('/dashboard')
+      return
+    }
+
+    console.log('✅ Usuário autenticado e autorizado')
   }, [user, profile, isLoading, requiredRole, router])
 
   return { user, profile, isLoading }

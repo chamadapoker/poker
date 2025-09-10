@@ -170,7 +170,7 @@ function TicketCard({ ticket, onStatusUpdate }: { ticket: Ticket; onStatusUpdate
 
       const { error } = await supabase
         .from("ti_tickets")
-        .update(updateData)
+        .update(updateData as any)
         .eq("id", ticket.id)
 
       if (error) {
@@ -659,7 +659,7 @@ export default function TIPage() {
       
       const { data, error } = await supabase
         .from("ti_tickets")
-        .update(updateData as TicketUpdate)
+        .update(updateData as any)
         .eq("id", ticketId)
         .select()
 

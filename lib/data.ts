@@ -391,7 +391,7 @@ export async function fetchJustificationTypes() {
 
     const total = (Object.values(reasonCounts || {}) as number[]).reduce((sum: number, count: number) => sum + count, 0)
 
-    return Object.entries(reasonCounts || {}).map(([type, count]) => ({
+    return Object.entries(reasonCounts || {}).map(([type, count]: [string, number]) => ({
       type,
       count,
       percentage: total > 0 ? Math.round((count / total) * 100) : 0

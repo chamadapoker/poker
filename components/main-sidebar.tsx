@@ -110,15 +110,15 @@ export function MainSidebar() {
   const sidebarContent = (
     <div className="h-full w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 shadow-lg flex flex-col">
       {/* Header do mobile com botão de fechar */}
-      <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Menu</h2>
         <Button variant="ghost" size="icon" onClick={toggleMobile}>
           <X className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Navegação */}
-      <div className="flex-1 p-4 pt-6">
+      {/* Navegação com scroll */}
+      <div className="flex-1 overflow-y-auto p-4 pt-6 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
         <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
           Navegação
         </h3>
@@ -155,7 +155,7 @@ export function MainSidebar() {
       </div>
 
       {/* Footer com Informações de Autenticação */}
-      <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800">
+      <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800 flex-shrink-0">
         {isLoading ? (
           <div className="text-center p-3">
             <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-600 mx-auto mb-2 flex items-center justify-center animate-pulse">

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw } from "lucide-react"
+import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw, Lock, Unlock, Download } from "lucide-react"
 import { militaryPersonnel, callTypes, attendanceStatuses } from "@/lib/static-data"
 import { PDFGenerator } from "@/components/pdf-generator"
 import { supabase } from "@/lib/supabase"
@@ -39,12 +39,112 @@ function AttendanceTracker() {
   const [showPDFButton, setShowPDFButton] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"))
   const [isBackdating, setIsBackdating] = useState(false)
+  const [isListLocked, setIsListLocked] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+
+  // Funções para persistência no localStorage
+  const saveAttendanceToLocalStorage = (attendance: MilitaryAttendance[], date: string, callType: string) => {
+    try {
+      const data = {
+        attendance,
+        date,
+        callType,
+        timestamp: new Date().toISOString(),
+        isLocked: isListLocked
+      }
+      localStorage.setItem('poker_attendance_backup', JSON.stringify(data))
+      setLastSaved(new Date())
+      console.log('💾 Lista de presença salva no localStorage')
+    } catch (error) {
+      console.error('❌ Erro ao salvar no localStorage:', error)
+    }
+  }
+
+  const loadAttendanceFromLocalStorage = () => {
+    try {
+      const saved = localStorage.getItem('poker_attendance_backup')
+      if (saved) {
+        const data = JSON.parse(saved)
+        console.log('📱 Lista de presença carregada do localStorage:', data)
+        return data
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar do localStorage:', error)
+    }
+    return null
+  }
+
+  const clearAttendanceFromLocalStorage = () => {
+    try {
+      localStorage.removeItem('poker_attendance_backup')
+      console.log('🗑️ Backup da lista de presença removido')
+    } catch (error) {
+      console.error('❌ Erro ao limpar localStorage:', error)
+    }
+  }
+
+  const toggleListLock = () => {
+    const newLockState = !isListLocked
+    setIsListLocked(newLockState)
+    
+    // Salvar estado de travamento
+    if (militaryAttendance.length > 0) {
+      saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
+    }
+    
+    toast({
+      title: newLockState ? "🔒 Lista Travada" : "🔓 Lista Destravada",
+      description: newLockState 
+        ? "A lista está protegida contra alterações acidentais" 
+        : "A lista pode ser editada normalmente",
+    })
+  }
+
+  const saveCurrentState = () => {
+    if (militaryAttendance.length > 0 && selectedCallType) {
+      saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
+      toast({
+        title: "💾 Lista Salva",
+        description: "A lista foi salva localmente e será restaurada se o celular bloquear",
+      })
+    }
+  }
+
+  // Auto-save a cada 30 segundos
+  useEffect(() => {
+    if (militaryAttendance.length > 0 && selectedCallType) {
+      const interval = setInterval(() => {
+        if (!isListLocked) {
+          saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
+        }
+      }, 30000) // 30 segundos
+
+      return () => clearInterval(interval)
+    }
+  }, [militaryAttendance, selectedDate, selectedCallType, isListLocked])
 
   useEffect(() => {
     const loadData = async () => {
       console.log('=== INICIANDO CARREGAMENTO DE DADOS ===')
       console.log('militaryPersonnel disponível:', militaryPersonnel)
       console.log('callTypes disponível:', callTypes)
+      
+      // 1. PRIMEIRO: Verificar se há dados salvos no localStorage
+      const savedData = loadAttendanceFromLocalStorage()
+      if (savedData && savedData.attendance && savedData.attendance.length > 0) {
+        console.log('🔄 Restaurando lista de presença do localStorage...')
+        setMilitaryAttendance(savedData.attendance)
+        setSelectedCallType(savedData.callType || '')
+        setIsListLocked(savedData.isLocked || false)
+        setLastSaved(new Date(savedData.timestamp))
+        console.log('✅ Lista restaurada com sucesso!')
+        
+        // Se a lista está travada, não carregar dados do servidor
+        if (savedData.isLocked) {
+          console.log('🔒 Lista travada - mantendo dados locais')
+          return
+        }
+      }
       
       try {
         // 1. PRIMEIRO: Carregar justificativas

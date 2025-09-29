@@ -70,13 +70,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (savedProfile) {
       setProfile(savedProfile)
       console.log('⚡ Perfil carregado instantaneamente do localStorage')
+      // Se temos perfil no localStorage, reduzir tempo de loading
+      setTimeout(() => setIsLoading(false), 100)
     }
 
-    // Timeout de segurança para evitar travamento
+    // Timeout de segurança para evitar travamento (reduzido para melhor UX)
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
       setIsLoading(false)
-    }, 5000) // 5 segundos
+    }, 3000) // 3 segundos (reduzido de 5s)
 
     // Verificar sessão atual
     const getSession = async () => {
@@ -315,13 +317,13 @@ export function useRequireAuth(requiredRole?: 'admin' | 'user') {
     // Se há usuário mas não há perfil ainda, aguardar um pouco mais
     if (user && !profile) {
       console.log('⏳ Usuário autenticado mas perfil ainda carregando...')
-      // Aguardar mais tempo para o perfil carregar
+      // Aguardar mais tempo para o perfil carregar (reduzido para melhor UX)
       const timeout = setTimeout(() => {
         if (!profile) {
           console.log('⚠️ Timeout aguardando perfil, redirecionando para dashboard')
           router.push('/dashboard')
         }
-      }, 3000) // 3 segundos
+      }, 2000) // 2 segundos (reduzido de 3s)
       
       return () => clearTimeout(timeout)
     }

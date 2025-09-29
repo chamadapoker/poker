@@ -40,10 +40,11 @@ export const militaryPersonnel = [
   { id: "31", name: "NYCOLAS", rank: "S1" },
   { id: "32", name: "GABRIEL REIS", rank: "S1" },
   { id: "33", name: "DOUGLAS SILVA", rank: "S2" },
-  { id: "34", name: "DA ROSA", rank: "S2" },
-  { id: "35", name: "DENARDIN", rank: "S2" },
-  { id: "36", name: "JOÃO GABRIEL", rank: "S2" },
-  { id: "37", name: "VIEIRA", rank: "S2" },
+  { id: "34", name: "PIBER", rank: "S2" },
+  { id: "35", name: "DA ROSA", rank: "S2" },
+  { id: "36", name: "DENARDIN", rank: "S2" },
+  { id: "37", name: "JOÃO GABRIEL", rank: "S2" },
+  { id: "38", name: "VIEIRA", rank: "S2" },
 ]
 
 /** Tipos de chamada conforme solicitado */

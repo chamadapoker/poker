@@ -114,6 +114,7 @@ function AttendanceTracker() {
         const mockJustifications = [
           {
             id: '1',
+            military_id: '30',
             military_name: '3S HENRIQUE',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -122,6 +123,7 @@ function AttendanceTracker() {
           },
           {
             id: '2',
+            military_id: '27',
             military_name: '3S JAQUES',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -130,6 +132,7 @@ function AttendanceTracker() {
           },
           {
             id: '3',
+            military_id: '25',
             military_name: '3S MAIA',
             start_date: '2025-09-22',
             end_date: '2025-10-02',
@@ -138,6 +141,7 @@ function AttendanceTracker() {
           },
           {
             id: '4',
+            military_id: '23',
             military_name: '3S PITTIGLIANI',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -146,6 +150,7 @@ function AttendanceTracker() {
           },
           {
             id: '5',
+            military_id: '14',
             military_name: 'SO ELIASAFE',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -154,6 +159,7 @@ function AttendanceTracker() {
           },
           {
             id: '6',
+            military_id: '11',
             military_name: 'CP MAIRINK',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -162,6 +168,7 @@ function AttendanceTracker() {
           },
           {
             id: '7',
+            military_id: '10',
             military_name: 'CP EDUARDO',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -170,6 +177,7 @@ function AttendanceTracker() {
           },
           {
             id: '8',
+            military_id: '9',
             military_name: 'CP FELIPPE MIRANDA',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -178,6 +186,7 @@ function AttendanceTracker() {
           },
           {
             id: '9',
+            military_id: '7',
             military_name: 'CP ALMEIDA',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -186,6 +195,7 @@ function AttendanceTracker() {
           },
           {
             id: '10',
+            military_id: '8',
             military_name: 'CP JÚNIOR',
             start_date: '2025-09-22',
             end_date: '2025-10-11',
@@ -194,6 +204,7 @@ function AttendanceTracker() {
           },
           {
             id: '11',
+            military_id: '6',
             military_name: 'CP SPINELLI',
             start_date: '2025-09-22',
             end_date: '2025-10-11',
@@ -202,6 +213,7 @@ function AttendanceTracker() {
           },
           {
             id: '12',
+            military_id: '5',
             military_name: 'CP FARIAS',
             start_date: '2025-09-22',
             end_date: '2025-10-11',
@@ -210,6 +222,7 @@ function AttendanceTracker() {
           },
           {
             id: '13',
+            military_id: '3',
             military_name: 'CP MIRANDA',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -218,6 +231,7 @@ function AttendanceTracker() {
           },
           {
             id: '14',
+            military_id: '2',
             military_name: 'MJ MAIA',
             start_date: '2025-09-22',
             end_date: '2025-10-11',
@@ -226,6 +240,7 @@ function AttendanceTracker() {
           },
           {
             id: '15',
+            military_id: '1',
             military_name: 'TC CARNEIRO',
             start_date: '2025-09-21',
             end_date: '2025-10-11',
@@ -234,6 +249,7 @@ function AttendanceTracker() {
           },
           {
             id: '16',
+            military_id: '15',
             military_name: 'MENEZES',
             start_date: '2025-09-01',
             end_date: '2025-09-01',
@@ -242,6 +258,7 @@ function AttendanceTracker() {
           },
           {
             id: '17',
+            military_id: '34',
             military_name: 'DA ROSA',
             start_date: '2025-08-31',
             end_date: '2025-09-09',
@@ -250,6 +267,7 @@ function AttendanceTracker() {
           },
           {
             id: '18',
+            military_id: '24',
             military_name: 'L. TEIXEIRA',
             start_date: '2025-03-31',
             end_date: '2025-11-15',
@@ -258,6 +276,7 @@ function AttendanceTracker() {
           },
           {
             id: '19',
+            military_id: '12',
             military_name: 'ISMAEL',
             start_date: '2025-05-31',
             end_date: '2025-09-30',

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw, Lock, Unlock, Download } from "lucide-react"
+import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw, Lock, Unlock, Download, Search, Filter, BarChart3, Clock, AlertTriangle, CheckSquare, XSquare, Eye, EyeOff, RefreshCw, Zap, TrendingUp, Activity } from "lucide-react"
 import { militaryPersonnel, callTypes, attendanceStatuses } from "@/lib/static-data"
 import { PDFGenerator } from "@/components/pdf-generator"
 import { supabase } from "@/lib/supabase"
@@ -41,8 +41,19 @@ function AttendanceTracker() {
   const [isBackdating, setIsBackdating] = useState(false)
   const [isListLocked, setIsListLocked] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  
+  // Novos estados para melhorias
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [rankFilter, setRankFilter] = useState("all")
+  const [showOnlyChanged, setShowOnlyChanged] = useState(false)
+  const [showStats, setShowStats] = useState(true)
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true)
+  const [lastChangeTime, setLastChangeTime] = useState<Date | null>(null)
+  const [changeHistory, setChangeHistory] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Funções para persistência no localStorage
+  // Funções para persistência no localStorage por data
   const saveAttendanceToLocalStorage = (attendance: MilitaryAttendance[], date: string, callType: string) => {
     try {
       const data = {
@@ -52,26 +63,69 @@ function AttendanceTracker() {
         timestamp: new Date().toISOString(),
         isLocked: isListLocked
       }
+      
+      // Salvar por data específica
+      const key = `poker_attendance_${date}`
+      localStorage.setItem(key, JSON.stringify(data))
+      
+      // Também salvar como backup geral (para compatibilidade)
       localStorage.setItem('poker_attendance_backup', JSON.stringify(data))
+      
       setLastSaved(new Date())
-      console.log('💾 Lista de presença salva no localStorage')
+      console.log(`💾 Lista de presença salva no localStorage para ${date}`)
     } catch (error) {
       console.error('❌ Erro ao salvar no localStorage:', error)
     }
   }
 
-  const loadAttendanceFromLocalStorage = () => {
+  const loadAttendanceFromLocalStorage = (date?: string) => {
     try {
-      const saved = localStorage.getItem('poker_attendance_backup')
+      const targetDate = date || selectedDate
+      const key = `poker_attendance_${targetDate}`
+      const saved = localStorage.getItem(key)
+      
       if (saved) {
         const data = JSON.parse(saved)
-        console.log('📱 Lista de presença carregada do localStorage:', data)
+        console.log(`📱 Lista de presença carregada do localStorage para ${targetDate}:`, data)
+        return data
+      }
+      
+      // Fallback para o backup geral se não encontrar por data
+      const fallback = localStorage.getItem('poker_attendance_backup')
+      if (fallback) {
+        const data = JSON.parse(fallback)
+        console.log('📱 Usando backup geral do localStorage:', data)
         return data
       }
     } catch (error) {
       console.error('❌ Erro ao carregar do localStorage:', error)
     }
     return null
+  }
+
+  // Nova função para carregar dados por data específica
+  const loadAttendanceForDate = async (date: string) => {
+    console.log(`🔄 Carregando dados para a data: ${date}`)
+    
+    // 1. Primeiro tentar carregar do localStorage
+    const savedData = loadAttendanceFromLocalStorage(date)
+    if (savedData && savedData.attendance && savedData.attendance.length > 0) {
+      console.log('✅ Dados encontrados no localStorage para a data:', date)
+      setMilitaryAttendance(savedData.attendance)
+      setSelectedCallType(savedData.callType || '')
+      setIsListLocked(savedData.isLocked || false)
+      setLastSaved(new Date(savedData.timestamp))
+      return
+    }
+    
+    // 2. Se não encontrar no localStorage, carregar do servidor
+    console.log('🔍 Buscando dados no servidor para a data:', date)
+    try {
+      await fetchJustifications()
+      await fetchAttendanceHistory()
+    } catch (error) {
+      console.error('Erro ao carregar dados do servidor:', error)
+    }
   }
 
   const clearAttendanceFromLocalStorage = () => {
@@ -193,7 +247,9 @@ function AttendanceTracker() {
     if (selectedDate) {
       console.log('=== DATA ALTERADA, RECARREGANDO DADOS ===')
       console.log('Nova data selecionada:', selectedDate)
-      fetchJustifications()
+      
+      // Carregar dados para a nova data
+      loadAttendanceForDate(selectedDate)
     }
   }, [selectedDate])
 
@@ -576,6 +632,8 @@ function AttendanceTracker() {
   }
 
   const handleStatusChange = (militaryId: string, newStatus: string) => {
+    const oldAttendance = militaryAttendance.find(m => m.militaryId === militaryId)
+    
     setMilitaryAttendance(prev => 
       prev.map((military: any) => 
         military.militaryId === militaryId 
@@ -583,6 +641,123 @@ function AttendanceTracker() {
           : military
       )
     )
+    
+    // Registrar mudança no histórico
+    if (oldAttendance && oldAttendance.status !== newStatus) {
+      const change = {
+        id: Date.now(),
+        militaryId,
+        militaryName: oldAttendance.militaryName,
+        rank: oldAttendance.rank,
+        oldStatus: oldAttendance.status,
+        newStatus,
+        timestamp: new Date(),
+        user: 'Sistema'
+      }
+      setChangeHistory(prev => [change, ...prev.slice(0, 49)]) // Manter apenas 50 mudanças
+      setLastChangeTime(new Date())
+    }
+  }
+
+  // Funções de filtro e busca
+  const getFilteredMilitary = () => {
+    let filtered = militaryAttendance
+
+    // Filtro por busca
+    if (searchTerm) {
+      filtered = filtered.filter(military => 
+        military.militaryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        military.rank.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${military.rank} ${military.militaryName}`.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    // Filtro por status
+    if (statusFilter !== "all") {
+      if (statusFilter === "justified") {
+        filtered = filtered.filter(military => military.isJustified)
+      } else {
+        filtered = filtered.filter(military => military.status === statusFilter && !military.isJustified)
+      }
+    }
+
+    // Filtro por patente
+    if (rankFilter !== "all") {
+      filtered = filtered.filter(military => military.rank === rankFilter)
+    }
+
+    // Filtro por alterações
+    if (showOnlyChanged) {
+      filtered = filtered.filter(military => 
+        changeHistory.some(change => change.militaryId === military.militaryId)
+      )
+    }
+
+    return filtered
+  }
+
+  const getUniqueRanks = () => {
+    const ranks = [...new Set(militaryPersonnel.map(m => m.rank))]
+    return ranks.sort()
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setStatusFilter("all")
+    setRankFilter("all")
+    setShowOnlyChanged(false)
+  }
+
+  const getStatsData = () => {
+    const total = militaryAttendance.length
+    const present = militaryAttendance.filter(m => m.status === "presente" && !m.isJustified).length
+    const absent = militaryAttendance.filter(m => m.status === "ausente" && !m.isJustified).length
+    const justified = militaryAttendance.filter(m => m.isJustified).length
+    const changed = changeHistory.length
+    
+    const percentage = total > 0 ? Math.round((present / total) * 100) : 0
+    
+    return { total, present, absent, justified, changed, percentage }
+  }
+
+  // Função para listar datas com dados salvos
+  const getAvailableDates = () => {
+    const dates = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('poker_attendance_')) {
+        const date = key.replace('poker_attendance_', '')
+        try {
+          const data = JSON.parse(localStorage.getItem(key) || '{}')
+          if (data.attendance && data.attendance.length > 0) {
+            dates.push({
+              date,
+              callType: data.callType,
+              timestamp: data.timestamp,
+              count: data.attendance.length
+            })
+          }
+        } catch (error) {
+          console.error('Erro ao processar dados salvos:', error)
+        }
+      }
+    }
+    return dates.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
+  // Função para verificar se há dados salvos para a data atual
+  const hasDataForDate = (date: string) => {
+    const key = `poker_attendance_${date}`
+    const saved = localStorage.getItem(key)
+    if (saved) {
+      try {
+        const data = JSON.parse(saved)
+        return data.attendance && data.attendance.length > 0
+      } catch (error) {
+        return false
+      }
+    }
+    return false
   }
 
   const handleClearAttendance = () => {
@@ -626,6 +801,7 @@ function AttendanceTracker() {
       return
     }
 
+    setIsLoading(true)
     try {
       console.log('=== INICIANDO SALVAMENTO DE PRESENÇA ===')
       console.log('Tipo de chamada selecionado:', selectedCallType)
@@ -718,6 +894,7 @@ function AttendanceTracker() {
         description: `Dados de presença salvos para ${callTypes.find((t: any) => t.id === selectedCallType)?.label}. Agora você pode gerar o PDF ou enviar por email.`,
       })
       setShowPDFButton(true)
+      setLastSaved(new Date())
     } catch (error: any) {
       console.error("=== ERRO AO SALVAR PRESENÇA ===")
       console.error("Tipo do erro:", typeof error)
@@ -740,6 +917,8 @@ function AttendanceTracker() {
         description: errorMessage,
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -774,53 +953,176 @@ function AttendanceTracker() {
 
   // Agora mostra todos os militares, incluindo justificados
   const allMilitary = militaryAttendance
-
-  // Estatísticas
-  const presentCount = allMilitary.filter(m => m.status === "presente" && !m.isJustified).length
-  const absentCount = allMilitary.filter(m => m.status === "ausente" && !m.isJustified).length
-  const justifiedCount = allMilitary.filter(m => m.isJustified).length
-  const totalCount = allMilitary.length
+  const filteredMilitary = getFilteredMilitary()
+  const stats = getStatsData()
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Cards de estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {totalCount}
-            </p>
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total</p>
-          </CardContent>
-        </Card>
+      {/* Cards de estatísticas melhorados */}
+      {showStats && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {stats.total}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total</p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {presentCount}
-            </p>
-            <p className="text-sm font-medium text-green-700 dark:text-green-300">Presentes</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border border-green-200 dark:border-green-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+                <span className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {stats.present}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-green-700 dark:text-green-300">Presentes</p>
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                {stats.percentage}% do total
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-              {absentCount}
-            </p>
-            <p className="text-sm font-medium text-red-700 dark:text-red-300">Ausentes</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/20 dark:to-red-900/20 border border-red-200 dark:border-red-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
+                <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+                  {stats.absent}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-red-700 dark:text-red-300">Ausentes</p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {justifiedCount}
-            </p>
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Justificados</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {stats.justified}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Justificados</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-2" />
+                <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  {stats.changed}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Alterações</p>
+              {lastChangeTime && (
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                  Última: {format(lastChangeTime, "HH:mm")}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Controles de filtro e busca */}
+      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
+            <Filter className="h-6 w-6 text-red-600 dark:text-red-400" />
+            Filtros e Busca
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Busca por nome */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Buscar por nome
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Digite o nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 rounded-md transition-colors duration-200 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Filtro por status */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Status
+              </label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
+                  <SelectValue placeholder="Todos os status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="presente">Presentes</SelectItem>
+                  <SelectItem value="ausente">Ausentes</SelectItem>
+                  <SelectItem value="justified">Justificados</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por patente */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Patente
+              </label>
+              <Select value={rankFilter} onValueChange={setRankFilter}>
+                <SelectTrigger className="border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
+                  <SelectValue placeholder="Todas as patentes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {getUniqueRanks().map(rank => (
+                    <SelectItem key={rank} value={rank}>{rank}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Controles adicionais */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Opções
+              </label>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="w-full"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Limpar Filtros
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowOnlyChanged(!showOnlyChanged)}
+                  className={`w-full ${showOnlyChanged ? 'bg-orange-100 dark:bg-orange-900' : ''}`}
+                >
+                  {showOnlyChanged ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                  {showOnlyChanged ? 'Mostrar Todos' : 'Só Alterados'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Seletor de Data */}
       <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
@@ -828,6 +1130,14 @@ function AttendanceTracker() {
           <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Calendar className="h-6 w-6 text-red-600 dark:text-red-400" />
             Data da Chamada
+            {hasDataForDate(selectedDate) && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-full">
+                <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span className="text-xs text-green-700 dark:text-green-300 font-medium">
+                  Dados Salvos
+                </span>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -849,15 +1159,62 @@ function AttendanceTracker() {
                 className="w-full max-w-md px-3 py-2 border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 rounded-md transition-colors duration-200 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
               />
             </div>
-            {isBackdating && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
-                <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  Lançando presença em data passada
-                </span>
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              {isBackdating && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                  <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Lançando presença em data passada
+                  </span>
+                </div>
+              )}
+              {hasDataForDate(selectedDate) && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                    Dados salvos para esta data
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
+          
+          {/* Lista de datas disponíveis */}
+          {getAvailableDates().length > 0 && (
+            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Datas com dados salvos:
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {getAvailableDates().slice(0, 5).map((dateInfo) => (
+                  <button
+                    key={dateInfo.date}
+                    onClick={() => {
+                      setSelectedDate(dateInfo.date)
+                      setIsBackdating(dateInfo.date !== format(new Date(), "yyyy-MM-dd"))
+                    }}
+                    className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                      selectedDate === dateInfo.date
+                        ? 'bg-red-100 border-red-300 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-300'
+                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    {format(new Date(dateInfo.date), "dd/MM")}
+                    {dateInfo.callType && (
+                      <span className="ml-1 text-xs opacity-75">
+                        ({callTypes.find(t => t.id === dateInfo.callType)?.label || dateInfo.callType})
+                      </span>
+                    )}
+                  </button>
+                ))}
+                {getAvailableDates().length > 5 && (
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    +{getAvailableDates().length - 5} mais
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -909,20 +1266,61 @@ function AttendanceTracker() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
+          {/* Contador de resultados */}
+          <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                Mostrando {filteredMilitary.length} de {allMilitary.length} militares
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowStats(!showStats)}
+                  className="text-slate-600 dark:text-slate-400"
+                >
+                  {showStats ? <BarChart3 className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
+                  className={`text-slate-600 dark:text-slate-400 ${autoSaveEnabled ? 'text-green-600 dark:text-green-400' : ''}`}
+                >
+                  <Zap className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          
           <div className="space-y-3">
-            {allMilitary.map((military: any) => (
+            {filteredMilitary.map((military: any) => (
               <div
                 key={military.id}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300 group`}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border-l-4 ${getStatusColor(military.status, military.isJustified)} bg-white dark:bg-slate-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300 group ${
+                  changeHistory.some(change => change.militaryId === military.militaryId) 
+                    ? 'ring-2 ring-orange-200 dark:ring-orange-800' 
+                    : ''
+                }`}
               >
                 <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-0">
                   <div className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-slate-700 shadow-sm group-hover:shadow-md transition-shadow duration-300">
                     {getStatusIcon(military.status, military.isJustified)}
                   </div>
                   <div>
-                    <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
-                      {military.rank} {military.militaryName}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
+                        {military.rank} {military.militaryName}
+                      </span>
+                      {changeHistory.some(change => change.militaryId === military.militaryId) && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 border border-orange-200 dark:border-orange-700 rounded-full">
+                          <Clock className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                          <span className="text-xs text-orange-700 dark:text-orange-300 font-medium">
+                            Alterado
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -979,14 +1377,18 @@ function AttendanceTracker() {
             </div>
             
             {/* Botões de Ação */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-2xl mx-auto">
               <Button 
                 onClick={handleSaveAttendance} 
                 className="flex-1 h-12 sm:h-14 text-base sm:text-lg font-semibold bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                disabled={!selectedCallType}
+                disabled={!selectedCallType || isLoading}
               >
-                <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                Salvar Presença
+                {isLoading ? (
+                  <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5 mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                )}
+                {isLoading ? 'Salvando...' : 'Salvar Presença'}
               </Button>
               
               <Button 
@@ -997,7 +1399,32 @@ function AttendanceTracker() {
                 <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Limpar Lista
               </Button>
+              
+              <Button 
+                onClick={saveCurrentState}
+                variant="outline"
+                className="h-12 sm:h-14 text-base sm:text-lg font-semibold border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Salvar Local
+              </Button>
             </div>
+
+            {/* Status de salvamento */}
+            {lastSaved && (
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <Clock className="h-4 w-4" />
+                <span>Último salvamento: {format(lastSaved, "dd/MM/yyyy HH:mm")}</span>
+              </div>
+            )}
+
+            {/* Indicador de auto-save */}
+            {autoSaveEnabled && (
+              <div className="flex items-center justify-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <Zap className="h-4 w-4" />
+                <span>Auto-save ativado (30s)</span>
+              </div>
+            )}
 
             {/* Botões de PDF e Email */}
             {showPDFButton && (

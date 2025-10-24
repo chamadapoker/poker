@@ -70,15 +70,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (savedProfile) {
       setProfile(savedProfile)
       console.log('⚡ Perfil carregado instantaneamente do localStorage')
-      // Se temos perfil no localStorage, reduzir tempo de loading
-      setTimeout(() => setIsLoading(false), 100)
+      // Se temos perfil no localStorage, finalizar loading imediatamente
+      setIsLoading(false)
     }
 
     // Timeout de segurança para evitar travamento (reduzido para melhor UX)
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
       setIsLoading(false)
-    }, 3000) // 3 segundos (reduzido de 5s)
+    }, 1500) // 1.5 segundos para melhor UX
 
     // Verificar sessão atual
     const getSession = async () => {
@@ -155,6 +155,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('🔍 Buscando perfil para usuário:', userId)
       
+      // Verificar se já temos perfil em cache
+      if (profile && profile.user_id === userId) {
+        console.log('⚡ Perfil já em cache, pulando busca')
+        return
+      }
+      
       const { data, error } = await (supabase as any)
         .from('user_profiles')
         .select('*')
@@ -187,48 +193,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('🆕 Criando perfil padrão para usuário:', userId)
       
-      // Determinar role baseado no email
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError) {
-        console.error('❌ Erro ao buscar usuário:', userError)
+      // Usar dados do usuário já disponíveis em vez de fazer nova chamada
+      const currentUser = user || session?.user
+      if (!currentUser) {
+        console.error('❌ Usuário não disponível para criar perfil')
         return
       }
 
-      if (!user) {
-        console.error('❌ Usuário não encontrado')
-        return
-      }
-
-      const isAdmin = user.email === 'pokeradmin@teste.com'
+      const isAdmin = currentUser.email === 'pokeradmin@teste.com'
       console.log('👑 Role determinado:', isAdmin ? 'admin' : 'user')
       
+      // Criar perfil temporário imediatamente para melhor UX
+      const tempProfile = {
+        id: `temp-${userId}`,
+        user_id: userId,
+        role: (isAdmin ? 'admin' : 'user') as 'admin' | 'user',
+        display_name: currentUser.email?.split('@')[0] || 'Usuário',
+        created_at: new Date().toISOString()
+      }
+      
+      // Definir perfil temporário imediatamente
+      setProfile(tempProfile)
+      saveProfileToLocalStorage(tempProfile)
+      
+      // Criar perfil no banco em background (não bloqueia)
       const { data, error } = await (supabase as any)
         .from('user_profiles')
         .insert({
           user_id: userId,
           role: isAdmin ? 'admin' : 'user',
-          display_name: user?.email?.split('@')[0] || 'Usuário'
+          display_name: currentUser.email?.split('@')[0] || 'Usuário'
         })
         .select()
         .single()
 
       if (error) {
-        console.error('❌ Erro ao criar perfil:', error)
-        console.error('📋 Detalhes do erro:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
-        
-        // Se a tabela não existir, mostrar instruções
+        console.error('❌ Erro ao criar perfil no banco:', error)
+        // Manter perfil temporário se falhar
         if (error.code === '42P01') { // undefined_table
           console.error('🚨 TABELA user_profiles NÃO EXISTE!')
           console.error('📋 Execute o script SQL: scripts/create_user_profiles_table.sql')
         }
       } else {
-        console.log('✅ Perfil criado com sucesso:', data)
+        console.log('✅ Perfil criado no banco com sucesso:', data)
         setProfile(data)
         saveProfileToLocalStorage(data)
       }
@@ -323,7 +330,7 @@ export function useRequireAuth(requiredRole?: 'admin' | 'user') {
           console.log('⚠️ Timeout aguardando perfil, redirecionando para dashboard')
           router.push('/dashboard')
         }
-      }, 2000) // 2 segundos (reduzido de 3s)
+      }, 1000) // 1 segundo para melhor UX
       
       return () => clearTimeout(timeout)
     }

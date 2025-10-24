@@ -60,6 +60,7 @@ function AttendanceTracker() {
   // Estado para justificativas personalizadas
   const [customJustifications, setCustomJustifications] = useState<{[key: string]: string}>({})
   const [showJustificationField, setShowJustificationField] = useState<{[key: string]: boolean}>({})
+  const [isAutoSaving, setIsAutoSaving] = useState(false)
   const [isBackdating, setIsBackdating] = useState(false)
   const [isListLocked, setIsListLocked] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -215,6 +216,8 @@ function AttendanceTracker() {
         console.log('✅ Justificativas personalizadas restauradas:', savedData.customJustifications)
       }
       
+      // NÃO carregar do servidor se já temos dados salvos
+      console.log('📱 Mantendo dados salvos, não carregando do servidor')
       return
     }
     
@@ -264,18 +267,19 @@ function AttendanceTracker() {
     }
   }
 
-  // Auto-save a cada 30 segundos (DESABILITADO temporariamente)
+  // Auto-save inteligente quando há mudanças
   useEffect(() => {
-    // Desabilitado para evitar erros
-    // if (militaryAttendance.length > 0 && selectedCallType) {
-    //   const interval = setInterval(() => {
-    //     if (!isListLocked) {
-    //       saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
-    //     }
-    //   }, 30000) // 30 segundos
-    //
-    //   return () => clearInterval(interval)
-    // }
+    if (militaryAttendance.length > 0 && selectedCallType && !isListLocked) {
+      console.log('💾 Auto-salvando lista de presença...')
+      setIsAutoSaving(true)
+      try {
+        saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
+        setTimeout(() => setIsAutoSaving(false), 1000) // Mostrar indicador por 1 segundo
+      } catch (error) {
+        console.error('❌ Erro no auto-save:', error)
+        setIsAutoSaving(false)
+      }
+    }
   }, [militaryAttendance, selectedDate, selectedCallType, isListLocked])
 
   useEffect(() => {
@@ -358,11 +362,21 @@ function AttendanceTracker() {
   // NOVO: useEffect separado para reagir às mudanças em justifications
   useEffect(() => {
     if (justifications.length > 0) { // Volta para > 0 para evitar loop
-      console.log('=== JUSTIFICATIVAS ATUALIZADAS, INICIALIZANDO LISTA ===')
+      console.log('=== JUSTIFICATIVAS ATUALIZADAS ===')
       console.log('Justificativas disponíveis:', justifications)
       console.log('militaryPersonnel disponível:', militaryPersonnel)
-      initializeAttendance()
-      fetchAttendanceHistory()
+      
+      // SÓ inicializar se não há dados salvos no localStorage
+      const savedData = loadAttendanceFromLocalStorage()
+      if (!savedData || !savedData.attendance || savedData.attendance.length === 0) {
+        console.log('🔄 Nenhum dado salvo encontrado, inicializando lista...')
+        initializeAttendance()
+        fetchAttendanceHistory()
+      } else {
+        console.log('✅ Dados salvos encontrados, mantendo lista existente')
+        // Apenas atualizar justificações sem sobrescrever a lista
+        fetchAttendanceHistory()
+      }
     }
   }, [justifications.length]) // Dependência apenas do length para evitar loop
 
@@ -1375,6 +1389,14 @@ function AttendanceTracker() {
                 <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                 <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">
                   Persistente
+                </span>
+              </div>
+            )}
+            {isAutoSaving && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-full">
+                <RefreshCw className="h-3 w-3 text-green-600 dark:text-green-400 animate-spin" />
+                <span className="text-xs text-green-700 dark:text-green-300 font-medium">
+                  Salvando...
                 </span>
               </div>
             )}

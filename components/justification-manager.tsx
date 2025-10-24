@@ -26,7 +26,7 @@ interface Justification {
   created_at?: string
 }
 
-export function JustificationManager() {
+function JustificationManager() {
   const { toast } = useToast()
   const [justifications, setJustifications] = useState<Justification[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -202,25 +202,13 @@ export function JustificationManager() {
       }
 
       await fetchJustifications()
-      setIsModalOpen(false)
       resetForm()
+      setIsModalOpen(false)
     } catch (error: any) {
-      console.error('Erro completo ao salvar justificativa:', error)
-      console.error('Tipo do erro:', typeof error)
-      console.error('Propriedades do erro:', Object.keys(error))
-      
-      let errorMessage = "Erro ao salvar a justificativa."
-      if (error?.message) {
-        errorMessage = error.message
-      } else if (error?.details) {
-        errorMessage = error.details
-      } else if (error?.code) {
-        errorMessage = `Erro ${error.code}: ${errorMessage}`
-      }
-      
+      console.error('Erro ao salvar justificativa:', error)
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: error.message || "Erro ao salvar a justificativa.",
         variant: "destructive",
       })
     }
@@ -323,18 +311,17 @@ export function JustificationManager() {
     }
   }
 
-  const getSelectedMilitaryDisplay = () => {
-    const military = militaryPersonnel.find(m => m.id === formData.military_id)
-    return military ? `${military.rank} ${military.name}` : ""
-  }
-
   const getMilitaryDisplayName = (militaryId: string) => {
     const military = militaryPersonnel.find(m => m.id === militaryId)
-    return military ? `${military.rank} ${military.name}` : "Militar não encontrado"
+    return military ? `${military.rank} ${military.name}` : 'Militar não encontrado'
   }
 
   const formatarDataParaExibicao = (data: string) => {
-    return format(new Date(data), 'dd/MM/yyyy', { locale: ptBR })
+    try {
+      return format(new Date(data), 'dd/MM/yyyy', { locale: ptBR })
+    } catch {
+      return data
+    }
   }
 
   const getJustificationStats = () => {
@@ -355,18 +342,23 @@ export function JustificationManager() {
       thisMonth: thisMonthJustifications,
       activeJustifications: activeJustificationsToday
     };
-  };
+  }
+
+  const getSelectedMilitaryDisplay = () => {
+    if (!formData.military_id) return 'Selecione um militar'
+    return getMilitaryDisplayName(formData.military_id)
+  }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Estatísticas das Justificativas - Design normal */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="space-y-8">
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
           <CardContent className="p-4 text-center">
             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
               {getJustificationStats().total}
             </p>
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total de Justificativas</p>
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total</p>
           </CardContent>
         </Card>
 
@@ -431,132 +423,123 @@ export function JustificationManager() {
             </DialogTrigger>
             
             <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-center">
-                {editingId ? "Editar Justificativa" : "Nova Justificativa"}
-              </DialogTitle>
-              <DialogDescription className="text-center text-muted-foreground">
-                {editingId ? 'Edite os dados da justificativa selecionada.' : 'Preencha os dados para criar uma nova justificativa.'}
-              </DialogDescription>
-            </DialogHeader>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-center">
+                  {editingId ? "Editar Justificativa" : "Nova Justificativa"}
+                </DialogTitle>
+                <DialogDescription className="text-center text-muted-foreground">
+                  {editingId ? 'Edite os dados da justificativa selecionada.' : 'Preencha os dados para criar uma nova justificativa.'}
+                </DialogDescription>
+              </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Seleção do Militar */}
-              <div className="space-y-2">
-                <Label htmlFor="military" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Militar *
-                </Label>
-                <Select 
-                  value={formData.military_id} 
-                  onValueChange={handleMilitaryChange}
-                >
-                  <SelectTrigger className="h-11 border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                    <SelectValue placeholder="Selecione o militar">
-                      {formData.military_id ? getSelectedMilitaryDisplay() : "Selecione o militar"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {militaryPersonnel.map((military) => (
-                      <SelectItem key={military.id} value={military.id} className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-700">
-                            {military.rank.charAt(0)}
-                          </span>
-                        </div>
-                        <span className="font-medium">{military.rank} {military.name}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formData.military_id && (
-                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mt-2">
-                    Selecionado: {getSelectedMilitaryDisplay()}
-                  </p>
-                )}
-              </div>
-
-              {/* Datas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Seleção do Militar */}
                 <div className="space-y-2">
-                  <Label htmlFor="startDate" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    Data de Início *
+                  <Label htmlFor="military" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    Militar *
                   </Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={formData.start_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                    className="h-11 border-2 focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                  <Select 
+                    value={formData.military_id} 
+                    onValueChange={handleMilitaryChange}
+                  >
+                    <SelectTrigger className="h-11 border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                      <SelectValue placeholder="Selecione um militar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {militaryPersonnel.map((military) => (
+                        <SelectItem key={military.id} value={military.id}>
+                          {military.rank} {military.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Motivo da Justificativa */}
+                <div className="space-y-2">
+                  <Label htmlFor="reason" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    Motivo da Justificativa *
+                  </Label>
+                  <Textarea
+                    id="reason"
+                    value={formData.reason}
+                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+                    placeholder="Descreva o motivo da justificativa..."
+                    className="min-h-[100px] border-2 focus:border-green-500 focus:ring-2 focus:ring-green-200"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="endDate" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    Data de Término *
-                  </Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={formData.end_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
-                    className="h-11 border-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
-                  />
-                </div>
-              </div>
+                {/* Datas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Data de Início *
+                    </Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={formData.start_date}
+                      onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
+                      className="h-11 border-2 focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                    />
+                  </div>
 
-              {/* Descrição/Motivo */}
-              <div className="space-y-2">
-                <Label htmlFor="reason" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Descrição/Motivo da Justificativa *
-                </Label>
-                <Textarea
-                  id="reason"
-                  value={formData.reason}
-                  onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
-                  placeholder="Digite aqui o motivo da justificativa (ex: Atestado médico, Serviço externo, Dispensa, etc.)"
-                  className="min-h-[120px] border-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 resize-none"
-                />
-              </div>
-
-              {/* Preview da Justificativa */}
-              {formData.military_id && formData.start_date && formData.end_date && formData.reason && (
-                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-3 text-center">
-                    Prévia da Justificativa
-                  </h4>
-                  <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                    <p><span className="font-medium">Militar:</span> {getSelectedMilitaryDisplay()}</p>
-                    <p><span className="font-medium">Período:</span> {formData.start_date} a {formData.end_date}</p>
-                    <p><span className="font-medium">Motivo:</span> {formData.reason}</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="endDate" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Data de Fim *
+                    </Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={formData.end_date}
+                      onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
+                      className="h-11 border-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                    />
                   </div>
                 </div>
-              )}
 
-              <DialogFooter className="flex gap-2">
-                <Button type="submit" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                  {editingId ? "Atualizar Justificativa" : "Criar Justificativa"}
-                </Button>
-                
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={resetForm}
-                  className="border-gray-300 hover:bg-gray-50"
-                >
-                  Cancelar
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-        
-        <Button 
-          onClick={handleCleanupExpired}
-          variant="outline"
-          className="h-12 px-6 bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 hover:border-orange-300 font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
-        >
-          🧹 Limpar Expiradas
-        </Button>
+                {/* Preview da Justificativa */}
+                {formData.military_id && formData.start_date && formData.end_date && formData.reason && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                    <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-3 text-center">
+                      Prévia da Justificativa
+                    </h4>
+                    <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+                      <p><span className="font-medium">Militar:</span> {getSelectedMilitaryDisplay()}</p>
+                      <p><span className="font-medium">Período:</span> {formData.start_date} a {formData.end_date}</p>
+                      <p><span className="font-medium">Motivo:</span> {formData.reason}</p>
+                    </div>
+                  </div>
+                )}
+
+                <DialogFooter className="flex gap-2">
+                  <Button type="submit" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                    {editingId ? "Atualizar Justificativa" : "Criar Justificativa"}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      resetForm()
+                      setIsModalOpen(false)
+                    }}
+                    className="border-gray-300 hover:border-gray-400"
+                  >
+                    Cancelar
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          
+          <Button 
+            onClick={handleCleanupExpired}
+            variant="outline"
+            className="h-12 px-6 bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 hover:border-orange-300 font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
+          >
+            🧹 Limpar Expiradas
+          </Button>
+        </div>
       </div>
 
       {/* Lista de Justificativas - Design melhorado */}
@@ -575,11 +558,11 @@ export function JustificationManager() {
               <div className="mx-auto w-24 h-24 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-4xl font-bold text-slate-600 dark:text-slate-300">J</span>
               </div>
-              <p className="text-slate-600 dark:text-slate-400 text-lg font-medium mb-2">
-                Nenhuma justificativa encontrada
-              </p>
-              <p className="text-slate-500 dark:text-slate-500 text-sm">
-                Crie a primeira justificativa usando o formulário acima
+              <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                Nenhuma Justificativa
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400">
+                Não há justificativas cadastradas no momento.
               </p>
             </div>
           ) : (
@@ -607,7 +590,7 @@ export function JustificationManager() {
                         
                         <div>
                           <p className="text-slate-600 dark:text-slate-400 mb-2 font-medium">
-                            Período da Justificativa:
+                            Período:
                           </p>
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -621,21 +604,6 @@ export function JustificationManager() {
                               </Badge>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-500 dark:text-slate-400">
-                          {justification.created_at && (
-                            <p>
-                              <strong>Criada em:</strong> {format(new Date(justification.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                            </p>
-                          )}
-                          {justification.military_name && (
-                            <p>
-                              <strong>Nome do Militar:</strong> {justification.military_name}
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>

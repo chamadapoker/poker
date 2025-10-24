@@ -1,4 +1,4 @@
-import { JustificationManager } from "@/components/justification-manager"
+import JustificationManager from "@/components/justification-manager"
 
 export default function JustificationsPage() {
   return (

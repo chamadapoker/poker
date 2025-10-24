@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw, Lock, Unlock, Download, Search, Filter, BarChart3, Clock, AlertTriangle, CheckSquare, XSquare, Eye, EyeOff, RefreshCw, Zap, TrendingUp, Activity } from "lucide-react"
+import { CheckCircle, XCircle, User, Shield, Save, Calendar, Users, Settings, RotateCcw, Lock, Unlock, Download, Search, Filter, BarChart3, Clock, AlertTriangle, AlertCircle, CheckSquare, XSquare, Eye, EyeOff, RefreshCw, Zap, TrendingUp, Activity } from "lucide-react"
 import { militaryPersonnel, callTypes, attendanceStatuses } from "@/lib/static-data"
 import { PDFGenerator } from "@/components/pdf-generator"
 import { supabase } from "@/lib/supabase"
@@ -49,6 +49,10 @@ function AttendanceTracker() {
   const [persistenceEnabled, setPersistenceEnabled] = useState(true)
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null)
   const [cleanupScheduled, setCleanupScheduled] = useState(false)
+  
+  // Estado para justificativas personalizadas
+  const [customJustifications, setCustomJustifications] = useState<{[key: string]: string}>({})
+  const [showJustificationField, setShowJustificationField] = useState<{[key: string]: boolean}>({})
   const [isBackdating, setIsBackdating] = useState(false)
   const [isListLocked, setIsListLocked] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -136,7 +140,8 @@ function AttendanceTracker() {
         callType,
         timestamp: new Date().toISOString(),
         isLocked: isListLocked,
-        lastSaveTime: new Date().toISOString()
+        lastSaveTime: new Date().toISOString(),
+        customJustifications // Incluir justificativas personalizadas
       }
       
       // Salvar por data específica
@@ -196,6 +201,13 @@ function AttendanceTracker() {
       setSelectedCallType(savedData.callType || '')
       setIsListLocked(savedData.isLocked || false)
       setLastSaved(new Date(savedData.timestamp))
+      
+      // Restaurar justificativas personalizadas se existirem
+      if (savedData.customJustifications) {
+        setCustomJustifications(savedData.customJustifications)
+        console.log('✅ Justificativas personalizadas restauradas:', savedData.customJustifications)
+      }
+      
       return
     }
     
@@ -758,6 +770,26 @@ function AttendanceTracker() {
       )
     )
     
+    // Mostrar campo de justificativa se status for "ausente"
+    if (newStatus === "ausente") {
+      setShowJustificationField(prev => ({
+        ...prev,
+        [militaryId]: true
+      }))
+    } else {
+      // Esconder campo se não for ausente
+      setShowJustificationField(prev => ({
+        ...prev,
+        [militaryId]: false
+      }))
+      // Limpar justificativa personalizada
+      setCustomJustifications(prev => {
+        const newJustifications = { ...prev }
+        delete newJustifications[militaryId]
+        return newJustifications
+      })
+    }
+    
     // Registrar mudança no histórico
     if (oldAttendance && oldAttendance.status !== newStatus) {
       const change = {
@@ -773,6 +805,20 @@ function AttendanceTracker() {
       setChangeHistory(prev => [change, ...prev.slice(0, 49)]) // Manter apenas 50 mudanças
       setLastChangeTime(new Date())
     }
+  }
+
+  const handleCustomJustificationChange = (militaryId: string, justification: string) => {
+    setCustomJustifications(prev => ({
+      ...prev,
+      [militaryId]: justification
+    }))
+  }
+
+  const toggleJustificationField = (militaryId: string) => {
+    setShowJustificationField(prev => ({
+      ...prev,
+      [militaryId]: !prev[militaryId]
+    }))
   }
 
   // Funções de filtro e busca
@@ -976,7 +1022,8 @@ function AttendanceTracker() {
           call_type: selectedCallType,
           date: attendance.date,
           status: attendance.status, // Inclui "justificado" se for o caso
-          justification_id: justificationId
+          justification_id: justificationId,
+          custom_justification: customJustifications[attendance.militaryId] || null // Adicionar justificativa personalizada
         }
       })
 
@@ -1473,6 +1520,55 @@ function AttendanceTracker() {
                       ))}
                     </SelectContent>
                   </Select>
+                )}
+                
+                {/* Campo de justificativa personalizada para ausências */}
+                {!military.isJustified && military.status === "ausente" && showJustificationField[military.militaryId] && (
+                  <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                      <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                        Justificativa da Ausência
+                      </span>
+                    </div>
+                    <textarea
+                      value={customJustifications[military.militaryId] || ''}
+                      onChange={(e) => handleCustomJustificationChange(military.militaryId, e.target.value)}
+                      placeholder="Descreva o motivo da ausência (ex: emergência familiar, consulta médica, etc.)"
+                      className="w-full p-2 text-sm border border-orange-200 dark:border-orange-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-orange-400 dark:focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-800 transition-colors duration-200"
+                      rows={2}
+                    />
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-orange-600 dark:text-orange-400">
+                        Esta justificativa será salva junto com a lista de presença
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleJustificationField(military.militaryId)}
+                        className="text-xs h-6 px-2 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-600 dark:text-orange-300 dark:hover:bg-orange-900/30"
+                      >
+                        Ocultar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Botão para mostrar/ocultar campo de justificativa */}
+                {!military.isJustified && military.status === "ausente" && !showJustificationField[military.militaryId] && (
+                  <div className="mt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleJustificationField(military.militaryId)}
+                      className="text-xs h-6 px-2 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-600 dark:text-orange-300 dark:hover:bg-orange-900/30"
+                    >
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Justificar Ausência
+                    </Button>
+                  </div>
                 )}
               </div>
             ))}

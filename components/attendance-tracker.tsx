@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
 import type { MilitaryAttendanceRecord } from "@/lib/types"
+import { ErrorBoundary } from "@/components/error-boundary"
 
 type MilitaryAttendance = {
   id: string
@@ -37,7 +38,12 @@ function AttendanceTracker() {
   const [militaryAttendance, setMilitaryAttendance] = useState<MilitaryAttendance[]>([])
   const [justifications, setJustifications] = useState<JustificationRecord[]>([])
   const [showPDFButton, setShowPDFButton] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"))
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Garantir que sempre usamos a data local do cliente
+    const now = new Date()
+    const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
+    return format(localDate, "yyyy-MM-dd")
+  })
   const [isBackdating, setIsBackdating] = useState(false)
   const [isListLocked, setIsListLocked] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -179,39 +185,62 @@ function AttendanceTracker() {
 
   useEffect(() => {
     const loadData = async () => {
-      console.log('=== INICIANDO CARREGAMENTO DE DADOS ===')
-      console.log('militaryPersonnel disponível:', militaryPersonnel)
-      console.log('callTypes disponível:', callTypes)
-      
-      // 1. PRIMEIRO: Verificar se há dados salvos no localStorage
-      const savedData = loadAttendanceFromLocalStorage()
-      if (savedData && savedData.attendance && savedData.attendance.length > 0) {
-        console.log('🔄 Restaurando lista de presença do localStorage...')
-        setMilitaryAttendance(savedData.attendance)
-        setSelectedCallType(savedData.callType || '')
-        setIsListLocked(savedData.isLocked || false)
-        setLastSaved(new Date(savedData.timestamp))
-        console.log('✅ Lista restaurada com sucesso!')
-        
-        // Se a lista está travada, não carregar dados do servidor
-        if (savedData.isLocked) {
-          console.log('🔒 Lista travada - mantendo dados locais')
-          return
-        }
-      }
-      
       try {
+        console.log('=== INICIANDO CARREGAMENTO DE DADOS ===')
+        console.log('militaryPersonnel disponível:', militaryPersonnel)
+        console.log('callTypes disponível:', callTypes)
+        
+        // 1. PRIMEIRO: Verificar se há dados salvos no localStorage
+        const savedData = loadAttendanceFromLocalStorage()
+        if (savedData && savedData.attendance && savedData.attendance.length > 0) {
+          console.log('🔄 Restaurando lista de presença do localStorage...')
+          setMilitaryAttendance(savedData.attendance)
+          setSelectedCallType(savedData.callType || '')
+          setIsListLocked(savedData.isLocked || false)
+          setLastSaved(new Date(savedData.timestamp))
+          console.log('✅ Lista restaurada com sucesso!')
+          
+          // Se a lista está travada, não carregar dados do servidor
+          if (savedData.isLocked) {
+            console.log('🔒 Lista travada - mantendo dados locais')
+            return
+          }
+        }
+        
         // 1. PRIMEIRO: Carregar justificativas
         console.log('1. Carregando justificativas...')
         await fetchJustifications()
         
         console.log('=== CARREGAMENTO DE DADOS CONCLUÍDO ===')
       } catch (error) {
-        console.error('Erro ao carregar dados:', error)
+        console.error('❌ Erro crítico ao carregar dados:', error)
+        
+        // Tratamento de erro mais específico
+        if (error instanceof Error) {
+          console.error('Detalhes do erro:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+          })
+        }
+        
+        // Mostrar toast de erro
+        toast({
+          title: "Erro ao Carregar",
+          description: "Não foi possível carregar os dados. Verifique sua conexão.",
+          variant: "destructive"
+        })
+        
         console.log('Continuando com dados estáticos...')
       }
     }
-    loadData()
+    
+    // Adicionar delay para garantir que o componente está montado
+    const timeoutId = setTimeout(() => {
+      loadData()
+    }, 100)
+    
+    return () => clearTimeout(timeoutId)
     
     // Definir um tipo de chamada padrão
     if (callTypes.length > 0) {
@@ -1461,5 +1490,14 @@ function AttendanceTracker() {
   )
 }
 
+// Componente principal com Error Boundary
+const AttendanceTrackerWithErrorBoundary = () => {
+  return (
+    <ErrorBoundary>
+      <AttendanceTracker />
+    </ErrorBoundary>
+  )
+}
+
 export { AttendanceTracker }
-export default AttendanceTracker
+export default AttendanceTrackerWithErrorBoundary

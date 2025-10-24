@@ -31,6 +31,7 @@ export function JustificationManager() {
   const [justifications, setJustifications] = useState<Justification[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [nextCleanupTime, setNextCleanupTime] = useState<string>("")
   const [formData, setFormData] = useState<Justification>({
     military_id: "",
     military_name: "",
@@ -41,6 +42,40 @@ export function JustificationManager() {
 
   useEffect(() => {
     fetchJustifications()
+    
+    // Limpeza automática diária às 23:00
+    const scheduleDailyCleanup = () => {
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const targetTime = new Date(today.getTime() + 23 * 60 * 60 * 1000) // 23:00 hoje
+      
+      // Se já passou das 23:00 hoje, agendar para amanhã
+      if (now >= targetTime) {
+        targetTime.setDate(targetTime.getDate() + 1)
+      }
+      
+      const timeUntilCleanup = targetTime.getTime() - now.getTime()
+      
+      console.log('🕚 Limpeza automática agendada para:', targetTime.toLocaleString('pt-BR'))
+      console.log('⏰ Tempo até a próxima limpeza:', Math.round(timeUntilCleanup / (1000 * 60 * 60)), 'horas')
+      
+      // Atualizar estado com o horário da próxima limpeza
+      setNextCleanupTime(targetTime.toLocaleString('pt-BR'))
+      
+      const timeoutId = setTimeout(() => {
+        console.log('🧹 Executando limpeza automática diária de justificativas expiradas...')
+        fetchJustifications()
+        
+        // Agendar próxima limpeza para amanhã às 23:00
+        scheduleDailyCleanup()
+      }, timeUntilCleanup)
+      
+      return timeoutId
+    }
+    
+    const timeoutId = scheduleDailyCleanup()
+    
+    return () => clearTimeout(timeoutId)
   }, [])
 
   const fetchJustifications = async () => {
@@ -65,7 +100,29 @@ export function JustificationManager() {
       }
       
       console.log('✅ Justificativas carregadas com sucesso:', data)
-      setJustifications(data || [])
+      
+      // Filtrar justificativas ativas (que ainda não expiraram)
+      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+      const activeJustifications = (data || []).filter((justification: any) => {
+        const endDate = justification.end_date
+        const isActive = endDate >= today
+        console.log(`Justificativa ${justification.military_name}: fim em ${endDate}, ativa: ${isActive}`)
+        return isActive
+      })
+      
+      console.log(`📅 Justificativas ativas (não expiradas): ${activeJustifications.length} de ${data?.length || 0}`)
+      setJustifications(activeJustifications)
+      
+      // Se há justificativas expiradas, mostrar notificação
+      const expiredCount = (data || []).length - activeJustifications.length
+      if (expiredCount > 0) {
+        toast({
+          title: "Justificativas Expiradas",
+          description: `${expiredCount} justificativa(s) expiraram e foram removidas da lista.`,
+          variant: "default",
+        })
+      }
+      
     } catch (error: any) {
       console.error('💥 Erro ao buscar justificativas:', error)
       console.error('📋 Tipo do erro:', typeof error)
@@ -208,6 +265,42 @@ export function JustificationManager() {
     }
   }
 
+  const handleCleanupExpired = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      
+      console.log('🧹 Iniciando limpeza de justificativas expiradas...')
+      console.log('📅 Data atual para limpeza:', today)
+      
+      const { data, error } = await (supabase as any)
+        .from('military_justifications')
+        .delete()
+        .lt('end_date', today)
+        .select()
+
+      if (error) throw error
+
+      const deletedCount = data?.length || 0
+      console.log(`🗑️ ${deletedCount} justificativa(s) expirada(s) removida(s) do banco`)
+      
+      toast({
+        title: "Limpeza Concluída",
+        description: `${deletedCount} justificativa(s) expirada(s) foram removidas permanentemente.`,
+        variant: "default",
+      })
+      
+      // Recarregar a lista
+      await fetchJustifications()
+    } catch (error: any) {
+      console.error('Erro ao limpar justificativas expiradas:', error)
+      toast({
+        title: "Erro na Limpeza",
+        description: "Não foi possível limpar as justificativas expiradas.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const resetForm = () => {
     setFormData({
       military_id: "",
@@ -303,24 +396,49 @@ export function JustificationManager() {
             <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Ativas Hoje</p>
           </CardContent>
         </Card>
+        
+        {/* Card informativo sobre limpeza automática */}
+        {nextCleanupTime && (
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4 text-center">
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
+                🧹 Próxima Limpeza Automática
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                {nextCleanupTime}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Botão de Nova Justificativa - Design normal */}
-      <div className="text-center">
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              onClick={() => {
-                setEditingId(null)
-                resetForm()
-                setIsModalOpen(true)
-              }}
-              className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Justificativa
-            </Button>
-          </DialogTrigger>
+      {/* Botões de Ação */}
+      <div className="text-center space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={() => {
+                  setEditingId(null)
+                  resetForm()
+                  setIsModalOpen(true)
+                }}
+                className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Justificativa
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          
+          <Button 
+            onClick={handleCleanupExpired}
+            variant="outline"
+            className="h-12 px-6 bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 hover:border-orange-300 font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
+          >
+            🧹 Limpar Expiradas
+          </Button>
+        </div>
           
           <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>

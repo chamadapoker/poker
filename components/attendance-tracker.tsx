@@ -1514,15 +1514,25 @@ function AttendanceTracker() {
                   >
                     {(() => {
                       try {
-                        const [year, month, day] = dateInfo.date.split('-')
+                        if (!dateInfo.date || typeof dateInfo.date !== 'string') {
+                          return ''
+                        }
+                        const parts = dateInfo.date.split('-')
+                        if (parts.length !== 3) {
+                          return ''
+                        }
+                        const [year, month, day] = parts
+                        if (!year || !month || !day) {
+                          return ''
+                        }
                         return `${day}/${month}`
                       } catch (error) {
-                        return dateInfo.date
+                        return ''
                       }
                     })()}
                     {dateInfo.callType && (
-                      <span className="ml-1 text-xs opacity-75">
-                        ({callTypes.find(t => t.id === dateInfo.callType)?.label || dateInfo.callType})
+                      <span className={`ml-1 text-xs opacity-75 ${!dateInfo.date ? 'ml-0' : ''}`}>
+                        {dateInfo.date ? '(' : ''}{callTypes.find(t => t.id === dateInfo.callType)?.label || dateInfo.callType}{dateInfo.date ? ')' : ''}
                       </span>
                     )}
                   </button>

@@ -22,6 +22,48 @@ function safeLower(value: string | null | undefined) {
   return (value ?? "").toLowerCase()
 }
 
+// Função auxiliar para criar datas de forma segura
+function safeCreateDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null
+  
+  try {
+    // Se a data estiver no formato ISO (YYYY-MM-DD)
+    if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateString)) {
+      const [year, month, day] = dateString.split('-').map(Number)
+      
+      // Validar se os valores são válidos
+      if (isNaN(year) || isNaN(month) || isNaN(day) || 
+          year < 1900 || year > 2100 || 
+          month < 1 || month > 12 || 
+          day < 1 || day > 31) {
+        return null
+      }
+      
+      const d = new Date(year, month - 1, day)
+      
+      // Verificar se a data criada é válida
+      if (d.getFullYear() !== year || d.getMonth() !== (month - 1) || d.getDate() !== day) {
+        return null
+      }
+      
+      return d
+    } else {
+      // Tentar outros formatos com validação
+      const d = new Date(dateString)
+      
+      // Verificar se a data é válida
+      if (isNaN(d.getTime())) {
+        return null
+      }
+      
+      return d
+    }
+  } catch (error) {
+    console.warn('⚠️ Erro ao criar data:', dateString, error)
+    return null
+  }
+}
+
 function formatDate(dateString: string | null | undefined) {
   if (!dateString) {
     return "—"
@@ -32,25 +74,29 @@ function formatDate(dateString: string | null | undefined) {
     return dateString
   }
   
-  // Tentar criar uma data válida
-  let d: Date
-  
-  // Se a data estiver no formato ISO (YYYY-MM-DD)
-  if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateString)) {
-    const [year, month, day] = dateString.split('-').map(Number)
-    d = new Date(year, month - 1, day)
+  try {
+    // Usar função auxiliar para criar data de forma segura
+    let d = safeCreateDate(dateString)
+    
+    if (!d) {
+      console.warn('⚠️ Data inválida:', dateString)
+      return "—"
+    }
+    
     // CORREÇÃO: Adicionar 1 dia para compensar o atraso do Supabase
     d.setDate(d.getDate() + 1)
-  } else {
-    // Tentar outros formatos
-    d = new Date(dateString)
-  }
-  
-  if (!isValid(d)) {
+    
+    // Verificação final com date-fns
+    if (!isValid(d)) {
+      console.warn('⚠️ Data inválida (date-fns):', dateString)
+      return "—"
+    }
+    
+    return format(d, "dd/MM/yyyy", { locale: ptBR })
+  } catch (error) {
+    console.error('❌ Erro ao formatar data:', dateString, error)
     return "—"
   }
-  
-  return format(d, "dd/MM/yyyy", { locale: ptBR })
 }
 
 
@@ -296,7 +342,8 @@ export function HistoryTabs() {
   
   // Verificar especificamente as chamadas do dia 01/09/2025
   const chamadas0109 = attendanceRecords.filter(r => {
-    const recordDate = new Date(r.date)
+    const recordDate = safeCreateDate(r.date)
+    if (!recordDate) return false
     return recordDate.getDate() === 1 && recordDate.getMonth() === 8 && recordDate.getFullYear() === 2025
   })
   
@@ -308,7 +355,8 @@ export function HistoryTabs() {
   const todayYear = today.getFullYear()
   
   const chamadasHoje = attendanceRecords.filter(r => {
-    const recordDate = new Date(r.date)
+    const recordDate = safeCreateDate(r.date)
+    if (!recordDate) return false
     return recordDate.getDate() === todayDate && recordDate.getMonth() === todayMonth && recordDate.getFullYear() === todayYear
   })
   
@@ -671,7 +719,8 @@ export function HistoryTabs() {
   // Verificar se há datas que parecem estar um dia atrasadas
   const suspiciousDates = attendanceRecords.filter(r => {
     if (!r.date) return false
-    const recordDate = new Date(r.date)
+    const recordDate = safeCreateDate(r.date)
+    if (!recordDate) return false
     const diffDays = Math.abs(today.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24)
     return diffDays <= 1 && diffDays > 0
   })
@@ -681,7 +730,11 @@ export function HistoryTabs() {
       military: r.military_name,
       date: r.date,
       formatted: formatDate(r.date),
-      diffDays: Math.abs(today.getTime() - new Date(r.date).getTime()) / (1000 * 60 * 60 * 24)
+      diffDays: (() => {
+        const recordDate = safeCreateDate(r.date)
+        if (!recordDate) return 0
+        return Math.abs(today.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24)
+      })()
     })))
   }
 

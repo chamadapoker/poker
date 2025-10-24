@@ -429,18 +429,8 @@ export function JustificationManager() {
                 Nova Justificativa
               </Button>
             </DialogTrigger>
-          </Dialog>
-          
-          <Button 
-            onClick={handleCleanupExpired}
-            variant="outline"
-            className="h-12 px-6 bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 hover:border-orange-300 font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
-          >
-            🧹 Limpar Expiradas
-          </Button>
-        </div>
-          
-          <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            
+            <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-center">
                 {editingId ? "Editar Justificativa" : "Nova Justificativa"}
@@ -559,6 +549,14 @@ export function JustificationManager() {
             </form>
           </DialogContent>
         </Dialog>
+        
+        <Button 
+          onClick={handleCleanupExpired}
+          variant="outline"
+          className="h-12 px-6 bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 hover:border-orange-300 font-semibold shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
+        >
+          🧹 Limpar Expiradas
+        </Button>
       </div>
 
       {/* Lista de Justificativas - Design melhorado */}

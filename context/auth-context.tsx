@@ -20,6 +20,7 @@ interface AuthContextType {
   isLoading: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  clearAuthCache: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -65,6 +66,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Limpar cache antigo se necessário
+    const cacheVersion = localStorage.getItem('auth_cache_version')
+    const currentVersion = '2.0' // Nova versão para forçar limpeza
+    
+    if (cacheVersion !== currentVersion) {
+      console.log('🧹 Limpando cache antigo...')
+      localStorage.removeItem('user_profile')
+      localStorage.removeItem('auth_cache_version')
+      localStorage.setItem('auth_cache_version', currentVersion)
+    }
+    
     // Carregar perfil do localStorage imediatamente para melhor UX
     const savedProfile = loadProfileFromLocalStorage()
     if (savedProfile) {
@@ -78,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Timeout de segurança ativado - forçando fim do loading')
       setIsLoading(false)
-    }, 1500) // 1.5 segundos para melhor UX
+    }, 5000) // 5 segundos para dar tempo suficiente
 
     // Verificar sessão atual
     const getSession = async () => {
@@ -250,6 +262,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const clearAuthCache = () => {
+    console.log('🧹 Limpando cache de autenticação...')
+    localStorage.removeItem('user_profile')
+    localStorage.removeItem('auth_cache_version')
+    setProfile(null)
+    setUser(null)
+    setSession(null)
+    setIsLoading(false)
+  }
+
   const signOut = async () => {
     try {
       console.log('🚪 Iniciando logout...')
@@ -285,7 +307,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     isLoading,
     signOut,
-    refreshProfile
+    refreshProfile,
+    clearAuthCache
   }
 
   return (
@@ -330,7 +353,7 @@ export function useRequireAuth(requiredRole?: 'admin' | 'user') {
           console.log('⚠️ Timeout aguardando perfil, redirecionando para dashboard')
           router.push('/dashboard')
         }
-      }, 1000) // 1 segundo para melhor UX
+      }, 3000) // 3 segundos para dar tempo ao perfil carregar
       
       return () => clearTimeout(timeout)
     }

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Shield, User, Lock, Eye, EyeOff, Sparkles } from "lucide-react"
+import { Loader2, Shield, User, Lock, Eye, EyeOff, Sparkles, RefreshCw } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
@@ -29,6 +29,20 @@ export default function LoginPage() {
     if (user) {
       router.push("/dashboard")
     }
+  }
+
+  const clearCache = () => {
+    console.log('🧹 Limpando cache do navegador...')
+    localStorage.clear()
+    sessionStorage.clear()
+    toast({
+      title: "Cache Limpo!",
+      description: "Cache do navegador foi limpo. Recarregue a página.",
+    })
+    // Recarregar a página após 1 segundo
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -187,6 +201,17 @@ export default function LoginPage() {
                     Entrar no Sistema
                   </>
                 )}
+              </Button>
+
+              {/* Cache Clear Button */}
+              <Button
+                type="button"
+                onClick={clearCache}
+                variant="outline"
+                className="w-full mt-3 bg-transparent border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Limpar Cache do Navegador
               </Button>
             </form>
           </CardContent>

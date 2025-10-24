@@ -932,10 +932,10 @@ export function HistoryTabs() {
         </div>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-4 mb-8">
           <Card className="border-2 border-blue-200 bg-white dark:bg-gray-800 dark:border-blue-700 shadow-md hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                 {attendanceRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-blue-800 dark:text-blue-200">Presença</div>
@@ -943,8 +943,8 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border-2 border-green-200 bg-white dark:bg-gray-800 dark:border-green-700 shadow-md hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
                 {justificationRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200">Justificativas</div>
@@ -952,8 +952,8 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border-2 border-purple-200 bg-white dark:bg-gray-800 dark:border-purple-700 shadow-md hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
                 {eventRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-purple-800 dark:text-purple-200">Eventos</div>
@@ -961,8 +961,8 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border-2 border-orange-200 bg-white dark:bg-gray-800 dark:border-orange-700 shadow-md hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
                 {flightRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-orange-800 dark:text-orange-200">Voos</div>
@@ -972,8 +972,8 @@ export function HistoryTabs() {
           <Card className="border border-red-200 dark:border-red-700 shadow-sm hover:shadow-md transition-shadow duration-200">
             
             
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
                 {permanenceRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Permanência</div>
@@ -981,8 +981,8 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border border-indigo-200 dark:border-indigo-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
                 {personalNoteRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Notas</div>
@@ -990,7 +990,7 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border border-yellow-200 dark:border-yellow-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardContent className="p-4 text-center">
+            <CardContent className="p-2 sm:p-4 text-center">
               <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                 {keyHistoryRecords.length}
               </div>
@@ -999,8 +999,8 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border border-cyan-200 dark:border-cyan-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1">
                 {tiTicketRecords.length}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">TI</div>
@@ -1008,8 +1008,8 @@ export function HistoryTabs() {
           </Card>
           
           <Card className="border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
                 {totalRecords}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Total</div>
@@ -1018,30 +1018,30 @@ export function HistoryTabs() {
         </div>
 
         {/* Dropdown para todas as abas */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
             <div className="w-full sm:w-96">
             <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="w-full h-12 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg">
+                <SelectTrigger className="w-full h-10 sm:h-12 text-sm sm:text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg">
                 <SelectValue>
                     <div className="flex items-center gap-4">
                       <div className="flex flex-col items-start">
-                        <span className="font-bold text-gray-900 dark:text-white text-lg">
+                        <span className="font-bold text-gray-900 dark:text-white text-sm sm:text-lg">
                           {availableTabs.find(tab => tab.value === activeTab)?.label}
                         </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           {availableTabs.find(tab => tab.value === activeTab)?.description}
                         </span>
                       </div>
                     </div>
                 </SelectValue>
               </SelectTrigger>
-                <SelectContent className="max-h-96 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                <SelectContent className="max-h-80 sm:max-h-96 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
                   {availableTabs.map(tab => (
-                    <SelectItem key={tab.value} value={tab.value} className="py-4 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-200">
+                    <SelectItem key={tab.value} value={tab.value} className="py-3 sm:py-4 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-200">
                       <div className="flex flex-col items-start">
-                        <span className="font-bold text-gray-900 dark:text-white text-lg">{tab.label}</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{tab.description}</span>
+                        <span className="font-bold text-gray-900 dark:text-white text-sm sm:text-lg">{tab.label}</span>
+                        <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{tab.description}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -1156,15 +1156,15 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Tipo de Chamada</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Justificativa</th>
-                        <th className="px-6 py-3">Detalhes</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Tipo de Chamada</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Justificativa</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Detalhes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1185,8 +1185,8 @@ export function HistoryTabs() {
                         return (
                           <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
                             <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
-                            <td className="px-6 py-4">{formatDate(r.date)}</td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">{formatDate(r.date)}</td>
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {(() => {
                                   const tipoChamada = r.call_type || 'N/A'
@@ -1199,7 +1199,7 @@ export function HistoryTabs() {
                                 })()}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 r.status === 'presente' ? 'bg-green-100 text-green-800' : 
                                 r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
@@ -1208,7 +1208,7 @@ export function HistoryTabs() {
                                 {r.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               {justification ? (
                                 <div className="text-sm">
                                   <div className="font-medium text-blue-600">{justification.type}</div>
@@ -1220,7 +1220,7 @@ export function HistoryTabs() {
                                 <span className="text-gray-400">—</span>
                               )}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               {justification ? (
                                 <div className="text-sm text-gray-600 max-w-xs truncate" title={justification.reason}>
                                   {justification.reason}
@@ -1292,14 +1292,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Tipo</th>
-                        <th className="px-6 py-3">Período</th>
-                        <th className="px-6 py-3">Motivo</th>
-                        <th className="px-6 py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Tipo</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Período</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Motivo</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1363,14 +1363,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Título</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Horário</th>
-                        <th className="px-6 py-3">Descrição</th>
-                        <th className="px-6 py-3">Responsável</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Título</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Horário</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Descrição</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Responsável</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1432,13 +1432,13 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Horário Zulu</th>
-                        <th className="px-6 py-3">Militares</th>
-                        <th className="px-6 py-3">Criado em</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Horário Zulu</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militares</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Criado em</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1511,13 +1511,13 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Detalhes</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Detalhes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1573,12 +1573,12 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Conteúdo</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Conteúdo</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1648,14 +1648,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Chave</th>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Ação</th>
-                        <th className="px-6 py-3">Data/Hora</th>
-                        <th className="px-6 py-3">Observações</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Chave</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Ação</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data/Hora</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Observações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1764,15 +1764,15 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Título</th>
-                        <th className="px-6 py-3">Solicitante</th>
-                        <th className="px-6 py-3">Categoria</th>
-                        <th className="px-6 py-3">Urgência</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Data de Criação</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Título</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Solicitante</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Categoria</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Urgência</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data de Criação</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1905,14 +1905,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Justificativa</th>
-                        <th className="px-6 py-3">Detalhes</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Justificativa</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Detalhes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1924,8 +1924,8 @@ export function HistoryTabs() {
                         return (
                           <tr key={r.id} className="bg-white border-b dark:bg-gray-800">
                             <td className="px-6 py-4 font-medium whitespace-nowrap">{r.rank} {r.military_name}</td>
-                            <td className="px-6 py-4">{formatDate(r.date)}</td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">{formatDate(r.date)}</td>
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 r.status === 'presente' ? 'bg-green-100 text-green-800' : 
                                 r.status === 'ausente' ? 'bg-red-100 text-red-800' : 
@@ -1934,7 +1934,7 @@ export function HistoryTabs() {
                                 {r.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               {justification ? (
                                 <div className="text-sm">
                                   <div className="font-medium text-blue-600">{justification.type}</div>
@@ -1946,7 +1946,7 @@ export function HistoryTabs() {
                                 <span className="text-gray-400">—</span>
                               )}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
                               {justification ? (
                                 <div className="text-sm text-gray-600 max-w-xs truncate" title={justification.reason}>
                                   {justification.reason}
@@ -2018,14 +2018,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Tipo</th>
-                        <th className="px-6 py-3">Período</th>
-                        <th className="px-6 py-3">Motivo</th>
-                        <th className="px-6 py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Tipo</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Período</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Motivo</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2089,14 +2089,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Título</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Horário</th>
-                        <th className="px-6 py-3">Descrição</th>
-                        <th className="px-6 py-3">Responsável</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Título</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Horário</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Descrição</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Responsável</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2158,13 +2158,13 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Horário Zulu</th>
-                        <th className="px-6 py-3">Militares</th>
-                        <th className="px-6 py-3">Criado em</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Horário Zulu</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militares</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Criado em</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2237,13 +2237,13 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Detalhes</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Detalhes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2299,12 +2299,12 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Data</th>
-                        <th className="px-6 py-3">Conteúdo</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Conteúdo</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2374,14 +2374,14 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Chave</th>
-                        <th className="px-6 py-3">Militar</th>
-                        <th className="px-6 py-3">Ação</th>
-                        <th className="px-6 py-3">Data/Hora</th>
-                        <th className="px-6 py-3">Observações</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Chave</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Militar</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Ação</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data/Hora</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Observações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2490,15 +2490,15 @@ export function HistoryTabs() {
                   </>
                 ))}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[800px]">
+                  <table className="w-full text-xs sm:text-sm text-left min-w-[600px] sm:min-w-[800px]">
                     <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3">Título</th>
-                        <th className="px-6 py-3">Solicitante</th>
-                        <th className="px-6 py-3">Categoria</th>
-                        <th className="px-6 py-3">Urgência</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Data de Criação</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Título</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Solicitante</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Categoria</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Urgência</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Status</th>
+                        <th className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3">Data de Criação</th>
                       </tr>
                     </thead>
                     <tbody>

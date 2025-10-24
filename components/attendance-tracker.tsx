@@ -64,6 +64,7 @@ function AttendanceTracker() {
   const [isBackdating, setIsBackdating] = useState(false)
   const [isListLocked, setIsListLocked] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [hasBeenSavedToday, setHasBeenSavedToday] = useState(false)
   
   // Novos estados para melhorias
   const [searchTerm, setSearchTerm] = useState("")
@@ -282,6 +283,42 @@ function AttendanceTracker() {
     }
   }, [militaryAttendance, selectedDate, selectedCallType, isListLocked])
 
+  // Reset automático às 23h
+  useEffect(() => {
+    const scheduleReset = () => {
+      const now = new Date()
+      const tomorrow = new Date(now)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      tomorrow.setHours(23, 0, 0, 0) // 23:00:00
+      
+      const timeUntilReset = tomorrow.getTime() - now.getTime()
+      
+      console.log('🕐 Agendando reset automático para:', tomorrow.toLocaleString())
+      
+      const timeoutId = setTimeout(() => {
+        console.log('🔄 Reset automático executado às 23h')
+        setHasBeenSavedToday(false)
+        setMilitaryAttendance([])
+        setSelectedCallType('')
+        setLastSaved(null)
+        setShowPDFButton(false)
+        
+        // Limpar localStorage
+        localStorage.removeItem('poker_attendance_backup')
+        
+        toast({
+          title: "🔄 Lista Resetada",
+          description: "Nova lista iniciada para o próximo dia.",
+        })
+      }, timeUntilReset)
+      
+      return () => clearTimeout(timeoutId)
+    }
+    
+    const cleanup = scheduleReset()
+    return cleanup
+  }, [])
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -347,16 +384,17 @@ function AttendanceTracker() {
       console.log('Tipo de chamada padrão definido:', callTypes[0].id)
     }
 
-    // Verificar se deve limpar a lista (expiração diária)
-    const lastResetDate = localStorage.getItem('lastAttendanceReset')
-    const today = new Date().toDateString()
-    
-    if (lastResetDate !== today) {
-      // É um novo dia, limpar a lista
-      console.log('Novo dia detectado, limpando lista de presença...')
-      localStorage.setItem('lastAttendanceReset', today)
-      // A lista será inicializada como "ausente" no initializeAttendance
-    }
+  // Verificar se deve limpar a lista (expiração diária)
+  const lastResetDate = localStorage.getItem('lastAttendanceReset')
+  const today = new Date().toDateString()
+  
+  if (lastResetDate !== today) {
+    // É um novo dia, limpar a lista
+    console.log('Novo dia detectado, limpando lista de presença...')
+    localStorage.setItem('lastAttendanceReset', today)
+    setHasBeenSavedToday(false)
+    // A lista será inicializada como "presente" no initializeAttendance
+  }
   }, [])
 
   // NOVO: useEffect separado para reagir às mudanças em justifications
@@ -374,6 +412,7 @@ function AttendanceTracker() {
         fetchAttendanceHistory()
       } else {
         console.log('✅ Dados salvos encontrados, mantendo lista existente')
+        setHasBeenSavedToday(true)
         // Apenas atualizar justificações sem sobrescrever a lista
         fetchAttendanceHistory()
       }
@@ -719,7 +758,7 @@ function AttendanceTracker() {
         militaryId: military.id,
         militaryName: military.name,
         rank: military.rank,
-        status: isJustified ? "justificado" : "ausente",
+        status: isJustified ? "justificado" : "presente",
         callType: "",
         date: selectedDate,
         isJustified,
@@ -778,7 +817,7 @@ function AttendanceTracker() {
             militaryId: military.id,
             militaryName: military.name,
             rank: military.rank,
-            status: record ? record.status : (isJustified ? "justificado" : "ausente"),
+            status: record ? record.status : (isJustified ? "justificado" : "presente"),
             callType: record ? record.call_type : "",
             date: selectedDate,
             isJustified,
@@ -970,7 +1009,7 @@ function AttendanceTracker() {
         // Resetar apenas os não justificados
         return {
           ...military,
-          status: 'ausente',
+          status: 'presente',
           isJustified: false
         }
       }
@@ -1111,6 +1150,10 @@ function AttendanceTracker() {
       })
       setShowPDFButton(true)
       setLastSaved(new Date())
+      setHasBeenSavedToday(true)
+      
+      // Salvar no localStorage que foi salvo hoje
+      saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
     } catch (error: any) {
       console.error("=== ERRO AO SALVAR PRESENÇA ===")
       console.error("Tipo do erro:", typeof error)
@@ -1400,6 +1443,14 @@ function AttendanceTracker() {
                 </span>
               </div>
             )}
+            {hasBeenSavedToday && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 rounded-full">
+                <CheckCircle className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">
+                  Salvo Hoje
+                </span>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -1461,7 +1512,14 @@ function AttendanceTracker() {
                         : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600'
                     }`}
                   >
-                    {format(new Date(dateInfo.date), "dd/MM")}
+                    {(() => {
+                      try {
+                        const [year, month, day] = dateInfo.date.split('-')
+                        return `${day}/${month}`
+                      } catch (error) {
+                        return dateInfo.date
+                      }
+                    })()}
                     {dateInfo.callType && (
                       <span className="ml-1 text-xs opacity-75">
                         ({callTypes.find(t => t.id === dateInfo.callType)?.label || dateInfo.callType})
@@ -1485,7 +1543,16 @@ function AttendanceTracker() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Settings className="h-6 w-6 text-red-600 dark:text-red-400" />
-            Tipo de Chamada - {format(new Date(selectedDate), "dd/MM/yyyy")}
+            Tipo de Chamada - {(() => {
+              try {
+                // Usar a data selecionada diretamente sem conversão
+                const [year, month, day] = selectedDate.split('-')
+                return `${day}/${month}/${year}`
+              } catch (error) {
+                console.error('Erro ao formatar data:', error)
+                return selectedDate
+              }
+            })()}
             {!selectedCallType && (
               <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 border border-orange-200 dark:border-orange-700 rounded-full">
                 <AlertTriangle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
@@ -1542,7 +1609,16 @@ function AttendanceTracker() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Users className="h-6 w-6 text-red-600 dark:text-red-400" />
-            Militares ({format(new Date(selectedDate), "dd/MM/yyyy")})
+            Militares ({(() => {
+              try {
+                // Usar a data selecionada diretamente sem conversão
+                const [year, month, day] = selectedDate.split('-')
+                return `${day}/${month}/${year}`
+              } catch (error) {
+                console.error('Erro ao formatar data:', error)
+                return selectedDate
+              }
+            })()})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-6">

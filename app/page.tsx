@@ -11,8 +11,8 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        // Se usuário está logado, redirecionar para dashboard
-        router.push("/dashboard")
+        // Se usuário está logado, redirecionar para página de presença
+        router.push("/attendance")
       } else {
         // Se não está logado, redirecionar para login
         router.push("/login")

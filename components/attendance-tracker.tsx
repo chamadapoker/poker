@@ -38,11 +38,18 @@ function AttendanceTracker() {
   const [militaryAttendance, setMilitaryAttendance] = useState<MilitaryAttendance[]>([])
   const [justifications, setJustifications] = useState<JustificationRecord[]>([])
   const [showPDFButton, setShowPDFButton] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    // Garantir que sempre usamos a data local do cliente
-    const now = new Date()
-    const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
-    return format(localDate, "yyyy-MM-dd")
+    try {
+      // Garantir que sempre usamos a data local do cliente
+      const now = new Date()
+      const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
+      return format(localDate, "yyyy-MM-dd")
+    } catch (error) {
+      console.error('❌ Erro ao inicializar data:', error)
+      // Fallback para data atual em formato ISO
+      return new Date().toISOString().split('T')[0]
+    }
   })
   
   // Estado para controle de persistência
@@ -379,6 +386,17 @@ function AttendanceTracker() {
     return () => {
       // Cleanup não é necessário pois o timeout é gerenciado automaticamente
     }
+  }, [])
+
+  // useEffect para tratamento de erros globais
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error('❌ Erro capturado:', error)
+      setError('Ocorreu um erro inesperado. Recarregue a página.')
+    }
+
+    window.addEventListener('error', handleError)
+    return () => window.removeEventListener('error', handleError)
   }, [])
 
   const fetchJustifications = async () => {
@@ -963,6 +981,26 @@ function AttendanceTracker() {
       return
     }
 
+    // Validar se a data está correta
+    if (!selectedDate) {
+      toast({
+        title: "Data não selecionada",
+        description: "Por favor, selecione uma data válida.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validar se há militares na lista
+    if (militaryAttendance.length === 0) {
+      toast({
+        title: "Lista vazia",
+        description: "Não há militares na lista de presença.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       console.log('=== INICIANDO SALVAMENTO DE PRESENÇA ===')
@@ -1118,6 +1156,36 @@ function AttendanceTracker() {
   const allMilitary = militaryAttendance
   const filteredMilitary = getFilteredMilitary()
   const stats = getStatsData()
+
+  // Se há erro, mostrar tela de erro
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-red-50 dark:bg-red-950/20 p-6 rounded-lg shadow-lg border border-red-200 dark:border-red-800">
+        <AlertTriangle className="w-16 h-16 text-red-600 dark:text-red-400 mb-6 animate-pulse" />
+        <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-3">
+          Erro na Página de Presença
+        </h2>
+        <p className="text-red-700 dark:text-red-300 text-center mb-6 max-w-md">
+          {error}
+        </p>
+        <div className="flex gap-4">
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" /> Recarregar Página
+          </Button>
+          <Button 
+            onClick={() => setError(null)} 
+            variant="outline" 
+            className="text-red-600 border-red-300 hover:bg-red-100 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/30"
+          >
+            Tentar Novamente
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -1390,20 +1458,38 @@ function AttendanceTracker() {
       </Card>
 
       {/* Tipo de Chamada */}
-      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg">
+      <Card className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg ${!selectedCallType ? 'border-2 border-orange-300 dark:border-orange-600 bg-orange-50 dark:bg-orange-950/20' : ''}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Settings className="h-6 w-6 text-red-600 dark:text-red-400" />
             Tipo de Chamada - {format(new Date(selectedDate), "dd/MM/yyyy")}
+            {!selectedCallType && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 border border-orange-200 dark:border-orange-700 rounded-full">
+                <AlertTriangle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                <span className="text-xs text-orange-700 dark:text-orange-300 font-medium">
+                  Obrigatório
+                </span>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
+          {!selectedCallType && (
+            <div className="mb-4 p-3 bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                  ⚠️ Selecione um tipo de chamada para continuar
+                </span>
+              </div>
+            </div>
+          )}
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3 sm:gap-4">
             <Select value={selectedCallType} onValueChange={(value) => {
               console.log('Tipo de chamada selecionado:', value)
               setSelectedCallType(value)
             }}>
-              <SelectTrigger className="w-full max-w-md border-2 border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400 transition-colors duration-200">
+              <SelectTrigger className={`w-full max-w-md border-2 ${!selectedCallType ? 'border-orange-300 hover:border-orange-400 focus:border-orange-500 dark:border-orange-600 dark:hover:border-orange-500 dark:focus:border-orange-400' : 'border-slate-200 hover:border-red-400 focus:border-red-500 dark:border-slate-600 dark:hover:border-red-500 dark:focus:border-red-400'} transition-colors duration-200`}>
                 <SelectValue placeholder="Selecione o tipo de chamada">
                   {selectedCallType && callTypes.find((t: any) => t.id === selectedCallType)?.label}
                 </SelectValue>

@@ -264,17 +264,18 @@ function AttendanceTracker() {
     }
   }
 
-  // Auto-save a cada 30 segundos
+  // Auto-save a cada 30 segundos (DESABILITADO temporariamente)
   useEffect(() => {
-    if (militaryAttendance.length > 0 && selectedCallType) {
-      const interval = setInterval(() => {
-        if (!isListLocked) {
-          saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
-        }
-      }, 30000) // 30 segundos
-
-      return () => clearInterval(interval)
-    }
+    // Desabilitado para evitar erros
+    // if (militaryAttendance.length > 0 && selectedCallType) {
+    //   const interval = setInterval(() => {
+    //     if (!isListLocked) {
+    //       saveAttendanceToLocalStorage(militaryAttendance, selectedDate, selectedCallType)
+    //     }
+    //   }, 30000) // 30 segundos
+    //
+    //   return () => clearInterval(interval)
+    // }
   }, [militaryAttendance, selectedDate, selectedCallType, isListLocked])
 
   useEffect(() => {
@@ -788,14 +789,14 @@ function AttendanceTracker() {
       )
     )
     
-    // Mostrar campo de justificativa se status for "ausente"
-    if (newStatus === "ausente") {
+    // Mostrar campo de justificativa apenas se status for "outros"
+    if (newStatus === "outros") {
       setShowJustificationField(prev => ({
         ...prev,
         [militaryId]: true
       }))
     } else {
-      // Esconder campo se não for ausente
+      // Esconder campo se não for "outros"
       setShowJustificationField(prev => ({
         ...prev,
         [militaryId]: false
@@ -1608,13 +1609,13 @@ function AttendanceTracker() {
                   </Select>
                 )}
                 
-                {/* Campo de justificativa personalizada para ausências */}
-                {!military.isJustified && military.status === "ausente" && showJustificationField[military.militaryId] && (
+                {/* Campo de justificativa personalizada para "outros" */}
+                {!military.isJustified && military.status === "outros" && showJustificationField[military.militaryId] && (
                   <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                       <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                        Justificativa da Ausência
+                        Motivo Específico
                       </span>
                     </div>
                     <textarea
@@ -1642,7 +1643,7 @@ function AttendanceTracker() {
                 )}
                 
                 {/* Botão para mostrar/ocultar campo de justificativa */}
-                {!military.isJustified && military.status === "ausente" && !showJustificationField[military.militaryId] && (
+                {!military.isJustified && military.status === "outros" && !showJustificationField[military.militaryId] && (
                   <div className="mt-2">
                     <Button
                       type="button"
@@ -1652,7 +1653,7 @@ function AttendanceTracker() {
                       className="text-xs h-6 px-2 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-600 dark:text-orange-300 dark:hover:bg-orange-900/30"
                     >
                       <AlertCircle className="h-3 w-3 mr-1" />
-                      Justificar Ausência
+                      Adicionar Motivo
                     </Button>
                   </div>
                 )}

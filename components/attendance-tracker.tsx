@@ -44,6 +44,11 @@ function AttendanceTracker() {
     const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
     return format(localDate, "yyyy-MM-dd")
   })
+  
+  // Estado para controle de persistência
+  const [persistenceEnabled, setPersistenceEnabled] = useState(true)
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null)
+  const [cleanupScheduled, setCleanupScheduled] = useState(false)
   const [isBackdating, setIsBackdating] = useState(false)
   const [isListLocked, setIsListLocked] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -59,6 +64,69 @@ function AttendanceTracker() {
   const [changeHistory, setChangeHistory] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
+  // Função para agendar limpeza às 23h
+  const scheduleCleanup = () => {
+    if (cleanupScheduled) return
+    
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const targetTime = new Date(today.getTime() + 23 * 60 * 60 * 1000) // 23:00 hoje
+    
+    // Se já passou das 23h, agendar para amanhã
+    if (now >= targetTime) {
+      targetTime.setDate(targetTime.getDate() + 1)
+    }
+    
+    const timeUntilCleanup = targetTime.getTime() - now.getTime()
+    
+    console.log(`🧹 Limpeza automática agendada para: ${targetTime.toLocaleString('pt-BR')}`)
+    
+    const timeoutId = setTimeout(() => {
+      console.log('🧹 Executando limpeza automática às 23h...')
+      clearAllAttendanceData()
+      setCleanupScheduled(false)
+      // Reagendar para o próximo dia
+      scheduleCleanup()
+    }, timeUntilCleanup)
+    
+    setCleanupScheduled(true)
+    return timeoutId
+  }
+
+  // Função para limpar todos os dados de presença
+  const clearAllAttendanceData = () => {
+    try {
+      // Limpar todas as chaves de presença do localStorage
+      const keys = Object.keys(localStorage)
+      keys.forEach(key => {
+        if (key.startsWith('poker_attendance_')) {
+          localStorage.removeItem(key)
+        }
+      })
+      
+      // Limpar backup geral
+      localStorage.removeItem('poker_attendance_backup')
+      
+      // Limpar estado atual se não for a data de hoje
+      const today = format(new Date(), "yyyy-MM-dd")
+      if (selectedDate !== today) {
+        setMilitaryAttendance([])
+        setSelectedCallType("")
+        setIsListLocked(false)
+        setLastSaved(null)
+      }
+      
+      console.log('🧹 Dados de presença limpos automaticamente')
+      
+      toast({
+        title: "🧹 Limpeza Automática",
+        description: "Dados antigos de presença foram limpos automaticamente",
+      })
+    } catch (error) {
+      console.error('❌ Erro na limpeza automática:', error)
+    }
+  }
+
   // Funções para persistência no localStorage por data
   const saveAttendanceToLocalStorage = (attendance: MilitaryAttendance[], date: string, callType: string) => {
     try {
@@ -67,7 +135,8 @@ function AttendanceTracker() {
         date,
         callType,
         timestamp: new Date().toISOString(),
-        isLocked: isListLocked
+        isLocked: isListLocked,
+        lastSaveTime: new Date().toISOString()
       }
       
       // Salvar por data específica
@@ -78,7 +147,13 @@ function AttendanceTracker() {
       localStorage.setItem('poker_attendance_backup', JSON.stringify(data))
       
       setLastSaved(new Date())
+      setLastSaveTime(new Date())
       console.log(`💾 Lista de presença salva no localStorage para ${date}`)
+      
+      // Agendar limpeza se ainda não foi agendada
+      if (!cleanupScheduled) {
+        scheduleCleanup()
+      }
     } catch (error) {
       console.error('❌ Erro ao salvar no localStorage:', error)
     }
@@ -281,6 +356,18 @@ function AttendanceTracker() {
       loadAttendanceForDate(selectedDate)
     }
   }, [selectedDate])
+
+  // useEffect para inicializar limpeza automática
+  useEffect(() => {
+    // Agendar limpeza automática na inicialização
+    if (!cleanupScheduled) {
+      scheduleCleanup()
+    }
+    
+    return () => {
+      // Cleanup não é necessário pois o timeout é gerenciado automaticamente
+    }
+  }, [])
 
   const fetchJustifications = async () => {
     console.log("Buscando justificativas para a data:", selectedDate)
@@ -1164,6 +1251,14 @@ function AttendanceTracker() {
                 <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
                 <span className="text-xs text-green-700 dark:text-green-300 font-medium">
                   Dados Salvos
+                </span>
+              </div>
+            )}
+            {persistenceEnabled && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-full">
+                <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                  Persistente
                 </span>
               </div>
             )}

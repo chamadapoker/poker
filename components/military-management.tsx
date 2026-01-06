@@ -109,7 +109,7 @@ export function MilitaryManagement() {
                         name: formData.name.toUpperCase(),
                         rank: formData.rank,
                         updated_at: new Date().toISOString()
-                    })
+                    } as any)
                     .eq("id", currentId)
 
                 if (error) throw error
@@ -127,7 +127,7 @@ export function MilitaryManagement() {
                         name: formData.name.toUpperCase(),
                         rank: formData.rank,
                         seniority: maxSeniority + 1
-                    }])
+                    }] as any)
 
                 if (error) throw error
 
@@ -198,7 +198,7 @@ export function MilitaryManagement() {
             // Update 1
             const { error: error1 } = await supabase
                 .from('military_personnel')
-                .update({ seniority: newCurrentSeniority })
+                .update({ seniority: newCurrentSeniority } as any)
                 .eq('id', currentItem.id);
 
             if (error1) throw error1;
@@ -206,7 +206,7 @@ export function MilitaryManagement() {
             // Update 2
             const { error: error2 } = await supabase
                 .from('military_personnel')
-                .update({ seniority: newTargetSeniority })
+                .update({ seniority: newTargetSeniority } as any)
                 .eq('id', targetItem.id);
 
             if (error2) throw error2;

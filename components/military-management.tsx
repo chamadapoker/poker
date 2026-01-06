@@ -103,7 +103,7 @@ export function MilitaryManagement() {
         try {
             if (isEditing && currentId) {
                 // Atualizar
-                const { error } = await supabase
+                const { error } = await (supabase as any)
                     .from("military_personnel")
                     .update({
                         name: formData.name.toUpperCase(),
@@ -121,7 +121,7 @@ export function MilitaryManagement() {
                     ? Math.max(...militaryList.map(m => m.seniority || 0))
                     : 0;
 
-                const { error } = await supabase
+                const { error } = await (supabase as any)
                     .from("military_personnel")
                     .insert([{
                         name: formData.name.toUpperCase(),
@@ -196,7 +196,7 @@ export function MilitaryManagement() {
         try {
             setLoading(true);
             // Update 1
-            const { error: error1 } = await supabase
+            const { error: error1 } = await (supabase as any)
                 .from('military_personnel')
                 .update({ seniority: newCurrentSeniority } as any)
                 .eq('id', currentItem.id);
@@ -204,7 +204,7 @@ export function MilitaryManagement() {
             if (error1) throw error1;
 
             // Update 2
-            const { error: error2 } = await supabase
+            const { error: error2 } = await (supabase as any)
                 .from('military_personnel')
                 .update({ seniority: newTargetSeniority } as any)
                 .eq('id', targetItem.id);

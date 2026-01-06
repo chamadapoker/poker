@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const saveProfileToLocalStorage = (profile: UserProfile) => {
     try {
       localStorage.setItem('poker_profile', JSON.stringify(profile))
-      console.log('💾 Perfil salvo no localStorage:', profile)
+      // console.log('💾 Perfil salvo no localStorage:', profile)
     } catch (error) {
       console.error('❌ Erro ao salvar perfil no localStorage:', error)
     }
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const savedProfile = localStorage.getItem('poker_profile')
       if (savedProfile) {
         const profile = JSON.parse(savedProfile)
-        console.log('📱 Perfil carregado do localStorage:', profile)
+        // console.log('📱 Perfil carregado do localStorage:', profile)
         return profile
       }
     } catch (error) {
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const savedProfile = loadProfileFromLocalStorage()
     if (savedProfile) {
       setProfile(savedProfile)
-      console.log('⚡ Perfil carregado instantaneamente do localStorage')
+      // console.log('⚡ Perfil carregado instantaneamente do localStorage')
     }
 
     // Timeout de segurança para evitar travamento
@@ -81,9 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Verificar sessão atual
     const getSession = async () => {
       try {
-        console.log('🔐 Verificando sessão atual...')
+        // console.log('🔐 Verificando sessão atual...')
         const { data: { session }, error } = await supabase.auth.getSession()
-        
+
         if (error) {
           console.error('❌ Erro ao buscar sessão:', error)
           setIsLoading(false)
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('✅ Sessão encontrada:', session ? 'Sim' : 'Não')
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (session?.user) {
           console.log('👤 Usuário autenticado:', session.user.email)
           // Verificar se o perfil do localStorage é do mesmo usuário
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null)
           clearProfileFromLocalStorage()
         }
-        
+
         setIsLoading(false)
         clearTimeout(safetyTimeout)
       } catch (error) {
@@ -127,17 +127,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Escutar mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Evento de autenticação:', event, session?.user?.email)
+        // console.log('🔄 Evento de autenticação:', event, session?.user?.email)
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (session?.user) {
           await fetchUserProfile(session.user.id)
         } else {
           setProfile(null)
           clearProfileFromLocalStorage()
         }
-        
+
         setIsLoading(false)
         clearTimeout(safetyTimeout)
       }
@@ -152,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('🔍 Buscando perfil para usuário:', userId)
-      
+
       const { data, error } = await (supabase as any)
         .from('user_profiles')
         .select('*')
@@ -167,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           details: error.details,
           hint: error.hint
         })
-        
+
         // Se não existir perfil, criar um padrão
         console.log('🔄 Tentando criar perfil padrão...')
         await createDefaultProfile(userId)
@@ -184,10 +184,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const createDefaultProfile = async (userId: string) => {
     try {
       console.log('🆕 Criando perfil padrão para usuário:', userId)
-      
+
       // Determinar role baseado no email
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
+
       if (userError) {
         console.error('❌ Erro ao buscar usuário:', userError)
         return
@@ -200,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const isAdmin = user.email === 'pokeradmin@teste.com'
       console.log('👑 Role determinado:', isAdmin ? 'admin' : 'user')
-      
+
       const { data, error } = await (supabase as any)
         .from('user_profiles')
         .insert({
@@ -219,14 +219,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           details: error.details,
           hint: error.hint
         })
-        
+
         // Se a tabela não existir, mostrar instruções
         if (error.code === '42P01') { // undefined_table
           console.error('🚨 TABELA user_profiles NÃO EXISTE!')
           console.error('📋 Execute o script SQL: scripts/create_user_profiles_table.sql')
         }
       } else {
-        console.log('✅ Perfil criado com sucesso:', data)
+        // console.log('✅ Perfil criado com sucesso:', data)
         setProfile(data)
         saveProfileToLocalStorage(data)
       }
@@ -244,23 +244,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       console.log('🚪 Iniciando logout...')
-      
+
       // Limpar estado local primeiro
       setUser(null)
       setSession(null)
       setProfile(null)
       clearProfileFromLocalStorage()
-      
+
       // Fazer logout no Supabase
       const { error } = await supabase.auth.signOut()
-      
+
       if (error) {
         console.error('❌ Erro no Supabase logout:', error)
         throw error
       }
-      
+
       console.log('✅ Logout realizado com sucesso')
-      
+
       // Forçar redirecionamento para login
       window.location.href = '/login'
     } catch (error) {
@@ -322,7 +322,7 @@ export function useRequireAuth(requiredRole?: 'admin' | 'user') {
           router.push('/dashboard')
         }
       }, 3000) // 3 segundos
-      
+
       return () => clearTimeout(timeout)
     }
 

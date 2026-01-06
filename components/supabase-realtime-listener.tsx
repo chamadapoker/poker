@@ -2,81 +2,61 @@
 
 import { useEffect } from "react"
 import { supabase } from "../lib/supabase"
-import { toast } from "sonner"
+import { toast } from "sonner" // Changed to match local usage if sonner is used, or hook toast.
+// The original used "import { toast } from 'sonner'". Assuming this is correct package.
 
 export default function SupabaseRealtimeListener() {
   useEffect(() => {
-    // Listen for changes in military_attendance_records
-    const attendanceChannel = supabase
-      .channel("military_attendance_records_changes")
+    console.log('🔌 Inicializando Supabase Realtime (Canal Único)...')
+
+    // Single channel for all mutations
+    const globalChannel = supabase
+      .channel("global_system_changes")
+
+      // Attendance
       .on("postgres_changes", { event: "*", schema: "public", table: "military_attendance_records" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Presença: ${payload.eventType} na tabela de registros de presença.`)
+        console.log("Change received (attendance)!", payload)
+        // toast.info(`Atualização de Presença recebida`) // Reduced noise
       })
-      .subscribe()
 
-    // Listen for changes in military_justifications
-    const justificationsChannel = supabase
-      .channel("military_justifications_changes")
+      // Justifications
       .on("postgres_changes", { event: "*", schema: "public", table: "military_justifications" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Justificativa: ${payload.eventType} na tabela de justificativas.`)
+        console.log("Change received (justifications)!", payload)
       })
-      .subscribe()
 
-    // Listen for changes in claviculario_keys
-    const keysChannel = supabase
-      .channel("claviculario_keys_changes")
+      // Keys
       .on("postgres_changes", { event: "*", schema: "public", table: "claviculario_keys" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Chave: ${payload.eventType} na tabela de chaves.`)
+        console.log("Change received (keys)!", payload)
       })
-      .subscribe()
 
-    // Listen for changes in events
-    const eventsChannel = supabase
-      .channel("events_changes")
+      // Events
       .on("postgres_changes", { event: "*", schema: "public", table: "events" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Evento: ${payload.eventType} na tabela de eventos.`)
+        console.log("Change received (events)!", payload)
       })
-      .subscribe()
 
-    // Listen for changes in flights
-    const flightsChannel = supabase
-      .channel("flights_changes")
+      // Flights
       .on("postgres_changes", { event: "*", schema: "public", table: "flights" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Voo: ${payload.eventType} na tabela de voos.`)
+        console.log("Change received (flights)!", payload)
       })
-      .subscribe()
 
-    // Listen for changes in personal_notes
-    const notesChannel = supabase
-      .channel("personal_notes_changes")
+      // Personal Notes
       .on("postgres_changes", { event: "*", schema: "public", table: "personal_notes" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Nota Pessoal: ${payload.eventType} na tabela de notas.`)
+        console.log("Change received (notes)!", payload)
       })
-      .subscribe()
 
-    // Listen for changes in military_personal_checklists
-    const checklistsChannel = supabase
-      .channel("military_personal_checklists_changes")
+      // Checklists
       .on("postgres_changes", { event: "*", schema: "public", table: "military_personal_checklists" }, (payload) => {
-        console.log("Change received!", payload)
-        toast.info(`Atualização de Checklist: ${payload.eventType} na tabela de checklists.`)
+        console.log("Change received (checklists)!", payload)
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Supabase Realtime conectado!')
+        }
+      })
 
     return () => {
-      supabase.removeChannel(attendanceChannel)
-      supabase.removeChannel(justificationsChannel)
-      supabase.removeChannel(keysChannel)
-      supabase.removeChannel(eventsChannel)
-      supabase.removeChannel(flightsChannel)
-      supabase.removeChannel(notesChannel)
-      supabase.removeChannel(checklistsChannel)
+      console.log('🔌 Desconectando Supabase Realtime...')
+      supabase.removeChannel(globalChannel)
     }
   }, [])
 
